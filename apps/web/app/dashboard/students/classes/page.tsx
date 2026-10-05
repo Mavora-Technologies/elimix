@@ -1,9 +1,10 @@
+// apps/web/app/dashboard/students/classes/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for a Class/Stream
+// TypeScript interface matched exactly to the AcademicsService output
 interface ClassStream {
   id: string;
   gradeName: string;
@@ -15,64 +16,54 @@ interface ClassStream {
   roomNumber: string;
 }
 
-// Initial mock data for classes and streams
-const initialClasses: ClassStream[] = [
-  {
-    id: 'CLS-6A',
-    gradeName: 'Grade 6',
-    streamName: 'East Stream',
-    classTeacher: 'Mr. David Wilson',
-    teacherEmail: 'david.wilson@elimix.edu',
-    studentCount: 38,
-    capacity: 40,
-    roomNumber: 'Rm 102',
-  },
-  {
-    id: 'CLS-6B',
-    gradeName: 'Grade 6',
-    streamName: 'West Stream',
-    classTeacher: 'Ms. Emily Davis',
-    teacherEmail: 'emily.davis@elimix.edu',
-    studentCount: 35,
-    capacity: 40,
-    roomNumber: 'Rm 104',
-  },
-  {
-    id: 'CLS-7A',
-    gradeName: 'Grade 7',
-    streamName: 'North Stream',
-    classTeacher: 'Mr. Robert Taylor',
-    teacherEmail: 'robert.taylor@elimix.edu',
-    studentCount: 42,
-    capacity: 40,
-    roomNumber: 'Rm 201',
-  },
-  {
-    id: 'CLS-8A',
-    gradeName: 'Grade 8',
-    streamName: 'South Stream',
-    classTeacher: 'Mrs. Amanda Martinez',
-    teacherEmail: 'amanda.martinez@elimix.edu',
-    studentCount: 37,
-    capacity: 45,
-    roomNumber: 'Rm 205',
-  },
-  {
-    id: 'CLS-9A',
-    gradeName: 'Grade 9',
-    streamName: 'East Stream',
-    classTeacher: 'Dr. James Anderson',
-    teacherEmail: 'james.anderson@elimix.edu',
-    studentCount: 39,
-    capacity: 40,
-    roomNumber: 'Rm 302',
-  },
-];
-
 export default function ClassesStreamsPage() {
-  const [classes, setClasses] = useState<ClassStream[]>(initialClasses);
+  const [classes, setClasses] = useState<ClassStream[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('All');
+
+  // Fetch real class and stream data from Phase 3 Academics endpoint
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        setIsLoading(true);
+        
+        const token = localStorage.getItem('elimix_token');
+        const userJson = localStorage.getItem('elimix_user');
+        
+        let tenantId = '';
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          tenantId = user.tenantId || '';
+        }
+
+        const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
+
+        const res = await fetch('http://localhost:3001/api/v1/academics/classes', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'x-tenant-id': activeTenantId,
+          },
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.message || 'Failed to fetch class and stream records.');
+        }
+
+        setClasses(result.data || []);
+      } catch (err: any) {
+        setError(err.message || 'An error occurred while connecting to the server.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchClasses();
+  }, []);
 
   // Filter logic based on search and grade level selection
   const filteredClasses = classes.filter((cls) => {
@@ -87,9 +78,13 @@ export default function ClassesStreamsPage() {
     return matchesSearch && matchesGrade;
   });
 
-  // Calculate totals
+  // Dynamic calculations based on live database data
   const totalStudentsEnrolled = classes.reduce((acc, curr) => acc + curr.studentCount, 0);
   const totalCapacity = classes.reduce((acc, curr) => acc + curr.capacity, 0);
+  const averageClassSize = classes.length > 0 ? Math.round(totalStudentsEnrolled / classes.length) : 0;
+
+  // Extract unique grades dynamically from the fetched classes for the filter dropdown
+  const uniqueGrades = Array.from(new Set(classes.map(c => c.gradeName))).sort();
 
   return (
     <div className="space-y-6">
@@ -105,7 +100,9 @@ export default function ClassesStreamsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
-            <i className="fa-solid fa-plus mr-2 text-xs"></i> Add Class Stream
+            <Link href="/dashboard/students/classes/new">
+              <i className="fa-solid fa-plus mr-2 text-xs"></i> Add Class Stream
+            </Link>
           </button>
         </div>
       </div>
@@ -152,16 +149,13 @@ export default function ClassesStreamsPage() {
               <i className="fa-solid fa-chart-pie text-sm"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">
-            {Math.round(totalStudentsEnrolled / classes.length)}
-          </p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{averageClassSize}</p>
           <span className="text-xs text-amber-600 font-medium">Optimal teacher-to-student ratio</span>
         </div>
       </div>
 
       {/* Toolbar: Search and Filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
           <input
@@ -173,7 +167,6 @@ export default function ClassesStreamsPage() {
           />
         </div>
 
-        {/* Grade Filter */}
         <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
           <span>Filter Grade:</span>
           <select
@@ -182,10 +175,9 @@ export default function ClassesStreamsPage() {
             className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
           >
             <option value="All">All Grades</option>
-            <option value="Grade 6">Grade 6</option>
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 8">Grade 8</option>
-            <option value="Grade 9">Grade 9</option>
+            {uniqueGrades.map(grade => (
+              <option key={grade} value={grade}>{grade}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -205,9 +197,24 @@ export default function ClassesStreamsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-sm">
-              {filteredClasses.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
+                    <div className="flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-spinner animate-spin text-blue-600"></i>
+                      <span>Loading classes from database...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-rose-600 text-sm">
+                    <i className="fa-solid fa-triangle-exclamation mr-2"></i> {error}
+                  </td>
+                </tr>
+              ) : filteredClasses.length > 0 ? (
                 filteredClasses.map((cls) => {
-                  const percent = Math.round((cls.studentCount / cls.capacity) * 100);
+                  const percent = cls.capacity > 0 ? Math.round((cls.studentCount / cls.capacity) * 100) : 0;
                   return (
                     <tr key={cls.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3.5 px-4">
@@ -239,7 +246,7 @@ export default function ClassesStreamsPage() {
                       <td className="py-3.5 px-4 text-right space-x-2">
                         <Link
                           href={`/dashboard/students?class=${encodeURIComponent(cls.gradeName)}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                          className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors inline-block"
                         >
                           View Roster
                         </Link>
@@ -249,8 +256,8 @@ export default function ClassesStreamsPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
-                    No matching class or stream records found.
+                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
+                    No matching class or stream records found in the database.
                   </td>
                 </tr>
               )}

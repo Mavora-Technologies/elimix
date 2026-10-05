@@ -1,3 +1,4 @@
+// apps/api/src/validators/user.validator.ts
 import { z } from 'zod';
 
 export const createUserSchema = z.object({

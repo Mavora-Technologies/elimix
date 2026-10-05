@@ -1,3 +1,4 @@
+// apps/api/src/validators/auth.validator.ts
 import { z } from 'zod';
 
 export const loginSchema = z.object({

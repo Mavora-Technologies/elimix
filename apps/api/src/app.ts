@@ -3,7 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { tenantMiddleware } from './middleware/tenant.middleware.js';
 import authRoutes from './modules/auth/auth.routes.js';
-import userRoutes from './modules/users/user.routes.js'; // <-- Add this import
+import userRoutes from './modules/users/user.routes.js';
+import studentRoutes from './modules/students/students.routes.js';
+import academicRoutes from './modules/academics/academics.routes.js';
 
 dotenv.config();
 
@@ -16,7 +18,9 @@ app.use(tenantMiddleware);
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/users', userRoutes); // <-- Mount users module
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/students', studentRoutes);
+app.use('/api/v1/academics', academicRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Elimix API', timestamp: new Date() });

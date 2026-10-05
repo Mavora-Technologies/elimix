@@ -319,6 +319,122 @@ const navigationSections: NavSection[] = [
       },
 
       {
+        name: 'Human Resources',
+        icon: 'fa-solid fa-user-tie',
+        description: 'Staff records, attendance, leave and payroll',
+        children: [
+          {
+            name: 'HR Dashboard',
+            href: '/dashboard/hr',
+            description: 'HR overview, workforce metrics and alerts',
+          },
+          {
+            name: 'Staff Directory',
+            href: '/dashboard/hr/staff',
+            description: 'Manage teaching and non-teaching staff',
+          },
+          {
+            name: 'Departments & Positions',
+            href: '/dashboard/hr/departments',
+            description: 'Manage departments, roles and positions',
+          },
+          {
+            name: 'Staff Attendance',
+            href: '/dashboard/hr/attendance',
+            description: 'Track staff attendance and working hours',
+          },
+          {
+            name: 'Leave Management',
+            href: '/dashboard/hr/leave',
+            description: 'Manage staff leave applications and approvals',
+          },
+          {
+            name: 'Payroll',
+            href: '/dashboard/hr/payroll',
+            description: 'Manage salaries, deductions and payroll',
+          },
+          {
+            name: 'Contracts & Documents',
+            href: '/dashboard/hr/contracts',
+            description: 'Manage staff contracts and HR documents',
+          },
+          {
+            name: 'Performance Management',
+            href: '/dashboard/hr/performance',
+            description: 'Manage staff appraisals and performance reviews',
+          },
+          {
+            name: 'Recruitment',
+            href: '/dashboard/hr/recruitment',
+            description: 'Manage vacancies, applicants and recruitment',
+          },
+        ],
+      },
+
+      {
+        name: 'Hostel & Boarding',
+        icon: 'fa-solid fa-bed',
+        description: 'Hostels, rooms, boarding students and welfare',
+        children: [
+          {
+            name: 'Hostel Dashboard',
+            href: '/dashboard/hostel',
+            description: 'Boarding overview, occupancy and key metrics',
+          },
+          {
+            name: 'Hostels & Houses',
+            href: '/dashboard/hostel/hostels',
+            description: 'Manage hostels, houses and boarding facilities',
+          },
+          {
+            name: 'Rooms & Beds',
+            href: '/dashboard/hostel/rooms',
+            description: 'Manage rooms, beds and occupancy',
+          },
+          {
+            name: 'Boarding Students',
+            href: '/dashboard/hostel/students',
+            description: 'Manage students assigned to boarding',
+          },
+          {
+            name: 'Room Allocation',
+            href: '/dashboard/hostel/allocation',
+            description: 'Assign students to rooms and beds',
+          },
+          {
+            name: 'Check-In & Check-Out',
+            href: '/dashboard/hostel/check-in-out',
+            description: 'Track student boarding movements',
+          },
+          {
+            name: 'Hostel Attendance',
+            href: '/dashboard/hostel/attendance',
+            description: 'Record and review boarding student attendance',
+          },
+          {
+            name: 'Meals & Dining',
+            href: '/dashboard/hostel/meals',
+            description: 'Manage meals, dining schedules and boarding meals',
+          },
+          {
+            name: 'Hostel Fees',
+            href: '/dashboard/hostel/fees',
+            description: 'Manage boarding charges and hostel fees',
+          },
+          {
+            name: 'Welfare & Incidents',
+            href: '/dashboard/hostel/incidents',
+            description: 'Manage student welfare issues and incidents',
+          },
+          {
+            name: 'Hostel Staff',
+            href: '/dashboard/hostel/staff',
+            description: 'Manage matrons, wardens and hostel staff',
+          },
+        ],
+      },
+
+      {
         name: 'Transport',
         icon: 'fa-solid fa-bus',
         description: 'Routes, vehicles and transport fees',

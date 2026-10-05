@@ -1,3 +1,4 @@
+// apps/api/src/modules/tenant/tenant.schema.ts
 import { pgTable, uuid, varchar, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const tenants = pgTable('tenants', {

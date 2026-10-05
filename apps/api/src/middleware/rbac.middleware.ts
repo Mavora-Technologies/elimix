@@ -1,3 +1,4 @@
+// apps/api/src/middleware/rbac.middleware.ts
 import { Response, NextFunction } from 'express';
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../config/db.js';

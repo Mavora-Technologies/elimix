@@ -1,3 +1,4 @@
+// apps/api/src/modules/auth/auth.schema.ts
 import { pgTable, uuid, varchar, boolean, timestamp, primaryKey, jsonb } from 'drizzle-orm/pg-core';
 import { tenants } from '../tenant/tenant.schema.js';
 
