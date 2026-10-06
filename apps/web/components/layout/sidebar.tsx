@@ -460,6 +460,168 @@ const navigationSections: NavSection[] = [
   },
 
   /* ------------------------------------------------------------------------
+     REPORTS & ANALYTICS
+     ------------------------------------------------------------------------ */
+
+  {
+    title: 'Reports & Analytics',
+    items: [
+      {
+        name: 'Academic Reports',
+        icon: 'fa-solid fa-chart-line',
+        description: 'Performance, exam analysis and progress',
+        children: [
+          {
+            name: 'Exam Performance',
+            href: '/dashboard/reports/academics/exams',
+            description: 'Analyze exam results and trends',
+          },
+          {
+            name: 'Subject Analysis',
+            href: '/dashboard/reports/academics/subjects',
+            description: 'Subject-wise performance metrics',
+          },
+          {
+            name: 'Teacher Performance',
+            href: '/dashboard/reports/academics/teachers',
+            description: 'Class performance by teacher',
+          },
+        ],
+      },
+      {
+        name: 'Financial Reports',
+        icon: 'fa-solid fa-file-invoice-dollar',
+        description: 'Revenue, collections and expenses',
+        children: [
+          {
+            name: 'Fee Collections',
+            href: '/dashboard/reports/finance/collections',
+            description: 'Daily and periodic fee collection reports',
+          },
+          {
+            name: 'Fee Defaulters',
+            href: '/dashboard/reports/finance/defaulters',
+            description: 'List of students with outstanding balances',
+          },
+          {
+            name: 'Income & Expenditure',
+            href: '/dashboard/reports/finance/income-expenditure',
+            description: 'Overall school financial summary',
+          },
+        ],
+      },
+      {
+        name: 'Student & Population',
+        icon: 'fa-solid fa-chart-user',
+        description: 'Demographics, enrollment and attendance',
+        children: [
+          {
+            name: 'Enrollment Statistics',
+            href: '/dashboard/reports/students/enrollment',
+            description: 'Student population breakdowns',
+          },
+          {
+            name: 'Attendance Registers',
+            href: '/dashboard/reports/students/attendance',
+            description: 'Comprehensive attendance reports',
+          },
+          {
+            name: 'Discipline & Welfare',
+            href: '/dashboard/reports/students/discipline',
+            description: 'Student conduct and incident reports',
+          },
+        ],
+      },
+      {
+        name: 'Operational Reports',
+        icon: 'fa-solid fa-clipboard-list',
+        description: 'Transport, hostel, library and inventory',
+        children: [
+          {
+            name: 'Hostel Occupancy',
+            href: '/dashboard/reports/operations/hostel',
+            description: 'Boarding capacity and utilization',
+          },
+          {
+            name: 'Transport Utilization',
+            href: '/dashboard/reports/operations/transport',
+            description: 'Bus routes and transport usage',
+          },
+          {
+            name: 'Inventory Consumption',
+            href: '/dashboard/reports/operations/inventory',
+            description: 'Stock usage and procurement reports',
+          },
+        ],
+      },
+      {
+        name: 'Custom Reports',
+        icon: 'fa-solid fa-filter',
+        description: 'Build and export custom data',
+        children: [
+          {
+            name: 'Report Builder',
+            href: '/dashboard/reports/custom/builder',
+            description: 'Create custom query reports',
+          },
+          {
+            name: 'Scheduled Exports',
+            href: '/dashboard/reports/custom/scheduled',
+            description: 'Manage automated email reports',
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ------------------------------------------------------------------------
+     USER MANAGEMENT & SECURITY
+     ------------------------------------------------------------------------ */
+
+  {
+    title: 'Security & Access',
+    items: [
+      {
+        name: 'User Management',
+        icon: 'fa-solid fa-user-shield',
+        description: 'System users, administrative roles, permissions and audit trails',
+        children: [
+          {
+            name: 'User Directory',
+            href: '/dashboard/users',
+            description: 'Manage all system users, accounts, status and profiles',
+          },
+          {
+            name: 'Roles & Permissions',
+            href: '/dashboard/users/roles',
+            description: 'Configure security roles and granular permission matrix',
+          },
+          {
+            name: 'Access Control (ACL)',
+            href: '/dashboard/users/acl',
+            description: 'Manage feature-level and data-level access rules',
+          },
+          {
+            name: 'Authentication & Security',
+            href: '/dashboard/users/security',
+            description: 'Configure password policies, 2FA and session controls',
+          },
+          {
+            name: 'Audit Logs & Activity',
+            href: '/dashboard/users/audit-logs',
+            description: 'Track user logins, modifications and security events',
+          },
+          {
+            name: 'API Tokens & Integrations',
+            href: '/dashboard/users/api-keys',
+            description: 'Manage API access tokens and third-party webhooks',
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ------------------------------------------------------------------------
      SYSTEM
      ------------------------------------------------------------------------ */
 
@@ -493,13 +655,13 @@ const allNavigationItems: SearchResult[] = navigationSections.flatMap(
     section.items.flatMap((item) => {
       const parentRoute: SearchResult[] = item.href
         ? [
-            {
-              name: item.name,
-              href: item.href,
-              icon: item.icon,
-              description: item.description,
-            },
-          ]
+          {
+            name: item.name,
+            href: item.href,
+            icon: item.icon,
+            description: item.description,
+          },
+        ]
         : [];
 
       const children: SearchResult[] =
@@ -705,8 +867,7 @@ export function Sidebar({
     : 'Administrator';
 
   const initials = user?.firstName
-    ? `${user.firstName.charAt(0)}${
-        user.lastName?.charAt(0) || ''
+    ? `${user.firstName.charAt(0)}${user.lastName?.charAt(0) || ''
       }`.toUpperCase()
     : 'AD';
 
@@ -801,9 +962,8 @@ export function Sidebar({
         </span>
 
         <i
-          className={`fa-solid fa-chevron-down ml-2 text-[9px] text-slate-400 transition-transform duration-200 ${
-            workspaceOpen ? 'rotate-180' : ''
-          }`}
+          className={`fa-solid fa-chevron-down ml-2 text-[9px] text-slate-400 transition-transform duration-200 ${workspaceOpen ? 'rotate-180' : ''
+            }`}
         />
       </button>
 
@@ -868,11 +1028,10 @@ export function Sidebar({
   const searchBox = (
     <div className="relative mt-3">
       <div
-        className={`flex h-9 items-center rounded-lg border bg-white transition-all ${
-          searchQuery
+        className={`flex h-9 items-center rounded-lg border bg-white transition-all ${searchQuery
             ? 'border-[#006FBF]/40 ring-2 ring-[#006FBF]/10'
             : 'border-slate-200 hover:border-slate-300'
-        }`}
+          }`}
       >
         <i
           className="fa-solid fa-magnifying-glass ml-3 text-xs"
@@ -990,11 +1149,10 @@ export function Sidebar({
           href={item.href}
           onClick={handleNavigation}
           aria-current={exactActive ? 'page' : undefined}
-          className={`group relative flex min-h-10 items-center rounded-lg px-2.5 py-2 transition-all duration-150 ${
-            exactActive
+          className={`group relative flex min-h-10 items-center rounded-lg px-2.5 py-2 transition-all duration-150 ${exactActive
               ? 'bg-[#006FBF]/10 text-[#006FBF]'
               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-          }`}
+            }`}
         >
           {exactActive && (
             <span
@@ -1004,11 +1162,10 @@ export function Sidebar({
           )}
 
           <span
-            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${
-              exactActive
+            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${exactActive
                 ? 'text-[#006FBF]'
                 : 'text-slate-400 group-hover:text-slate-600'
-            }`}
+              }`}
           >
             <i className={`${item.icon} text-sm`} />
           </span>
@@ -1030,11 +1187,10 @@ export function Sidebar({
           type="button"
           onClick={() => toggleMenu(item.name)}
           aria-expanded={isExpanded}
-          className={`group relative flex min-h-10 w-full items-center rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${
-            isActive
+          className={`group relative flex min-h-10 w-full items-center rounded-lg px-2.5 py-2 text-left transition-all duration-150 ${isActive
               ? 'bg-[#006FBF]/5 text-[#006FBF]'
               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-          }`}
+            }`}
         >
           {isActive && (
             <span
@@ -1044,11 +1200,10 @@ export function Sidebar({
           )}
 
           <span
-            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${
-              isActive
+            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${isActive
                 ? 'text-[#006FBF]'
                 : 'text-slate-400 group-hover:text-slate-600'
-            }`}
+              }`}
           >
             <i className={`${item.icon} text-sm`} />
           </span>
@@ -1058,11 +1213,10 @@ export function Sidebar({
           </span>
 
           <i
-            className={`fa-solid fa-chevron-down text-[9px] transition-transform duration-200 ${
-              isExpanded
+            className={`fa-solid fa-chevron-down text-[9px] transition-transform duration-200 ${isExpanded
                 ? 'rotate-180 text-[#006FBF]'
                 : 'text-slate-300 group-hover:text-slate-500'
-            }`}
+              }`}
           />
         </button>
 
@@ -1085,11 +1239,10 @@ export function Sidebar({
                     href={child.href}
                     onClick={handleNavigation}
                     aria-current={childActive ? 'page' : undefined}
-                    className={`group relative flex min-h-9 items-center rounded-md px-2.5 py-1.5 transition-colors ${
-                      childActive
+                    className={`group relative flex min-h-9 items-center rounded-md px-2.5 py-1.5 transition-colors ${childActive
                         ? 'bg-[#006FBF]/10 text-[#006FBF]'
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                    }`}
+                      }`}
                   >
                     {childActive && (
                       <span
@@ -1099,11 +1252,10 @@ export function Sidebar({
                     )}
 
                     <span
-                      className={`mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                        childActive
+                      className={`mr-2 h-1.5 w-1.5 flex-shrink-0 rounded-full ${childActive
                           ? 'bg-[#04B1D6]'
                           : 'bg-slate-300 group-hover:bg-slate-400'
-                      }`}
+                        }`}
                     />
 
                     <span className="truncate text-xs font-medium">
@@ -1228,9 +1380,8 @@ export function Sidebar({
         </span>
 
         <i
-          className={`fa-solid fa-chevron-down text-[9px] text-[#006FBF]/60 transition-transform ${
-            quickActionsOpen ? 'rotate-180' : ''
-          }`}
+          className={`fa-solid fa-chevron-down text-[9px] text-[#006FBF]/60 transition-transform ${quickActionsOpen ? 'rotate-180' : ''
+            }`}
         />
       </button>
 
@@ -1283,6 +1434,15 @@ export function Sidebar({
           >
             <i className="fa-solid fa-book-open-reader mr-2.5 w-4 text-center text-slate-400" />
             Issue Library Book
+          </Link>
+
+          <Link
+            href="/dashboard/users"
+            onClick={handleNavigation}
+            className="flex items-center rounded-lg px-2.5 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
+            <i className="fa-solid fa-user-shield mr-2.5 w-4 text-center text-slate-400" />
+            Manage Users
           </Link>
 
           <Link
@@ -1352,9 +1512,8 @@ export function Sidebar({
           </span>
 
           <i
-            className={`fa-solid fa-ellipsis text-slate-400 transition-transform ${
-              userMenuOpen ? 'rotate-90' : ''
-            }`}
+            className={`fa-solid fa-ellipsis text-slate-400 transition-transform ${userMenuOpen ? 'rotate-90' : ''
+              }`}
           />
         </button>
 
@@ -1449,11 +1608,10 @@ export function Sidebar({
          ====================================================================== */}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${
-          mobileOpen
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${mobileOpen
             ? 'translate-x-0'
             : '-translate-x-full'
-        }`}
+          }`}
         aria-label="Mobile navigation"
       >
         {sidebarContent}

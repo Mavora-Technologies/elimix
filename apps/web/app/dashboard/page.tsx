@@ -31,7 +31,7 @@ export default function DashboardOverviewPage() {
   }, []);
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6 font-sans pb-12">
       
       {/* Executive Header & Institutional Context Banner */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -128,7 +128,7 @@ export default function DashboardOverviewPage() {
         </Card>
       </div>
 
-      {/* Main Operational Grid */}
+      {/* Main Operational & Navigation Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* Left Column: Security & Tenant Context */}
@@ -161,64 +161,182 @@ export default function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Center/Right Column: Administrative Operations & Quick Links */}
+        {/* Center/Right Column: Comprehensive Sidebar Quick Actions Hub */}
         <Card className="border-slate-200 shadow-sm lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base font-semibold text-slate-900">Administrative Operations</CardTitle>
-            <CardDescription className="text-xs">Direct access to core module management suites</CardDescription>
+            <CardTitle className="text-base font-semibold text-slate-900">Sidebar Quick Actions & Modules</CardTitle>
+            <CardDescription className="text-xs">Direct access shortcuts mapped directly to institutional navigation</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link href="/dashboard/users" className="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+            
+            {/* Students & Admissions */}
+            <Link href="/dashboard/students" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
-                  <i className="fa-solid fa-users-gear text-sm"></i>
+                  <i className="fa-solid fa-user-graduate text-sm"></i>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Users & RBAC</h4>
-                  <p className="text-[11px] text-slate-500">Manage access roles & permissions</p>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Students Directory</h4>
+                  <p className="text-[11px] text-slate-500">Admissions & profiles</p>
                 </div>
               </div>
               <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
             </Link>
 
-            <Link href="/dashboard/finance" className="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+            {/* Finance & Invoicing */}
+            <Link href="/dashboard/finance" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
                   <i className="fa-solid fa-file-invoice-dollar text-sm"></i>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Fee Invoicing</h4>
-                  <p className="text-[11px] text-slate-500">Automated statements & M-Pesa</p>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Finance & M-Pesa</h4>
+                  <p className="text-[11px] text-slate-500">Invoicing & fee collection</p>
                 </div>
               </div>
               <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
             </Link>
 
-            <Link href="/dashboard/exams" className="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+            {/* Examinations */}
+            <Link href="/dashboard/exams" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
                   <i className="fa-solid fa-pen-to-square text-sm"></i>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Examinations</h4>
-                  <p className="text-[11px] text-slate-500">Marks entry & grade calculation</p>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Examinations & Grading</h4>
+                  <p className="text-[11px] text-slate-500">Marks entry & report cards</p>
                 </div>
               </div>
               <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
             </Link>
 
-            <Link href="/dashboard/settings" className="group p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+            {/* Users & RBAC */}
+            <Link href="/dashboard/users" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-users-gear text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">User Management</h4>
+                  <p className="text-[11px] text-slate-500">Staff roles & permissions</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Security Policies */}
+            <Link href="/dashboard/users/security" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-shield-halved text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Security & Passwords</h4>
+                  <p className="text-[11px] text-slate-500">2FA & password rules</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Audit Logs */}
+            <Link href="/dashboard/users/audit-logs" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-file-shield text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Audit Logs</h4>
+                  <p className="text-[11px] text-slate-500">Compliance & activity trail</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* API Tokens */}
+            <Link href="/dashboard/users/api-keys" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-key text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">API Tokens & Webhooks</h4>
+                  <p className="text-[11px] text-slate-500">Integrations & gateway keys</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Hostel Management */}
+            <Link href="/dashboard/hostel" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-bed text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Hostel & Accommodation</h4>
+                  <p className="text-[11px] text-slate-500">Bed allocations & dorms</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Library System */}
+            <Link href="/dashboard/library" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-book-open text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Library Management</h4>
+                  <p className="text-[11px] text-slate-500">Book loans & cataloging</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Communication Hub */}
+            <Link href="/dashboard/communication" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-bullhorn text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Communication & SMS</h4>
+                  <p className="text-[11px] text-slate-500">Broadcasts & parent alerts</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Reports & Analytics */}
+            <Link href="/dashboard/reports" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
+                  <i className="fa-solid fa-chart-pie text-sm"></i>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Reports & Analytics</h4>
+                  <p className="text-[11px] text-slate-500">Statistical dashboards</p>
+                </div>
+              </div>
+              <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
+            </Link>
+
+            {/* Institution Settings */}
+            <Link href="/dashboard/settings" className="group p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center transition-colors">
                   <i className="fa-solid fa-sliders text-sm"></i>
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-900">Institution Settings</h4>
-                  <p className="text-[11px] text-slate-500">Configure terms, branding & metadata</p>
+                  <p className="text-[11px] text-slate-500">Terms, branding & metadata</p>
                 </div>
               </div>
               <i className="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-blue-600"></i>
             </Link>
+
           </CardContent>
         </Card>
 
