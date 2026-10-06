@@ -1,3 +1,4 @@
+// apps/api/src/middleware/auth.middleware.ts
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { TenantRequest } from './tenant.middleware.js';

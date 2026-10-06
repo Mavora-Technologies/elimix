@@ -1,15 +1,18 @@
+// apps/api/src/modules/students/students.routes.ts
 import { Router } from 'express';
-import { StudentsController } from './students.controller';
-import { authenticateToken } from '../../middleware/auth.middleware';
-import { requireTenant } from '../../middleware/tenant.middleware';
-import { requirePermission } from '../../middleware/rbac.middleware';
+import { StudentsController } from './students.controller.js';
+import { authMiddleware } from '../../middleware/auth.middleware.js';
+import { requirePermission } from '../../middleware/rbac.middleware.js';
 
 const router = Router();
 const controller = new StudentsController();
 
-router.use(authenticateToken, requireTenant);
+router.use(authMiddleware);
 
-router.get('/', requirePermission('students.read'), controller.getDirectory);
-router.post('/admissions', requirePermission('students.create'), controller.createAdmission);
+router.post('/', requirePermission('students.create'), controller.create);
+router.get('/', requirePermission('students.read'), controller.getAll);
+router.get('/:id', requirePermission('students.read'), controller.getById);
+router.patch('/:id', requirePermission('students.update'), controller.update);
+router.delete('/:id', requirePermission('students.delete'), controller.remove);
 
 export default router;

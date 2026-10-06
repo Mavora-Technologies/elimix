@@ -1,3 +1,4 @@
+// apps/api/src/modules/audit/audit.schema.ts
 import { pgTable, uuid, varchar, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { tenants } from '../tenant/tenant.schema.js';
 import { users } from '../auth/auth.schema.js';

@@ -1,3 +1,4 @@
+// apps/api/src/modules/auth/auth.controller.ts
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { loginSchema } from '../../validators/auth.validator.js';
