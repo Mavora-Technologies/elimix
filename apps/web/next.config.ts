@@ -1,11 +1,19 @@
-import type { NextConfig } from "next";
-import path from "path";
-
-const nextConfig: NextConfig = {
-  turbopack: {
-    // Directs Turbopack to resolve packages from the monorepo root (D:\elimix)
-    root: path.join(process.cwd(), '../../'),
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      }
+    ],
   },
-};
+}
 
-export default nextConfig;
+module.exports = nextConfig; // Use 'export default nextConfig;' if using .mjs

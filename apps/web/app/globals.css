@@ -128,3 +128,10 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(59, 130, 246, 0.15) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+}
