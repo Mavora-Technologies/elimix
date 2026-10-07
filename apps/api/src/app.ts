@@ -6,6 +6,10 @@ import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/users/user.routes.js';
 import studentRoutes from './modules/students/students.routes.js';
 import academicRoutes from './modules/academics/academics.routes.js';
+import attendanceRoutes from './modules/attendance/attendance.routes.js';
+import subjectRoutes from './modules/academics/subjects.routes.js';
+import teacherRoutes from './modules/teachers/teachers.routes.js';
+import departmentRoutes from './modules/departments/departments.routes.js';
 
 dotenv.config();
 
@@ -21,6 +25,10 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/academics', academicRoutes);
+app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/academics/subjects', subjectRoutes);
+app.use('/api/v1/teachers', teacherRoutes);
+app.use('/api/v1/departments', departmentRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Elimix API', timestamp: new Date() });

@@ -3,6 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+/* ==========================================================================
+   ELIMIX BRAND
+   ========================================================================== */
+
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 // TypeScript interface for a Lesson Plan
 interface LessonPlan {
   id: string;
@@ -71,6 +83,28 @@ export default function LessonPlansPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
+  // Form state for new lesson plan modal
+  const [formData, setFormData] = useState({
+    title: 'Introduction to Photosynthesis',
+    subject: 'General Science',
+    teacherName: 'Ms. Emily Davis',
+    gradeStream: 'Grade 7 North',
+    status: 'Pending Review' as const,
+  });
+
+  const handleCreatePlan = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newPlan: LessonPlan = {
+      id: `LP-00${lessonPlans.length + 1}`,
+      ...formData,
+      submissionDate: new Date().toISOString().split('T')[0],
+    };
+    setLessonPlans([newPlan, ...lessonPlans]);
+    setSuccessBanner('New lesson plan successfully created and submitted for review.');
+    setCreateModalOpen(false);
+    setTimeout(() => setSuccessBanner(null), 4000);
+  };
+
   // Filter logic based on search, status, and subject
   const filteredPlans = lessonPlans.filter((plan) => {
     const matchesSearch =
@@ -88,195 +122,223 @@ export default function LessonPlansPage() {
   const getStatusBadge = (status: LessonPlan['status']) => {
     switch (status) {
       case 'Approved':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50/80 text-emerald-600 border-emerald-200';
       case 'Pending Review':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50/80 text-amber-600 border-amber-200';
       case 'Needs Revision':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50/80 text-rose-600 border-rose-200';
       case 'Draft':
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'bg-slate-50 text-slate-600 border-slate-200';
       default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   };
 
-  const handleCreatePlan = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccessBanner('New lesson plan successfully created and submitted for review.');
-    setCreateModalOpen(false);
-    setTimeout(() => setSuccessBanner(null), 4000);
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      {/* ==================================================================
+         BREADCRUMBS & HEADER
+         ================================================================== */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-2">
+            <Link href="/dashboard" className="hover:text-[#006FBF] transition-colors">
+              Dashboard
+            </Link>
+            <i className="fa-solid fa-chevron-right text-[10px]" />
+            <Link href="/dashboard/academics" className="hover:text-[#006FBF] transition-colors">
+              Academics Overview
+            </Link>
+            <i className="fa-solid fa-chevron-right text-[10px]" />
+            <span className="text-slate-900">Lesson Plans</span>
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">
             Lesson Plans & Curriculum Tracking
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl">
             Review, approve, and manage weekly lesson plans submitted by teaching faculty.
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/academics"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors shadow-sm"
           >
-            <i className="fa-solid fa-book-open mr-2 text-xs text-blue-600"></i> Academics Overview
+            <i className="fa-solid fa-book-open text-[#006FBF]"></i>
+            <span>Academics Overview</span>
           </Link>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="flex h-9 items-center gap-2 rounded-xl px-5 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
-            <i className="fa-solid fa-plus mr-2 text-xs"></i> New Lesson Plan
+            <i className="fa-solid fa-plus text-[10px]"></i>
+            <span>New Lesson Plan</span>
           </button>
         </div>
       </div>
 
-      {/* Success Notification Banner */}
+      {/* ==================================================================
+         NOTIFICATIONS
+         ================================================================== */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
-          <div className="flex items-center">
-            <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
-          </div>
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/80 p-3.5 text-xs font-medium text-emerald-800 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100/80 text-emerald-600">
+            <i className="fa-solid fa-check text-[10px]" />
+          </span>
+          <p className="flex-1">{successBanner}</p>
         </div>
       )}
 
-      {/* Summary KPI Cards */}
+      {/* ==================================================================
+         SUMMARY KPI CARDS
+         ================================================================== */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Plans</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-file-lines text-sm"></i>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Plans</p>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#006FBF]/10 text-[#006FBF]">
+              <i className="fa-solid fa-file-lines text-xs"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">128</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Submitted this term</span>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">128</p>
+          <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+            <i className="fa-solid fa-arrow-trend-up"></i>
+            <span>Submitted this term</span>
+          </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Approved Plans</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-clipboard-check text-sm"></i>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approved Plans</p>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <i className="fa-solid fa-clipboard-check text-xs"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">110</p>
-          <span className="text-xs text-emerald-600 font-medium">Ready for classroom use</span>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">110</p>
+          <p className="mt-1 text-[11px] font-medium text-slate-500">Ready for classroom use</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Review</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-clock text-sm"></i>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending Review</p>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+              <i className="fa-solid fa-clock text-xs"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">12</p>
-          <span className="text-xs text-amber-600 font-medium">Awaiting head review</span>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">12</p>
+          <p className="mt-1 text-[11px] font-medium text-amber-600">Awaiting head review</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Needs Revision</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Needs Revision</p>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+              <i className="fa-solid fa-triangle-exclamation text-xs"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">6</p>
-          <span className="text-xs text-rose-600 font-medium">Returned to teachers</span>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">6</p>
+          <p className="mt-1 text-[11px] font-medium text-rose-600">Returned to teachers</p>
         </div>
       </div>
 
-      {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
-          <input
-            type="text"
-            placeholder="Search title, teacher, or grade stream..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Filters Group */}
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Subject Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <span>Subject:</span>
-            <select
-              value={subjectFilter}
-              onChange={(e) => setSubjectFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Subjects</option>
-              <option value="Algebra II">Algebra II</option>
-              <option value="General Science">General Science</option>
-              <option value="World History">World History</option>
-              <option value="English Literature">English Literature</option>
-              <option value="Calculus">Calculus</option>
-            </select>
+      {/* ==================================================================
+         TOOLBAR: SEARCH AND FILTERS
+         ================================================================== */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+            <input
+              type="text"
+              placeholder="Search title, teacher, or grade stream..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-9 pr-4 py-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+            />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <span>Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Approved">Approved</option>
-              <option value="Pending Review">Pending Review</option>
-              <option value="Needs Revision">Needs Revision</option>
-              <option value="Draft">Draft</option>
-            </select>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-slate-500">Subject:</span>
+              <select
+                value={subjectFilter}
+                onChange={(e) => setSubjectFilter(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-medium text-slate-700 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+              >
+                <option value="All">All Subjects</option>
+                <option value="Algebra II">Algebra II</option>
+                <option value="General Science">General Science</option>
+                <option value="World History">World History</option>
+                <option value="English Literature">English Literature</option>
+                <option value="Calculus">Calculus</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-slate-500">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-medium text-slate-700 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Approved">Approved</option>
+                <option value="Pending Review">Pending Review</option>
+                <option value="Needs Revision">Needs Revision</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Lesson Plans Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* ==================================================================
+         LESSON PLANS DATA TABLE
+         ================================================================== */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Lesson Title / ID</th>
-                <th className="py-3 px-4">Subject</th>
-                <th className="py-3 px-4">Teacher Name</th>
-                <th className="py-3 px-4">Grade Stream</th>
-                <th className="py-3 px-4">Submission Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-slate-200/80 bg-slate-50/50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3.5 px-6">Lesson Title / ID</th>
+                <th className="py-3.5 px-6">Subject</th>
+                <th className="py-3.5 px-6">Teacher Name</th>
+                <th className="py-3.5 px-6">Grade Stream</th>
+                <th className="py-3.5 px-6">Submission Date</th>
+                <th className="py-3.5 px-6">Status</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-slate-100">
               {filteredPlans.length > 0 ? (
                 filteredPlans.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">{plan.title}</div>
-                      <div className="text-xs text-slate-500 font-mono">{plan.id}</div>
+                  <tr key={plan.id} className="hover:bg-slate-50/40 transition-colors">
+                    <td className="py-3.5 px-6">
+                      <div className="font-semibold text-slate-900 text-xs">{plan.title}</div>
+                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">{plan.id}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">{plan.subject}</td>
-                    <td className="py-3.5 px-4 text-slate-800 text-xs font-medium">{plan.teacherName}</td>
-                    <td className="py-3.5 px-4 text-slate-600 text-xs font-medium">{plan.gradeStream}</td>
-                    <td className="py-3.5 px-4 text-slate-600 text-xs font-mono">{plan.submissionDate}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(plan.status)}`}>
+                    <td className="py-3.5 px-6 text-slate-700 font-medium text-[11px]">{plan.subject}</td>
+                    <td className="py-3.5 px-6">
+                      <div className="flex items-center gap-2 text-slate-700 text-[11px] font-medium">
+                        <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-bold border border-slate-200/80">
+                          {plan.teacherName.charAt(0)}
+                        </div>
+                        {plan.teacherName}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-6 text-slate-600 text-[11px] font-medium">{plan.gradeStream}</td>
+                    <td className="py-3.5 px-6 text-slate-500 font-mono text-[11px]">{plan.submissionDate}</td>
+                    <td className="py-3.5 px-6">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${getStatusBadge(plan.status)}`}>
                         {plan.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
+                    <td className="py-3.5 px-6 text-right">
+                      <button className="text-[#006FBF] hover:text-[#012E54] font-semibold text-[11px] px-2.5 py-1 rounded-lg hover:bg-[#006FBF]/5 transition-colors">
                         Review Plan
                       </button>
                     </td>
@@ -284,8 +346,12 @@ export default function LessonPlansPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-sm">
-                    No matching lesson plans found.
+                  <td colSpan={7} className="py-12 text-center">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-400 mb-3">
+                      <i className="fa-solid fa-file-lines text-lg"></i>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-600">No matching lesson plans found</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Try adjusting your filters or search criteria.</p>
                   </td>
                 </tr>
               )}
@@ -294,83 +360,106 @@ export default function LessonPlansPage() {
         </div>
       </div>
 
-      {/* Create / Submit Lesson Plan Modal */}
+      {/* ==================================================================
+         NEW LESSON PLAN MODAL
+         ================================================================== */}
       {createModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">New Lesson Plan Submission</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200/80 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm">New Lesson Plan Submission</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Submit curriculum plans and teaching notes for review.</p>
+              </div>
               <button
                 onClick={() => setCreateModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-200/50 hover:text-slate-600 transition-colors"
               >
-                <i className="fa-solid fa-xmark text-lg"></i>
+                <i className="fa-solid fa-xmark text-sm"></i>
               </button>
             </div>
-            <form onSubmit={handleCreatePlan} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Lesson Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Introduction to Photosynthesis"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
-                />
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Subject
+            <form onSubmit={handleCreatePlan}>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Lesson Title <span className="text-rose-500">*</span>
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
-                    <option value="Algebra II">Algebra II</option>
-                    <option value="General Science">General Science</option>
-                    <option value="World History">World History</option>
-                    <option value="English Literature">English Literature</option>
-                  </select>
+                  <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="e.g. Introduction to Photosynthesis"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Grade Stream
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Subject <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+                    >
+                      <option value="Algebra II">Algebra II</option>
+                      <option value="General Science">General Science</option>
+                      <option value="World History">World History</option>
+                      <option value="English Literature">English Literature</option>
+                      <option value="Calculus">Calculus</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Grade Stream <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={formData.gradeStream}
+                      onChange={(e) => setFormData({ ...formData, gradeStream: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+                    >
+                      <option value="Grade 9 East">Grade 9 East</option>
+                      <option value="Grade 8 South">Grade 8 South</option>
+                      <option value="Grade 7 North">Grade 7 North</option>
+                      <option value="Grade 6 West">Grade 6 West</option>
+                      <option value="Grade 10 North">Grade 10 North</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Curriculum Objectives & Notes <span className="text-rose-500">*</span>
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
-                    <option value="Grade 9 East">Grade 9 East</option>
-                    <option value="Grade 8 South">Grade 8 South</option>
-                    <option value="Grade 7 North">Grade 7 North</option>
-                    <option value="Grade 6 West">Grade 6 West</option>
-                  </select>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Outline core objectives, materials required, and lesson steps..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs text-slate-800 outline-none focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+                  ></textarea>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Curriculum Objectives & Notes
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="Outline core objectives, materials required, and lesson steps..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
-                ></textarea>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  }}
                 >
-                  Submit for Review
+                  <i className="fa-solid fa-check text-[10px]"></i>
+                  <span>Submit for Review</span>
                 </button>
               </div>
             </form>

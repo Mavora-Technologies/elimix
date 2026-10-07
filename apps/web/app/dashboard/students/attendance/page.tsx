@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// TypeScript interface for an Attendance Record
 interface AttendanceStudent {
   id: string;
   admissionNo: string;
@@ -11,55 +10,95 @@ interface AttendanceStudent {
   status: 'Present' | 'Absent' | 'Late' | 'Excused';
 }
 
-// Initial mock attendance data for a selected class
-const initialAttendanceList: AttendanceStudent[] = [
-  {
-    id: 'ATT-001',
-    admissionNo: 'ADM/2024/104',
-    studentName: 'Liam Johnson',
-    stream: 'Grade 9 East',
-    status: 'Present',
-  },
-  {
-    id: 'ATT-002',
-    admissionNo: 'ADM/2024/112',
-    studentName: 'Sophia Williams',
-    stream: 'Grade 9 East',
-    status: 'Present',
-  },
-  {
-    id: 'ATT-003',
-    admissionNo: 'ADM/2024/119',
-    studentName: 'Noah Brown',
-    stream: 'Grade 9 East',
-    status: 'Absent',
-  },
-  {
-    id: 'ATT-004',
-    admissionNo: 'ADM/2024/125',
-    studentName: 'Olivia Davis',
-    stream: 'Grade 9 East',
-    status: 'Late',
-  },
-  {
-    id: 'ATT-005',
-    admissionNo: 'ADM/2024/130',
-    studentName: 'Ethan Miller',
-    stream: 'Grade 9 East',
-    status: 'Excused',
-  },
-];
-
 export default function DailyAttendancePage() {
-  const [selectedDate, setSelectedDate] = useState<string>('2026-10-02');
-  const [selectedClass, setSelectedClass] = useState<string>('Grade 9 East');
-  const [students, setStudents] = useState<AttendanceStudent[]>(initialAttendanceList);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  
+  const [allStudents, setAllStudents] = useState<AttendanceStudent[]>([]);
+  const [availableStreams, setAvailableStreams] = useState<string[]>([]);
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch students AND their attendance for the selected date
+  useEffect(() => {
+    async function loadAttendanceData() {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem('elimix_token');
+        const userJson = localStorage.getItem('elimix_user');
+        const tenantId = userJson ? JSON.parse(userJson).tenantId : '';
+        const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
+
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': activeTenantId,
+        };
+
+        // 1. Fetch Students
+        const studentsRes = await fetch('http://localhost:3001/api/v1/students', { headers });
+        const studentsResult = await studentsRes.json();
+        if (!studentsRes.ok) throw new Error(studentsResult.message || 'Failed to fetch students.');
+
+        // 2. Fetch saved attendance for the specific date
+        const attendanceRes = await fetch(`http://localhost:3001/api/v1/attendance?date=${selectedDate}`, { headers });
+        const attendanceResult = await attendanceRes.json();
+        
+        // Create a map of saved statuses for fast lookup: { studentId: 'Late' }
+        const savedStatuses: Record<string, any> = {};
+        if (attendanceRes.ok && attendanceResult.data) {
+          attendanceResult.data.forEach((record: any) => {
+            savedStatuses[record.studentId] = record.status;
+          });
+        }
+
+        // 3. Merge data: Use saved status if it exists, otherwise default to 'Present'
+        const mappedStudents: AttendanceStudent[] = (studentsResult.data || []).map((student: any) => {
+          const streamName = student.stream ? `${student.classGrade} ${student.stream}` : student.classGrade || 'Unassigned';
+          return {
+            id: student.id,
+            admissionNo: student.admissionNumber,
+            studentName: `${student.firstName} ${student.lastName}`,
+            stream: streamName,
+            status: savedStatuses[student.id] || 'Present', // Merge happens here!
+          };
+        });
+
+        setAllStudents(mappedStudents);
+
+        // Extract streams for dropdown
+        const uniqueStreams = Array.from(new Set(mappedStudents.map(s => s.stream))).sort();
+        setAvailableStreams(uniqueStreams);
+        
+        if (uniqueStreams.length > 0 && !selectedClass) {
+          setSelectedClass(uniqueStreams[0]);
+        }
+
+      } catch (err: any) {
+        setError(err.message || 'An error occurred while connecting to the server.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadAttendanceData();
+  }, [selectedDate]); // Re-run whenever the date changes!
+
+  // Filter students based on selected class and search query
+  const currentClassStudents = allStudents.filter(s => s.stream === selectedClass);
+  const filteredStudents = currentClassStudents.filter(
+    (s) =>
+      s.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Handle individual status toggle
   const handleStatusChange = (id: string, status: AttendanceStudent['status']) => {
-    setStudents((prev) =>
+    setAllStudents((prev) =>
       prev.map((student) => (student.id === id ? { ...student, status } : student))
     );
     setSavedSuccess(false);
@@ -67,28 +106,63 @@ export default function DailyAttendancePage() {
 
   // Mark all as present quick action
   const markAllPresent = () => {
-    setStudents((prev) => prev.map((student) => ({ ...student, status: 'Present' })));
+    setAllStudents((prev) => 
+      prev.map((student) => (student.stream === selectedClass ? { ...student, status: 'Present' } : student))
+    );
     setSavedSuccess(false);
   };
 
-  // Filter list by search query
-  const filteredStudents = students.filter(
-    (s) =>
-      s.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   // Calculate KPIs
-  const totalCount = students.length;
-  const presentCount = students.filter((s) => s.status === 'Present').length;
-  const absentCount = students.filter((s) => s.status === 'Absent').length;
-  const lateCount = students.filter((s) => s.status === 'Late' || s.status === 'Excused').length;
+  const totalCount = currentClassStudents.length;
+  const presentCount = currentClassStudents.filter((s) => s.status === 'Present').length;
+  const absentCount = currentClassStudents.filter((s) => s.status === 'Absent').length;
+  const lateCount = currentClassStudents.filter((s) => s.status === 'Late' || s.status === 'Excused').length;
   const attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
-  const handleSaveAttendance = () => {
-    // API call logic goes here
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+  // Save to backend API
+  const handleSaveAttendance = async () => {
+    setIsSaving(true);
+    setError(null);
+    setSavedSuccess(false);
+
+    try {
+      const token = localStorage.getItem('elimix_token');
+      const userJson = localStorage.getItem('elimix_user');
+      const tenantId = userJson ? JSON.parse(userJson).tenantId : '';
+      const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
+
+      const attendancePayload = {
+        date: selectedDate,
+        stream: selectedClass,
+        records: currentClassStudents.map(s => ({
+          studentId: s.id,
+          status: s.status
+        }))
+      };
+
+      const res = await fetch('http://localhost:3001/api/v1/attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': activeTenantId,
+        },
+        body: JSON.stringify(attendancePayload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || 'Failed to save attendance records.');
+      }
+
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 4000);
+    } catch (err: any) {
+      setError(err.message || 'Network error occurred while saving.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Badge styling helper
@@ -118,7 +192,6 @@ export default function DailyAttendancePage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -131,30 +204,36 @@ export default function DailyAttendancePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={markAllPresent}
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            disabled={isLoading || currentClassStudents.length === 0}
+            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
             <i className="fa-solid fa-check-double mr-2 text-xs text-emerald-600"></i> Mark All Present
           </button>
           <button
             onClick={handleSaveAttendance}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            disabled={isLoading || isSaving || currentClassStudents.length === 0}
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors disabled:opacity-50"
           >
-            <i className="fa-solid fa-floppy-disk mr-2 text-xs"></i> Save Attendance
+            <i className={`fa-solid ${isSaving ? 'fa-spinner animate-spin' : 'fa-floppy-disk'} mr-2 text-xs`}></i> 
+            {isSaving ? 'Saving...' : 'Save Attendance'}
           </button>
         </div>
       </div>
 
-      {/* Success Notification Banner */}
       {savedSuccess && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
-          <div className="flex items-center">
-            <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>Attendance records successfully saved and synchronized for {selectedClass}!</span>
-          </div>
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center shadow-sm">
+          <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
+          <span>Attendance records successfully saved and synchronized for {selectedClass}!</span>
+        </div>
+      )}
+      
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-rose-800 text-sm flex items-center shadow-sm">
+          <i className="fa-solid fa-triangle-exclamation text-rose-600 mr-2 text-base"></i>
+          <span>{error}</span>
         </div>
       )}
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
@@ -201,9 +280,7 @@ export default function DailyAttendancePage() {
         </div>
       </div>
 
-      {/* Toolbar: Date Picker, Class Selector, and Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Date & Stream Selectors */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <i className="fa-regular fa-calendar text-slate-400"></i>
@@ -221,17 +298,20 @@ export default function DailyAttendancePage() {
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
+              disabled={isLoading || availableStreams.length === 0}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
             >
-              <option value="Grade 6 East">Grade 6 East</option>
-              <option value="Grade 6 West">Grade 6 West</option>
-              <option value="Grade 8 South">Grade 8 South</option>
-              <option value="Grade 9 East">Grade 9 East</option>
+              {availableStreams.length === 0 ? (
+                <option value="">No streams found</option>
+              ) : (
+                availableStreams.map((stream) => (
+                  <option key={stream} value={stream}>{stream}</option>
+                ))
+              )}
             </select>
           </div>
         </div>
 
-        {/* Search Bar */}
         <div className="relative flex-1 max-w-xs">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
           <input
@@ -244,7 +324,6 @@ export default function DailyAttendancePage() {
         </div>
       </div>
 
-      {/* Attendance Interactive Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -256,7 +335,16 @@ export default function DailyAttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-sm">
-              {filteredStudents.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={3} className="py-12 text-center text-slate-500 text-sm">
+                    <div className="flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-spinner animate-spin text-blue-600"></i>
+                      <span>Loading class roster...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3.5 px-4">
@@ -285,8 +373,10 @@ export default function DailyAttendancePage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-slate-500 text-sm">
-                    No students found matching your search.
+                  <td colSpan={3} className="py-12 text-center text-slate-500 text-sm">
+                    {currentClassStudents.length === 0 
+                      ? 'No students found in this class stream.' 
+                      : 'No students found matching your search.'}
                   </td>
                 </tr>
               )}

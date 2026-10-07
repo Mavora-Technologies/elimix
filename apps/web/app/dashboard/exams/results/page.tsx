@@ -86,7 +86,19 @@ export default function ExamResultsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [gradeFilter, setGradeFilter] = useState('All');
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+
+  // Form State for Recording New Exam Result
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentId, setNewStudentId] = useState('STU-2026-150');
+  const [newExamTitle, setNewExamTitle] = useState('Term 3 Mid-Term Mathematics');
+  const [newSubject, setNewSubject] = useState('Algebra II');
+  const [newGradeStream, setNewGradeStream] = useState('Grade 9 East');
+  const [newMarksObtained, setNewMarksObtained] = useState<number>(85);
+  const [newTotalMarks, setNewTotalMarks] = useState<number>(100);
+  const [newGrade, setNewGrade] = useState<ExamResult['grade']>('A');
+  const [newStatus, setNewStatus] = useState<ExamResult['status']>('Passed');
 
   // Filter logic based on search, status, and letter grade
   const filteredResults = results.filter((res) => {
@@ -134,6 +146,33 @@ export default function ExamResultsPage() {
     }
   };
 
+  const handleCreateResult = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const newResult: ExamResult = {
+      id: `RES-0${results.length + 1}`,
+      studentId: newStudentId || `STU-2026-${Math.floor(100 + Math.random() * 900)}`,
+      studentName: newStudentName,
+      examTitle: newExamTitle,
+      subject: newSubject,
+      gradeStream: newGradeStream,
+      marksObtained: Number(newMarksObtained) || 80,
+      totalMarks: Number(newTotalMarks) || 100,
+      grade: newGrade,
+      status: newStatus,
+    };
+
+    setResults([newResult, ...results]);
+
+    // Reset form inputs
+    setNewStudentName('');
+    setNewMarksObtained(85);
+
+    setSuccessBanner('New examination result successfully recorded and published.');
+    setCreateModalOpen(false);
+    setTimeout(() => setSuccessBanner(null), 4000);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -153,8 +192,11 @@ export default function ExamResultsPage() {
           >
             <i className="fa-solid fa-file-lines mr-2 text-xs text-blue-600"></i> All Exams
           </Link>
-          <button className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
-            <i className="fa-solid fa-file-arrow-down mr-2 text-xs"></i> Export Transcripts
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+          >
+            <i className="fa-solid fa-plus mr-2 text-xs"></i> Record New Score
           </button>
         </div>
       </div>
@@ -178,7 +220,7 @@ export default function ExamResultsPage() {
               <i className="fa-solid fa-graduation-cap text-sm"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">712</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{results.length + 707}</p>
           <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Term 3 Assessment Cycle</span>
         </div>
 
@@ -190,7 +232,7 @@ export default function ExamResultsPage() {
             </div>
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">91.4%</p>
-          <span className="text-xs text-emerald-600 font-medium">Passing threshold $\ge$ 50%</span>
+          <span className="text-xs text-emerald-600 font-medium">Passing threshold &ge; 50%</span>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -211,7 +253,9 @@ export default function ExamResultsPage() {
               <i className="fa-solid fa-clock text-sm"></i>
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">18</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {results.filter(r => r.status === 'Pending Review').length + 15}
+          </p>
           <span className="text-xs text-amber-600 font-medium">Awaiting teacher verification</span>
         </div>
       </div>
@@ -333,6 +377,182 @@ export default function ExamResultsPage() {
           </table>
         </div>
       </div>
+
+      {/* Record New Score Modal */}
+      {createModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+              <h3 className="font-bold text-slate-900 text-base">Record New Exam Result</h3>
+              <button
+                onClick={() => setCreateModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <i className="fa-solid fa-xmark text-lg"></i>
+              </button>
+            </div>
+            <form onSubmit={handleCreateResult} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Student Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newStudentName}
+                    onChange={(e) => setNewStudentName(e.target.value)}
+                    placeholder="e.g. Mary Shelley"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Student ID
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newStudentId}
+                    onChange={(e) => setNewStudentId(e.target.value)}
+                    placeholder="e.g. STU-2026-150"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Examination Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newExamTitle}
+                  onChange={(e) => setNewExamTitle(e.target.value)}
+                  placeholder="e.g. Term 3 Mid-Term Mathematics"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Subject
+                  </label>
+                  <select
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Algebra II">Algebra II</option>
+                    <option value="General Science">General Science</option>
+                    <option value="World History">World History</option>
+                    <option value="English Literature">English Literature</option>
+                    <option value="Physics">Physics</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Grade Stream
+                  </label>
+                  <select
+                    value={newGradeStream}
+                    onChange={(e) => setNewGradeStream(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Grade 7 North">Grade 7 North</option>
+                    <option value="Grade 8 South">Grade 8 South</option>
+                    <option value="Grade 9 East">Grade 9 East</option>
+                    <option value="Grade 9 West">Grade 9 West</option>
+                    <option value="Grade 10 North">Grade 10 North</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Marks Obtained
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={newMarksObtained}
+                    onChange={(e) => setNewMarksObtained(Number(e.target.value))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Total Marks
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={newTotalMarks}
+                    onChange={(e) => setNewTotalMarks(Number(e.target.value))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Letter Grade
+                  </label>
+                  <select
+                    value={newGrade}
+                    onChange={(e) => setNewGrade(e.target.value as ExamResult['grade'])}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-bold"
+                  >
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="F">F</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as ExamResult['status'])}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-semibold"
+                  >
+                    <option value="Passed">Passed</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Pending Review">Pending Review</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCreateModalOpen(false)}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                >
+                  Save & Publish Result
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

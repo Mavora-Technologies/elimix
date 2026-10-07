@@ -147,7 +147,17 @@ const navigationSections: NavSection[] = [
             description: 'Manage teaching staff',
           },
           {
-            name: 'Class Timetables',
+            name: 'Departments',
+            href: '/dashboard/academics/departments',
+            description: 'Manage academic departments',
+          },
+          {
+            name: 'Subjects',
+            href: '/dashboard/academics/subjects',
+            description: 'Manage class subjects',
+          },
+          {
+            name: 'Timetables',
             href: '/dashboard/academics/timetables',
             description: 'Manage class schedules',
           },

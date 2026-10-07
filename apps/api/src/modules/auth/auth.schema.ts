@@ -9,6 +9,7 @@ export const users = pgTable('users', {
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   firstName: varchar('first_name', { length: 100 }).notNull(),
   lastName: varchar('last_name', { length: 100 }).notNull(),
+  phone: varchar('phone', { length: 20 }),
   isSuperAdmin: boolean('is_super_admin').default(false),
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow(),
