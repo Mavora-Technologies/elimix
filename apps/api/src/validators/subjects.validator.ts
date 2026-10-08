@@ -1,9 +1,14 @@
+// apps/api/src/validators/subjects.validator.ts
 import { z } from 'zod';
 
 export const createSubjectSchema = z.object({
-  name: z.string().min(2, 'Subject name must be at least 2 characters'),
-  code: z.string().min(2, 'Subject code is required'),
-  departmentId: z.string().optional().nullable(),
+  name: z.string().min(1, 'Subject name is required'),
+  code: z.string().min(1, 'Subject code is required'),
+  departmentId: z.preprocess(
+    (val) => (!val || val === '' ? null : val),
+    z.string().uuid().nullable().optional()
+  ),
+  teacherIds: z.array(z.string().uuid()).default([]),
 });
 
 export const allocateSubjectSchema = z.object({

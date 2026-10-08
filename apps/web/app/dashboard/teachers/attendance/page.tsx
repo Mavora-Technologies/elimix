@@ -1,282 +1,371 @@
+// apps/web/app/dashboard/teachers/attendance/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for Teacher Attendance Record
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 interface TeacherAttendanceRecord {
   id: string;
   teacherId: string;
   teacherName: string;
+  employeeNumber: string;
   department: string;
   date: string;
   checkIn: string;
   checkOut: string;
-  status: 'Present' | 'Late' | 'Absent' | 'On Leave';
+  status: 'Present' | 'Late' | 'Absent' | 'On Leave' | 'Not Marked';
 }
 
-// Initial mock data for teacher attendance
-const initialAttendance: TeacherAttendanceRecord[] = [
-  {
-    id: 'ATT-001',
-    teacherId: 'TCH-101',
-    teacherName: 'Mr. David Wilson',
-    department: 'Mathematics',
-    date: '2026-10-02',
-    checkIn: '07:45 AM',
-    checkOut: '04:15 PM',
-    status: 'Present',
-  },
-  {
-    id: 'ATT-002',
-    teacherId: 'TCH-102',
-    teacherName: 'Ms. Emily Davis',
-    department: 'Science & Physics',
-    date: '2026-10-02',
-    checkIn: '08:22 AM',
-    checkOut: 'Pending',
-    status: 'Late',
-  },
-  {
-    id: 'ATT-003',
-    teacherId: 'TCH-103',
-    teacherName: 'Dr. James Anderson',
-    department: 'Humanities & History',
-    date: '2026-10-02',
-    checkIn: '07:30 AM',
-    checkOut: '03:50 PM',
-    status: 'Present',
-  },
-  {
-    id: 'ATT-004',
-    teacherId: 'TCH-104',
-    teacherName: 'Mrs. Amanda Martinez',
-    department: 'Languages & Literature',
-    date: '2026-10-02',
-    checkIn: '--',
-    checkOut: '--',
-    status: 'On Leave',
-  },
-  {
-    id: 'ATT-005',
-    teacherId: 'TCH-105',
-    teacherName: 'Mr. Robert Taylor',
-    department: 'Arts & Athletics',
-    date: '2026-10-02',
-    checkIn: '--',
-    checkOut: '--',
-    status: 'Absent',
-  },
-];
-
 export default function TeacherAttendancePage() {
-  const [attendanceRecords, setAttendanceRecords] = useState<TeacherAttendanceRecord[]>(initialAttendance);
+  const [attendanceRecords, setAttendanceRecords] = useState<TeacherAttendanceRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [queryDate, setQueryDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [departmentFilter, setDepartmentFilter] = useState('All');
 
-  // Filter logic based on search, status, and department
-  const filteredRecords = attendanceRecords.filter((record) => {
-    const matchesSearch =
-      record.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.teacherId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.department.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus = statusFilter === 'All' || record.status === statusFilter;
-    const matchesDept = departmentFilter === 'All' || record.department === departmentFilter;
-
-    return matchesSearch && matchesStatus && matchesDept;
+  // Modal & Form State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<TeacherAttendanceRecord | null>(null);
+  
+  const [attFormData, setAttFormData] = useState({
+    status: 'Present' as TeacherAttendanceRecord['status'],
+    checkIn: '',
+    checkOut: '',
   });
 
-  // Helper for attendance status badge styling
-  const getStatusBadge = (status: TeacherAttendanceRecord['status']) => {
-    switch (status) {
-      case 'Present':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'Late':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'Absent':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'On Leave':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+  const getHeaders = () => {
+    const token = localStorage.getItem('elimix_token');
+    const userStr = localStorage.getItem('elimix_user');
+    let tenantId = '00000000-0000-0000-0000-000000000000';
+    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+      try {
+        const userJson = JSON.parse(userStr);
+        if (userJson && userJson.tenantId) tenantId = userJson.tenantId;
+      } catch (e) {}
+    }
+    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'x-tenant-id': tenantId };
+  };
+
+  const fetchAttendance = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`http://localhost:3001/api/v1/teachers/attendance?date=${queryDate}`, { headers: getHeaders() });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || 'Failed to load attendance records');
+      setAttendanceRecords(result.data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchAttendance();
+  }, [queryDate]);
+
+  // --- Modal Handlers ---
+  const openUpdateModal = (record: TeacherAttendanceRecord) => {
+    setSelectedRecord(record);
+    setAttFormData({
+      status: record.status === 'Not Marked' ? 'Present' : record.status,
+      checkIn: record.checkIn === '--' ? '' : record.checkIn,
+      checkOut: record.checkOut === '--' ? '' : record.checkOut,
+    });
+    setFormError(null);
+    setIsModalOpen(true);
+  };
+
+  const setCurrentTime = (field: 'checkIn' | 'checkOut') => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    setAttFormData(prev => ({ ...prev, [field]: timeStr }));
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecord) return;
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      const payload = {
+        teacherId: selectedRecord.teacherId,
+        date: queryDate,
+        status: attFormData.status,
+        checkIn: attFormData.checkIn || null,
+        checkOut: attFormData.checkOut || null,
+      };
+
+      const res = await fetch(`http://localhost:3001/api/v1/teachers/attendance`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        if (result.errors) throw new Error(result.errors.map((err: any) => err.message).join(', '));
+        throw new Error(result.message || 'Failed to update attendance');
+      }
+
+      await fetchAttendance();
+      setIsModalOpen(false);
+    } catch (err: any) {
+      setFormError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- Filters ---
+  const filteredRecords = attendanceRecords.filter((record) => {
+    const matchesSearch =
+      record.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.employeeNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.department.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || record.status === statusFilter;
+    const matchesDept = departmentFilter === 'All' || record.department === departmentFilter;
+    return matchesSearch && matchesStatus && matchesDept;
+  });
+
+  // --- Dynamic Metrics ---
+  const totalRecords = attendanceRecords.length;
+  const presentCount = attendanceRecords.filter(r => r.status === 'Present').length;
+  const lateCount = attendanceRecords.filter(r => r.status === 'Late').length;
+  const absentLeaveCount = attendanceRecords.filter(r => r.status === 'Absent' || r.status === 'On Leave').length;
+  const markedCount = presentCount + lateCount + absentLeaveCount;
+  const attendanceRate = markedCount > 0 ? (((presentCount + lateCount) / markedCount) * 100).toFixed(1) : '0.0';
+
+  // --- Helpers ---
+  const getStatusBadge = (status: TeacherAttendanceRecord['status']) => {
+    switch (status) {
+      case 'Present': return 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20';
+      case 'Late': return 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20';
+      case 'Absent': return 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20';
+      case 'On Leave': return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20';
+      case 'Not Marked': return 'bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200 border-dashed';
+      default: return 'bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-200';
+    }
+  };
+
+  const formatTime12h = (time24: string) => {
+    if (!time24 || time24 === '--') return '--';
+    const [h, m] = time24.split(':');
+    if (!h || !m) return time24;
+    const hNum = parseInt(h, 10);
+    const ampm = hNum >= 12 ? 'PM' : 'AM';
+    const h12 = hNum % 12 || 12;
+    return `${h12}:${m} ${ampm}`;
+  };
+
+  const availableDepartments = Array.from(new Set(attendanceRecords.map(r => r.department)));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Staff & Teacher Attendance
-          </h1>
-          <p className="text-sm text-slate-500">
-            Monitor daily check-ins, punctuality, leaves, and attendance logs for faculty members.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Staff & Teacher Attendance</h1>
+          <p className="text-sm text-slate-500">Monitor daily check-ins, punctuality, and leaves for faculty.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/teachers"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
-          >
-            <i className="fa-solid fa-chalkboard-user mr-2 text-xs text-blue-600"></i> Teachers Directory
+          <Link href="/dashboard/teachers" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+            <i className="fa-solid fa-chalkboard-user mr-2 text-[#006FBF]"></i> Teachers Directory
           </Link>
-          <button className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
-            <i className="fa-solid fa-file-arrow-down mr-2 text-xs"></i> Export Report
-          </button>
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Scheduled</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-users text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">64</p>
-          <span className="text-xs text-slate-500 font-medium">Expected on campus</span>
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-rose-800 text-sm flex items-center shadow-sm">
+          <i className="fa-solid fa-triangle-exclamation text-rose-600 mr-2 text-base"></i><span>{error}</span>
         </div>
+      )}
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Present Today</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-user-check text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">56</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> 87.5% attendance rate</span>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm flex flex-col justify-center min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Total Scheduled</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{totalRecords}</p>
         </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-clock text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">4</p>
-          <span className="text-xs text-amber-600 font-medium">Checked in after 08:00 AM</span>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm flex flex-col justify-center min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Present / Late</p>
+          <p className="mt-1 text-2xl font-bold text-emerald-600">{presentCount + lateCount} <span className="text-xs font-medium text-slate-400">({attendanceRate}%)</span></p>
         </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Absent / On Leave</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-user-xmark text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">4</p>
-          <span className="text-xs text-rose-600 font-medium">Covered by substitutes</span>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm flex flex-col justify-center min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Late Arrivals</p>
+          <p className="mt-1 text-2xl font-bold text-amber-500">{lateCount}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm flex flex-col justify-center min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Absent / Leave</p>
+          <p className="mt-1 text-2xl font-bold text-rose-500">{absentLeaveCount}</p>
         </div>
       </div>
 
-      {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
-          <input
-            type="text"
-            placeholder="Search teacher name, ID, or department..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          />
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
+        <div className="flex gap-2 w-full lg:w-auto">
+          <div className="relative flex-1">
+            <i className="fa-solid fa-calendar absolute left-3 top-3 text-xs text-slate-400"></i>
+            <input type="date" value={queryDate} onChange={(e) => setQueryDate(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-9 pr-4 text-xs font-medium text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white" />
+          </div>
         </div>
 
-        {/* Filters Group */}
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <span>Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Present">Present</option>
-              <option value="Late">Late</option>
-              <option value="Absent">Absent</option>
-              <option value="On Leave">On Leave</option>
-            </select>
-          </div>
+        <div className="relative flex min-w-0 flex-1 items-center w-full">
+          <i className="fa-solid fa-magnifying-glass absolute left-3 text-xs text-slate-400" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search records..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-9 pr-4 text-xs outline-none focus:border-[#006FBF]/40 focus:bg-white" />
+        </div>
 
-          {/* Department Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <span>Department:</span>
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Departments</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Science & Physics">Science & Physics</option>
-              <option value="Humanities & History">Humanities & History</option>
-              <option value="Languages & Literature">Languages & Literature</option>
-              <option value="Arts & Athletics">Arts & Athletics</option>
-            </select>
-          </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+          <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-xs font-medium outline-none focus:border-[#006FBF]/40 focus:bg-white">
+            <option value="All">All Departments</option>
+            {availableDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-xs font-medium outline-none focus:border-[#006FBF]/40 focus:bg-white">
+            <option value="All">All Statuses</option>
+            <option value="Present">Present</option>
+            <option value="Late">Late</option>
+            <option value="Absent">Absent</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Not Marked">Not Marked</option>
+          </select>
         </div>
       </div>
 
-      {/* Attendance Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm w-full">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-auto whitespace-nowrap min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Teacher Name / ID</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Check-In Time</th>
-                <th className="py-3 px-4">Check-Out Time</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="py-4 pl-5 pr-3 min-w-[200px]">Teacher / Employee No.</th>
+                <th className="px-4 py-4">Department</th>
+                <th className="px-4 py-4 w-[120px]">Check-In</th>
+                <th className="px-4 py-4 w-[120px]">Check-Out</th>
+                <th className="px-4 py-4 w-[120px]">Status</th>
+                <th className="py-4 pl-3 pr-5 text-right w-[100px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
-              {filteredRecords.length > 0 ? (
+            <tbody className="divide-y divide-slate-100 text-xs">
+              {isLoading ? (
+                <tr><td colSpan={6} className="py-12 text-center text-slate-500"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading records...</td></tr>
+              ) : filteredRecords.length > 0 ? (
                 filteredRecords.map((record) => (
-                  <tr key={record.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
+                  <tr key={record.id} className="transition-colors hover:bg-slate-50/60">
+                    <td className="py-4 pl-5 pr-3">
                       <div className="font-semibold text-slate-900">{record.teacherName}</div>
-                      <div className="text-xs text-slate-500 font-mono">{record.teacherId}</div>
+                      <div className="font-mono text-[10px] text-slate-400">{record.employeeNumber}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">{record.department}</td>
-                    <td className="py-3.5 px-4 text-slate-600 text-xs font-medium">{record.date}</td>
-                    <td className="py-3.5 px-4 text-slate-800 font-mono text-xs">{record.checkIn}</td>
-                    <td className="py-3.5 px-4 text-slate-800 font-mono text-xs">{record.checkOut}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(record.status)}`}>
+                    <td className="px-4 py-4 text-slate-700 font-medium">{record.department}</td>
+                    <td className="px-4 py-4 font-mono font-semibold text-slate-800">{formatTime12h(record.checkIn)}</td>
+                    <td className="px-4 py-4 font-mono font-semibold text-slate-800">{formatTime12h(record.checkOut)}</td>
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-bold ${getStatusBadge(record.status)}`}>
                         {record.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
-                        Edit Record
+                    <td className="py-4 pl-3 pr-5 text-right">
+                      <button 
+                        onClick={() => openUpdateModal(record)} 
+                        className="rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-[#006FBF] hover:text-white transition-colors border border-slate-200/60 shadow-sm"
+                      >
+                        Update
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-sm">
-                    No matching teacher attendance records found.
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="py-8 text-center text-slate-500">No attendance records found for this date.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* UPDATE ATTENDANCE MODAL */}
+      {isModalOpen && selectedRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Update Attendance</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">{selectedRecord.teacherName} • {queryDate}</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><i className="fa-solid fa-xmark text-sm" /></button>
+            </div>
+
+            <form onSubmit={handleUpdateSubmit} className="space-y-4 text-xs">
+              {formError && (
+                <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl flex items-center font-medium">
+                  <i className="fa-solid fa-circle-exclamation mr-2"></i> <span className="truncate">{formError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Status <span className="text-rose-500">*</span></label>
+                <select 
+                  value={attFormData.status} 
+                  onChange={(e) => setAttFormData({ ...attFormData, status: e.target.value as any })} 
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 font-medium outline-none focus:border-[#006FBF] bg-white"
+                >
+                  <option value="Present">Present</option>
+                  <option value="Late">Late</option>
+                  <option value="Absent">Absent</option>
+                  <option value="On Leave">On Leave</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">Check-In</label>
+                    <button type="button" onClick={() => setCurrentTime('checkIn')} className="text-[9px] text-[#006FBF] font-semibold hover:underline">Set Now</button>
+                  </div>
+                  <input 
+                    type="time" 
+                    value={attFormData.checkIn} 
+                    onChange={(e) => setAttFormData({ ...attFormData, checkIn: e.target.value })} 
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-[#006FBF] font-mono" 
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">Check-Out</label>
+                    <button type="button" onClick={() => setCurrentTime('checkOut')} className="text-[9px] text-[#006FBF] font-semibold hover:underline">Set Now</button>
+                  </div>
+                  <input 
+                    type="time" 
+                    value={attFormData.checkOut} 
+                    onChange={(e) => setAttFormData({ ...attFormData, checkOut: e.target.value })} 
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-[#006FBF] font-mono" 
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200 transition-colors">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="rounded-xl px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:opacity-95 disabled:opacity-50" style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}>
+                  {isSubmitting ? 'Saving...' : 'Save Record'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

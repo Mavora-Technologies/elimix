@@ -13,5 +13,7 @@ router.use(authMiddleware);
 router.get('/classes', requirePermission('academics.read'), controller.getClassesAndStreams);
 router.get('/reference', requirePermission('academics.read'), controller.getReferenceData);
 router.post('/streams', requirePermission('academics.create'), controller.createStream);
+router.put('/streams/:id', requirePermission('academics.create'), controller.updateStream);
+router.delete('/streams/:id', requirePermission('academics.create'), controller.deleteStream);
 
 export default router;

@@ -1,5 +1,5 @@
 // apps/api/src/modules/academics/subjects.schema.ts
-import { pgTable, uuid, varchar, timestamp, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, unique, text } from 'drizzle-orm/pg-core';
 import { tenants } from '../tenant/tenant.schema.js';
 import { departments, teachers } from '../teachers/teachers.schema.js';
 import { streams } from './academics.schema.js';
@@ -7,10 +7,13 @@ import { streams } from './academics.schema.js';
 export const subjects = pgTable('subjects', {
   id: uuid('id').defaultRandom().primaryKey(),
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).notNull(),
-  name: varchar('name', { length: 100 }).notNull(), // e.g., "Mathematics", "Biology"
-  code: varchar('code', { length: 20 }).notNull(),  // e.g., "MAT-101"
+  name: varchar('name', { length: 100 }).notNull(),
+  code: varchar('code', { length: 20 }).notNull(),
   departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+  teacherIds: text('teacher_ids').default('[]'), // Storing array as text to bypass driver bugs
+  status: varchar('status', { length: 20 }).default('Active'),
   createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const subjectAllocations = pgTable('subject_allocations', {
@@ -21,6 +24,5 @@ export const subjectAllocations = pgTable('subject_allocations', {
   teacherId: uuid('teacher_id').references(() => teachers.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => ({
-  // Prevents assigning multiple teachers to the exact same subject in the exact same stream
   uniqueAllocation: unique('unique_subject_stream').on(t.subjectId, t.streamId)
 }));

@@ -41,4 +41,21 @@ export class AcademicsService {
     
     return stream;
   }
+
+  async updateStream(tenantId: string, id: string, userId: string, data: any) {
+    const cleanedData = {
+      ...data,
+      classTeacherId: data.classTeacherId && data.classTeacherId !== '' ? data.classTeacherId : null,
+      roomNumber: data.roomNumber && data.roomNumber !== '' ? data.roomNumber : null,
+    };
+    const stream = await repository.updateStream(tenantId, id, cleanedData);
+    await db.insert(auditLogs).values({ tenantId, userId, action: 'UPDATE', module: 'ACADEMICS', entity: 'Stream', entityId: id, newValue: stream });
+    return stream;
+  }
+
+  async deleteStream(tenantId: string, id: string, userId: string) {
+    await repository.deleteStream(tenantId, id);
+    await db.insert(auditLogs).values({ tenantId, userId, action: 'DELETE', module: 'ACADEMICS', entity: 'Stream', entityId: id, newValue: { status: 'deleted' } });
+    return true;
+  }
 }

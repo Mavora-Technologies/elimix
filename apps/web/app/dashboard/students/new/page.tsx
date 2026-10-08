@@ -5,6 +5,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 export default function AddStudentPage() {
   const router = useRouter();
   
@@ -26,7 +34,6 @@ export default function AddStudentPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear errors when user types
     setError(null);
     setValidationErrors([]);
   };
@@ -38,7 +45,6 @@ export default function AddStudentPage() {
     setValidationErrors([]);
 
     try {
-      // Retrieve auth and tenant context
       const token = localStorage.getItem('elimix_token');
       const userJson = localStorage.getItem('elimix_user');
       
@@ -65,7 +71,6 @@ export default function AddStudentPage() {
       const result = await res.json();
 
       if (!res.ok) {
-        // Handle Zod Validation Errors from backend
         if (result.code === 'VALIDATION_ERROR' && result.errors) {
           setValidationErrors(result.errors);
           throw new Error('Please correct the highlighted fields.');
@@ -73,7 +78,6 @@ export default function AddStudentPage() {
         throw new Error(result.message || 'Failed to register student.');
       }
 
-      // Success: Redirect back to directory
       router.push('/dashboard/students');
       
     } catch (err: any) {
@@ -84,52 +88,59 @@ export default function AddStudentPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Admit New Student
-          </h1>
-          <p className="text-sm text-slate-500">
-            Enter the student's primary demographic and enrollment details.
-          </p>
+    <div className="max-w-4xl mx-auto space-y-6 pb-12 w-full">
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1 truncate">
+            <Link href="/dashboard" className="hover:text-[#006FBF] transition-colors">Dashboard</Link>
+            <i className="fa-solid fa-chevron-right text-[10px]" />
+            <Link href="/dashboard/students" className="hover:text-[#006FBF] transition-colors">Students</Link>
+            <i className="fa-solid fa-chevron-right text-[10px]" />
+            <span className="text-slate-900 truncate">New Student</span>
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">Admit New Student</h1>
+          <p className="text-xs text-slate-500 mt-0.5 truncate">Enter the student's primary demographic and enrollment details.</p>
         </div>
-        <Link
-          href="/dashboard/students"
-          className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
-        >
-          Cancel
-        </Link>
+        
+        <div className="flex w-full sm:w-auto">
+          <Link href="/dashboard/students" className="flex w-full sm:w-auto h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:bg-slate-50 shadow-sm transition-colors">
+            <i className="fa-solid fa-arrow-left text-[10px]"></i> Back to Directory
+          </Link>
+        </div>
       </div>
 
-      {/* Main Form Card */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <form onSubmit={handleSubmit} className="divide-y divide-slate-200">
-          
-          {/* Error Banner */}
-          {error && (
-            <div className="p-4 bg-rose-50 border-b border-rose-100 flex items-start gap-3">
-              <i className="fa-solid fa-circle-exclamation text-rose-600 mt-0.5"></i>
-              <div className="text-sm text-rose-700 font-medium">
-                {error}
-                {validationErrors.length > 0 && (
-                  <ul className="mt-1 ml-4 list-disc text-xs font-normal text-rose-600">
-                    {validationErrors.map((err, idx) => (
-                      <li key={idx}>{err.message}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          )}
+      {/* ERROR BANNER */}
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-rose-800 text-sm flex items-start gap-3 shadow-sm animate-in fade-in">
+          <i className="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 text-base"></i>
+          <div>
+            <span className="font-semibold block">{error}</span>
+            {validationErrors.length > 0 && (
+              <ul className="mt-1.5 ml-4 list-disc text-xs font-medium text-rose-600/80 space-y-0.5">
+                {validationErrors.map((err, idx) => (
+                  <li key={idx}>{err.message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
-          <div className="p-6 space-y-6">
+      {/* FORM CARD */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+          <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <i className="fa-solid fa-user-graduate text-[#006FBF]"></i> Basic Information
+          </h2>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 md:p-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* First Name */}
-              <div className="space-y-2">
-                <label htmlFor="firstName" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="firstName" className="block text-xs font-semibold text-slate-700">
                   First Name <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -140,13 +151,12 @@ export default function AddStudentPage() {
                   onChange={handleInputChange}
                   required
                   placeholder="e.g. Brian"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
                 />
               </div>
 
-              {/* Last Name */}
-              <div className="space-y-2">
-                <label htmlFor="lastName" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="lastName" className="block text-xs font-semibold text-slate-700">
                   Last Name <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -157,13 +167,12 @@ export default function AddStudentPage() {
                   onChange={handleInputChange}
                   required
                   placeholder="e.g. Omondi"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
                 />
               </div>
 
-              {/* Admission Number */}
-              <div className="space-y-2">
-                <label htmlFor="admissionNumber" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="admissionNumber" className="block text-xs font-semibold text-slate-700">
                   Admission Number <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -174,29 +183,30 @@ export default function AddStudentPage() {
                   onChange={handleInputChange}
                   required
                   placeholder="e.g. ADM/2026/001"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 font-mono placeholder:text-slate-400 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10 uppercase"
                 />
               </div>
 
-              {/* Date of Birth */}
-              <div className="space-y-2">
-                <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-slate-700">
                   Date of Birth <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
+                <div className="relative">
+                  <i className="fa-regular fa-calendar absolute left-4 top-3 text-sm text-slate-400"></i>
+                  <input
+                    type="date"
+                    id="dateOfBirth"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-sm text-slate-900 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
+                  />
+                </div>
               </div>
 
-              {/* Gender */}
-              <div className="space-y-2">
-                <label htmlFor="gender" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="gender" className="block text-xs font-semibold text-slate-700">
                   Gender <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -204,7 +214,7 @@ export default function AddStudentPage() {
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10 appearance-none"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
@@ -212,9 +222,8 @@ export default function AddStudentPage() {
                 </select>
               </div>
 
-              {/* Enrollment Status */}
-              <div className="space-y-2">
-                <label htmlFor="enrollmentStatus" className="block text-sm font-semibold text-slate-700">
+              <div className="space-y-1.5">
+                <label htmlFor="enrollmentStatus" className="block text-xs font-semibold text-slate-700">
                   Enrollment Status <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -222,9 +231,9 @@ export default function AddStudentPage() {
                   name="enrollmentStatus"
                   value={formData.enrollmentStatus}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10 appearance-none"
                 >
-                  <option value="Admitted">Admitted (Pending Full Registration)</option>
+                  <option value="Admitted">Admitted (Pending Reg)</option>
                   <option value="Enrolled">Enrolled (Active)</option>
                   <option value="Transferred">Transferred</option>
                   <option value="Withdrawn">Withdrawn</option>
@@ -234,27 +243,15 @@ export default function AddStudentPage() {
             </div>
           </div>
 
-          {/* Form Actions */}
-          <div className="p-6 bg-slate-50 flex items-center justify-end gap-3">
-            <Link
-              href="/dashboard/students"
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-            >
+          <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-5 flex items-center justify-end gap-3">
+            <Link href="/dashboard/students" className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors shadow-sm">
               Cancel
             </Link>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            >
+            <button type="submit" disabled={isLoading} className="inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-70 disabled:cursor-not-allowed" style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}>
               {isLoading ? (
-                <>
-                  <i className="fa-solid fa-spinner animate-spin mr-2"></i> Saving...
-                </>
+                <><i className="fa-solid fa-spinner animate-spin"></i> Saving Student...</>
               ) : (
-                <>
-                  <i className="fa-solid fa-check mr-2"></i> Save Student
-                </>
+                <><i className="fa-solid fa-check"></i> Save & Continue</>
               )}
             </button>
           </div>

@@ -48,4 +48,17 @@ export class AcademicsRepository {
     const [stream] = await db.insert(streams).values({ ...data, tenantId }).returning();
     return stream;
   }
+
+  async updateStream(tenantId: string, id: string, data: any) {
+    const [stream] = await db.update(streams)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(streams.id, id), eq(streams.tenantId, tenantId)))
+      .returning();
+    return stream;
+  }
+
+  async deleteStream(tenantId: string, id: string) {
+    await db.delete(streams).where(and(eq(streams.id, id), eq(streams.tenantId, tenantId)));
+    return true;
+  }
 }

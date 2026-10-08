@@ -1,3 +1,4 @@
+// apps/api/src/modules/academics/subjects.routes.ts
 import { Router } from 'express';
 import { SubjectsController } from './subjects.controller.js';
 import { authMiddleware } from '../../middleware/auth.middleware.js';
@@ -10,6 +11,8 @@ router.use(authMiddleware);
 
 router.get('/', requirePermission('academics.read'), controller.getSubjects);
 router.post('/', requirePermission('academics.create'), controller.createSubject);
+router.put('/:id', requirePermission('academics.create'), controller.updateSubject);
+router.delete('/:id', requirePermission('academics.create'), controller.deleteSubject);
 router.post('/allocations', requirePermission('academics.create'), controller.allocateTeacher);
 
 export default router;

@@ -43,4 +43,22 @@ export class AcademicsController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  async updateStream(req: AuthenticatedRequest, res: Response) {
+    try {
+      const stream = await service.updateStream(req.tenantId!, req.params.id as string, req.user!.userId, req.body);
+      res.status(200).json({ success: true, data: stream });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  async deleteStream(req: AuthenticatedRequest, res: Response) {
+    try {
+      await service.deleteStream(req.tenantId!, req.params.id as string, req.user!.userId);
+      res.status(200).json({ success: true, message: 'Stream deleted' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

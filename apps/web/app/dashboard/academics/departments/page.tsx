@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/academics/departments/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -56,12 +57,26 @@ export default function DepartmentsPage() {
 
     const getHeaders = () => {
         const token = localStorage.getItem('elimix_token');
-        const userJson = localStorage.getItem('elimix_user');
-        const tenantId = userJson ? JSON.parse(userJson).tenantId : '00000000-0000-0000-0000-000000000000';
+        const userStr = localStorage.getItem('elimix_user');
+        
+        let tenantId = '00000000-0000-0000-0000-000000000000';
+        
+        // Bulletproof parsing to ensure tenantId is NEVER undefined
+        if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+            try {
+                const userJson = JSON.parse(userStr);
+                if (userJson && userJson.tenantId) {
+                    tenantId = userJson.tenantId;
+                }
+            } catch (e) {
+                console.warn('Failed to parse elimix_user from localStorage');
+            }
+        }
+
         return {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'x-tenant-id': tenantId,
+            'x-tenant-id': tenantId, // Guaranteed to be a valid string fallback
         };
     };
 
@@ -191,7 +206,6 @@ export default function DepartmentsPage() {
 
             const result = await res.json();
             
-            // Handle validation errors from backend gracefully
             if (!res.ok) {
                 if (result.errors) {
                     throw new Error(result.errors.map((err: any) => err.message).join(', '));
@@ -424,7 +438,6 @@ export default function DepartmentsPage() {
                                 >
                                     <option value="">Unassigned</option>
                                     {teachers.map(t => (
-                                        // FIXED: Uses t.userId if present, otherwise t.id to guarantee a valid UUID string
                                         <option key={t.id} value={t.userId || t.id}>
                                             {t.fullName}
                                         </option>

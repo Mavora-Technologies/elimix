@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/teachers/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -57,8 +58,21 @@ export default function TeachersDirectoryPage() {
 
   const getHeaders = () => {
     const token = localStorage.getItem('elimix_token');
-    const userJson = localStorage.getItem('elimix_user');
-    const tenantId = userJson ? JSON.parse(userJson).tenantId : '00000000-0000-0000-0000-000000000000';
+    const userStr = localStorage.getItem('elimix_user');
+    
+    let tenantId = '00000000-0000-0000-0000-000000000000';
+    
+    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+      try {
+        const userJson = JSON.parse(userStr);
+        if (userJson && userJson.tenantId) {
+          tenantId = userJson.tenantId;
+        }
+      } catch (e) {
+        console.warn('Failed to parse elimix_user from localStorage');
+      }
+    }
+
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -212,7 +226,12 @@ export default function TeachersDirectoryPage() {
     return matchesSearch && matchesDept && matchesStatus;
   });
 
-  const getInitials = (name: string) => name.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.)\s+/i, '').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const getCleanInitials = (name: string) => {
+    if (!name) return 'T';
+    const cleanName = name.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.)\s+/i, '').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    if (!cleanName) return 'T';
+    return cleanName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
 
   return (
     <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
@@ -225,7 +244,7 @@ export default function TeachersDirectoryPage() {
             <span className="text-slate-900 truncate">Teachers</span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">Teachers Directory</h1>
-          <p className="mt-0.5 text-xs text-slate-500 truncate">Manage faculty profiles, assignments, and credentials.</p>
+          <p className="mt-0.5 text-xs text-slate-500 truncate">Manage faculty profiles, allocations, and credentials.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
@@ -260,8 +279,8 @@ export default function TeachersDirectoryPage() {
           <p className="mt-1 text-2xl font-bold text-slate-900">{new Set(teachers.map(t => t.department)).size}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm flex flex-col justify-center min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Ratio</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">14:1</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Unassigned Subjects</p>
+          <p className="mt-1 text-2xl font-bold text-rose-600">{teachers.filter(t => t.subjects.length === 0).length}</p>
         </div>
       </div>
 
@@ -287,64 +306,82 @@ export default function TeachersDirectoryPage() {
 
       {/* DESKTOP VIEW ONLY (Hidden on Mobile and Tablet) */}
       <div className="hidden lg:block overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm w-full">
-        <table className="w-full text-left border-collapse table-fixed">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              <th className="py-3 pl-4 pr-3 w-1/3">Profile & ID</th>
-              <th className="px-3 py-3 w-1/4">Contact</th>
-              <th className="px-3 py-3 w-1/5">Department</th>
-              <th className="px-3 py-3 w-1/6">Status</th>
-              <th className="py-3 pl-3 pr-4 text-right w-[140px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
-            {isLoading ? (
-              <tr><td colSpan={5} className="py-12 text-center text-slate-500"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading...</td></tr>
-            ) : filteredTeachers.length > 0 ? (
-              filteredTeachers.map((teacher) => (
-                <tr key={teacher.id} className="transition-colors hover:bg-slate-50/60">
-                  <td className="py-3 pl-4 pr-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600 ring-1 ring-inset ring-slate-200">{getInitials(teacher.fullName)}</div>
-                      <div className="min-w-0 flex-1">
-                        <span className="font-semibold text-slate-900 block truncate">{teacher.fullName}</span>
-                        <span className="font-mono text-[10px] text-slate-400 block truncate">{teacher.id}</span>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse table-auto whitespace-nowrap min-w-[1000px]">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="py-4 pl-5 pr-3 min-w-[220px]">Profile & ID</th>
+                <th className="px-4 py-4 min-w-[200px]">Department</th>
+                <th className="px-4 py-4 min-w-[250px]">Subjects Allocated</th>
+                <th className="px-4 py-4 w-[100px]">Status</th>
+                <th className="py-4 pl-3 pr-5 text-right w-[140px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs">
+              {isLoading ? (
+                <tr><td colSpan={5} className="py-12 text-center text-slate-500"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading...</td></tr>
+              ) : filteredTeachers.length > 0 ? (
+                filteredTeachers.map((teacher) => (
+                  <tr key={teacher.id} className="transition-colors hover:bg-slate-50/60">
+                    <td className="py-4 pl-5 pr-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-600 ring-1 ring-inset ring-slate-200">{getCleanInitials(teacher.fullName)}</div>
+                        <div className="min-w-0">
+                          <span className="font-semibold text-slate-900 block truncate text-sm">{teacher.fullName}</span>
+                          <span className="font-mono text-[10px] text-slate-400 block truncate">{teacher.email}</span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3 min-w-0">
-                    <span className="block font-medium truncate">{teacher.email}</span>
-                    <span className="block text-[11px] text-slate-500 truncate">{teacher.phone}</span>
-                  </td>
-                  <td className="px-3 py-3 min-w-0">
-                    <span className="block font-medium truncate">{teacher.department}</span>
-                    <span className="block text-[10px] text-slate-500 truncate">{teacher.assignedClasses.join(', ')}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className={`inline-flex whitespace-nowrap rounded-md px-2 py-0.5 text-[10px] font-semibold ${teacher.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                      {teacher.status}
-                    </span>
-                  </td>
-                  <td className="py-3 pl-3 pr-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openEditModal(teacher.id)} className="text-slate-400 hover:text-blue-600 transition-colors p-1" title="Edit Teacher">
-                        <i className="fa-solid fa-pen-to-square"></i>
-                      </button>
-                      <button onClick={() => confirmDelete(teacher.id)} className="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Delete Teacher">
-                        <i className="fa-solid fa-trash-can"></i>
-                      </button>
-                      <Link href={`/dashboard/teachers/${teacher.id}`} className="rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
-                        View
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan={5} className="py-8 text-center text-slate-500">No records found.</td></tr>
-            )}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-4 py-4">
+                      {teacher.department !== 'Unassigned' ? (
+                        <span className="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                          {teacher.department}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                          Unassigned
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-wrap gap-1.5 max-w-[300px]">
+                        {teacher.subjects && teacher.subjects.length > 0 ? (
+                          teacher.subjects.map((sub, idx) => (
+                            <span key={idx} className="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-[10px] font-medium text-slate-600 border border-slate-200 shadow-sm truncate max-w-[150px]">
+                              {sub}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-rose-500 italic flex items-center gap-1 font-medium"><i className="fa-solid fa-triangle-exclamation"></i> No subjects assigned</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex whitespace-nowrap rounded-md px-2.5 py-1 text-[10px] font-semibold shadow-sm ${teacher.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-amber-100 text-amber-800'}`}>
+                        {teacher.status}
+                      </span>
+                    </td>
+                    <td className="py-4 pl-3 pr-5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button onClick={() => openEditModal(teacher.id)} className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 rounded-lg hover:bg-blue-50" title="Edit Teacher">
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onClick={() => confirmDelete(teacher.id)} className="text-slate-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50" title="Delete Teacher">
+                          <i className="fa-solid fa-trash-can"></i>
+                        </button>
+                        <Link href={`/dashboard/teachers/${teacher.id}`} className="rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-200 transition-colors border border-slate-200/60 shadow-sm">
+                          View
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan={5} className="py-8 text-center text-slate-500">No records found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* MOBILE & TABLET CARDS VIEW (Hidden on Desktop) */}
@@ -356,42 +393,45 @@ export default function TeachersDirectoryPage() {
             <div key={teacher.id} className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col gap-4 min-w-0">
               <div className="flex justify-between items-start gap-2 min-w-0">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 ring-1 ring-inset ring-slate-200">{getInitials(teacher.fullName)}</div>
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 ring-1 ring-inset ring-slate-200">{getCleanInitials(teacher.fullName)}</div>
                   <div className="min-w-0 flex-1">
                     <span className="font-semibold text-slate-900 block truncate text-sm">{teacher.fullName}</span>
-                    <span className="font-mono text-[10px] text-slate-400 block truncate">{teacher.id}</span>
+                    <span className="font-mono text-[10px] text-slate-400 block truncate">{teacher.email}</span>
                   </div>
                 </div>
-                <span className={`inline-flex flex-shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold ${teacher.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                <span className={`inline-flex flex-shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold ${teacher.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-amber-100 text-amber-800'}`}>
                   {teacher.status}
                 </span>
               </div>
 
-              <div className="text-xs text-slate-600 space-y-2 pt-3 border-t border-slate-100 min-w-0">
+              <div className="text-xs text-slate-600 space-y-3 pt-3 border-t border-slate-100 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <i className="fa-solid fa-envelope text-slate-400 w-4 text-center flex-shrink-0"></i> 
-                  <span className="truncate block flex-1">{teacher.email}</span>
+                  <i className="fa-solid fa-building-columns text-slate-400 w-4 text-center flex-shrink-0"></i> 
+                  <span className="truncate block flex-1 font-medium text-slate-700">{teacher.department !== 'Unassigned' ? teacher.department : <span className="text-slate-400 italic">Unassigned Dept</span>}</span>
                 </div>
-                {teacher.phone && teacher.phone !== 'N/A' && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <i className="fa-solid fa-phone text-slate-400 w-4 text-center flex-shrink-0"></i> 
-                    <span className="truncate block flex-1">{teacher.phone}</span>
+                
+                <div className="flex items-start gap-2 min-w-0">
+                  <i className="fa-solid fa-book-open text-slate-400 w-4 text-center mt-0.5 flex-shrink-0"></i> 
+                  <div className="flex flex-wrap gap-1 flex-1">
+                    {teacher.subjects && teacher.subjects.length > 0 ? (
+                      teacher.subjects.map((sub, idx) => (
+                        <span key={idx} className="inline-flex items-center rounded-md bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">{sub}</span>
+                      ))
+                    ) : (
+                      <span className="text-[10px] text-rose-500 italic font-medium">No subjects assigned</span>
+                    )}
                   </div>
-                )}
-                <div className="flex items-center gap-2 min-w-0">
-                  <i className="fa-solid fa-building text-slate-400 w-4 text-center flex-shrink-0"></i> 
-                  <span className="truncate block flex-1">{teacher.department} <span className="text-slate-400">({teacher.assignedClasses.join(', ')})</span></span>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
-                <button onClick={() => openEditModal(teacher.id)} className="flex justify-center items-center gap-1.5 rounded-xl bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/60">
+                <button onClick={() => openEditModal(teacher.id)} className="flex justify-center items-center gap-1.5 rounded-xl bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/60 shadow-sm">
                   <i className="fa-solid fa-pen-to-square"></i> Edit
                 </button>
-                <Link href={`/dashboard/teachers/${teacher.id}`} className="flex justify-center items-center gap-1.5 rounded-xl bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/60">
+                <Link href={`/dashboard/teachers/${teacher.id}`} className="flex justify-center items-center gap-1.5 rounded-xl bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/60 shadow-sm">
                   <i className="fa-solid fa-eye"></i> View
                 </Link>
-                <button onClick={() => confirmDelete(teacher.id)} className="flex justify-center items-center gap-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-100">
+                <button onClick={() => confirmDelete(teacher.id)} className="flex justify-center items-center gap-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-100 shadow-sm">
                   <i className="fa-solid fa-trash-can"></i> Delete
                 </button>
               </div>
@@ -442,14 +482,14 @@ export default function TeachersDirectoryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Department</label>
-                  <select value={formData.departmentId} onChange={(e) => setFormData({...formData, departmentId: e.target.value})} className="w-full rounded-xl border border-slate-200 px-3 py-2 font-medium outline-none">
+                  <select value={formData.departmentId} onChange={(e) => setFormData({...formData, departmentId: e.target.value})} className="w-full rounded-xl border border-slate-200 px-3 py-2 font-medium outline-none bg-white">
                     <option value="">Unassigned</option>
                     {departments.map(dept => <option key={dept.id} value={dept.id} className="truncate">{dept.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Status</label>
-                  <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value as TeacherProfile['status']})} className="w-full rounded-xl border border-slate-200 px-3 py-2 font-medium outline-none">
+                  <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value as TeacherProfile['status']})} className="w-full rounded-xl border border-slate-200 px-3 py-2 font-medium outline-none bg-white">
                     <option value="Active">Active</option>
                     <option value="Part-Time">Part-Time</option>
                     <option value="On Leave">On Leave</option>
@@ -457,7 +497,7 @@ export default function TeachersDirectoryPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 mt-2">
                 <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200 transition-colors">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="rounded-xl px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:opacity-95 disabled:opacity-50" style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}>
                   {isSubmitting ? 'Saving...' : 'Save Changes'}

@@ -1,24 +1,52 @@
+// apps/api/src/modules/teachers/teachers.service.ts
 import { TeachersRepository } from './teachers.repository.js';
 import { db } from '../../config/db.js';
 import { auditLogs } from '../audit/audit.schema.js';
+// Import subjects schema so we can query it
+import { subjects } from '../academics/subjects.schema.js';
+import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
 const repository = new TeachersRepository();
 
 export class TeachersService {
   async getAllTeachers(tenantId: string) {
-    const rawTeachers = await repository.getAllTeachers(tenantId);
-    
-    return rawTeachers.map(t => ({
-      id: t.id,
-      fullName: `${t.firstName} ${t.lastName}`,
-      email: t.email,
-      phone: t.phone || 'N/A', // Phone restored
-      department: t.departmentName || 'Unassigned',
-      subjects: ['Pending Allocation'], 
-      assignedClasses: ['Unassigned'],
-      status: t.isActive ? 'Active' : 'On Leave',
-    }));
+    // Fetch teachers and subjects in parallel
+    const [rawTeachers, allSubjects] = await Promise.all([
+      repository.getAllTeachers(tenantId),
+      db.select({ id: subjects.id, name: subjects.name, code: subjects.code, teacherIds: subjects.teacherIds }).from(subjects).where(eq(subjects.tenantId, tenantId))
+    ]);
+
+    // Parse subjects into a usable format
+    const parsedSubjects = allSubjects.map(sub => {
+      let ids: string[] = [];
+      try {
+        const raw = typeof sub.teacherIds === 'string' ? JSON.parse(sub.teacherIds) : sub.teacherIds;
+        ids = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+        if (!Array.isArray(ids)) ids = [];
+      } catch {
+        ids = typeof sub.teacherIds === 'string' ? sub.teacherIds.split(',').map(s => s.trim()) : [];
+      }
+      return { ...sub, teacherIds: ids };
+    });
+
+    return rawTeachers.map(t => {
+      // Find all subjects where this teacher's ID is explicitly listed
+      const assignedSubjects = parsedSubjects
+        .filter(sub => sub.teacherIds.includes(t.id))
+        .map(sub => sub.name);
+
+      return {
+        id: t.id,
+        fullName: `${t.firstName} ${t.lastName}`,
+        email: t.email,
+        phone: t.phone || 'N/A',
+        department: t.departmentName || 'Unassigned',
+        subjects: assignedSubjects.length > 0 ? assignedSubjects : [], 
+        assignedClasses: [], // We will build this out later when we map Streams
+        status: t.isActive ? 'Active' : 'On Leave',
+      };
+    });
   }
 
   async getDepartments(tenantId: string) {
@@ -29,6 +57,17 @@ export class TeachersService {
     const t = await repository.getTeacherById(tenantId, teacherId);
     if (!t) throw new Error('Teacher not found');
     
+    // Fetch specific subjects for this teacher
+    const allSubjects = await db.select({ name: subjects.name, teacherIds: subjects.teacherIds }).from(subjects).where(eq(subjects.tenantId, tenantId));
+    
+    const assignedSubjects = allSubjects.filter(sub => {
+      try {
+        const raw = typeof sub.teacherIds === 'string' ? JSON.parse(sub.teacherIds) : sub.teacherIds;
+        const ids = Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+        return ids.includes(t.id);
+      } catch { return false; }
+    }).map(sub => sub.name);
+
     return {
       id: t.id,
       fullName: `${t.firstName} ${t.lastName}`,
@@ -37,8 +76,8 @@ export class TeachersService {
       employeeNumber: t.employeeNumber,
       qualifications: t.qualifications || 'No qualifications listed',
       department: t.departmentName || 'Unassigned',
-      subjects: ['Pending Allocation'],
-      assignedClasses: ['Unassigned'],
+      subjects: assignedSubjects,
+      assignedClasses: [],
       status: t.isActive ? 'Active' : 'On Leave',
     };
   }
@@ -51,7 +90,7 @@ export class TeachersService {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
-      phone: data.phone || null, // Phone restored
+      phone: data.phone || null,
       passwordHash,
       isActive: data.isActive ?? true,
     };
@@ -66,13 +105,7 @@ export class TeachersService {
     const result = await repository.createTeacher(tenantId, userData, teacherData as any);
 
     await db.insert(auditLogs).values({
-      tenantId,
-      userId: adminUserId,
-      action: 'CREATE',
-      module: 'STAFF',
-      entity: 'Teacher',
-      entityId: result.teacher.id,
-      newValue: result.teacher,
+      tenantId, userId: adminUserId, action: 'CREATE', module: 'STAFF', entity: 'Teacher', entityId: result.teacher.id, newValue: result.teacher,
     });
 
     return result;
