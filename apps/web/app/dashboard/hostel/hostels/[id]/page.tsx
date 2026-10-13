@@ -1,5 +1,5 @@
 // apps/web/app/dashboard/hostel/hostels/[id]/page.tsx
-
+export const runtime = 'edge';
 import Link from 'next/link';
 
 /* ==========================================================================

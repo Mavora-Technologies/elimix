@@ -1,5 +1,5 @@
 // apps/web/app/dashboard/hr/staff/[id]/page.tsx
-
+export const runtime = 'edge';
 import Link from 'next/link';
 
 /* ==========================================================================

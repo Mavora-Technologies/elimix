@@ -1,6 +1,6 @@
 // apps/web/app/dashboard/exams/[id]/papers/page.tsx
 'use client';
-
+export const runtime = 'edge';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
