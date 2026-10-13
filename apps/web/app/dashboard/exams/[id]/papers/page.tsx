@@ -1,6 +1,7 @@
 // apps/web/app/dashboard/exams/[id]/papers/page.tsx
 'use client';
 export const runtime = 'edge';
+
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +13,9 @@ const BRAND = {
   cyan: '#04B1D6',
   teal: '#0199B9',
 };
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 interface ExamPaper {
   id: string;
@@ -48,12 +52,29 @@ export default function ManageExamPapersPage() {
     status: 'Scheduled' as const,
   });
 
+  const getHeaders = () => {
+    // Safely attempt to access localStorage since this runs on edge/client
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('elimix_token');
+    const userJson = localStorage.getItem('elimix_user');
+    const tenantId = userJson ? JSON.parse(userJson).tenantId : '00000000-0000-0000-0000-000000000000';
+    
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-tenant-id': tenantId,
+    };
+  };
+
   const handleSavePaper = (e: React.FormEvent) => {
     e.preventDefault();
     const newPaper: ExamPaper = {
       id: `PPR-00${papers.length + 1}`,
       ...formData,
     };
+    
+    // In future: fetch(`${API_BASE_URL}/exams/${examId}/papers`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(newPaper) })
+    
     setPapers([...papers, newPaper]);
     setSuccessBanner(`${formData.paperName} has been successfully added to the exam schedule.`);
     setIsModalOpen(false);

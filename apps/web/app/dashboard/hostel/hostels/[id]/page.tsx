@@ -1,6 +1,13 @@
 // apps/web/app/dashboard/hostel/hostels/[id]/page.tsx
+'use client';
 export const runtime = 'edge';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 /* ==========================================================================
    MOCK DATA FOR HST-BLK-02 (Kilimanjaro House)
@@ -138,6 +145,39 @@ const MAINTENANCE_LOGS = [
    ========================================================================== */
 
 export default function HostelDetailPage() {
+  const params = useParams();
+  const hostelId = params.id as string;
+
+  // Setup headers for future API calls
+  const getHeaders = () => {
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('elimix_token');
+    const userJson = localStorage.getItem('elimix_user');
+    const tenantId = userJson ? JSON.parse(userJson).tenantId : '00000000-0000-0000-0000-000000000000';
+    
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-tenant-id': tenantId,
+    };
+  };
+
+  // Example structure for future dynamic data fetching
+  /*
+  useEffect(() => {
+    const fetchHostelData = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/hostels/${hostelId}`, { headers: getHeaders() });
+        const data = await res.json();
+        // setHostelDetails(data);
+      } catch (error) {
+        console.error("Failed to fetch hostel details", error);
+      }
+    };
+    // fetchHostelData();
+  }, [hostelId]);
+  */
+
   return (
     <div className="flex w-full flex-col gap-6 p-6 md:p-8">
       {/* ----------------------------------------------------------------------

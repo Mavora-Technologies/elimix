@@ -1,9 +1,13 @@
 // apps/web/app/dashboard/students/[id]/page.tsx
 'use client';
 export const runtime = 'edge';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 /* ==========================================================================
    TYPES & INTERFACES
@@ -80,8 +84,8 @@ export default function StudentProfilePage() {
 
         const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
 
-        // Attempt API fetch
-        const res = await fetch(`http://localhost:3001/api/v1/students/${studentId}`, {
+        // Attempt API fetch using the dynamic base URL
+        const res = await fetch(`${API_BASE_URL}/students/${studentId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-tenant-id': activeTenantId,

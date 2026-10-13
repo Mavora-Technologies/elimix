@@ -1,6 +1,13 @@
 // apps/web/app/dashboard/hr/staff/[id]/page.tsx
+'use client';
 export const runtime = 'edge';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 /* ==========================================================================
    MOCK DATA (EMP-001 - Sarah Jenkins)
@@ -66,12 +73,42 @@ const STAFF_DETAILS = {
    PAGE COMPONENT
    ========================================================================== */
 
-export default async function StaffDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function StaffDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const staffId = params.id as string;
+
+  const [staffData, setStaffData] = useState(STAFF_DETAILS);
+
+  // Setup headers for future API calls
+  const getHeaders = () => {
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('elimix_token');
+    const userJson = localStorage.getItem('elimix_user');
+    const tenantId = userJson ? JSON.parse(userJson).tenantId : '00000000-0000-0000-0000-000000000000';
+    
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-tenant-id': tenantId,
+    };
+  };
+
+  // Example structure for future dynamic data fetching
+  /*
+  useEffect(() => {
+    const fetchStaffData = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/staff/${staffId}`, { headers: getHeaders() });
+        const data = await res.json();
+        // setStaffData(data);
+      } catch (error) {
+        console.error("Failed to fetch staff details", error);
+      }
+    };
+    // fetchStaffData();
+  }, [staffId]);
+  */
 
   return (
     <div className="flex w-full flex-col gap-6 p-6 md:p-8">
@@ -95,24 +132,24 @@ export default async function StaffDetailPage({
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-5">
             <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#012E54] to-[#006FBF] text-2xl font-bold text-white shadow-md">
-              {STAFF_DETAILS.avatar}
+              {staffData.avatar}
             </div>
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-slate-900">
-                  {STAFF_DETAILS.name}
+                  {staffData.name}
                 </h1>
                 <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                  {STAFF_DETAILS.status}
+                  {staffData.status}
                 </span>
               </div>
               <p className="mt-1 text-sm font-medium text-slate-600">
-                {STAFF_DETAILS.role} &bull;{' '}
-                <span className="text-slate-500">{STAFF_DETAILS.department}</span>
+                {staffData.role} &bull;{' '}
+                <span className="text-slate-500">{staffData.department}</span>
               </p>
               <p className="mt-1 text-xs text-slate-400">
-                ID: {id || STAFF_DETAILS.id} &bull; Joined{' '}
-                {STAFF_DETAILS.joinDate}
+                ID: {staffId || staffData.id} &bull; Joined{' '}
+                {staffData.joinDate}
               </p>
             </div>
           </div>
@@ -144,27 +181,27 @@ export default async function StaffDetailPage({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Email Address</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.email}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.email}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Phone Number</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.phone}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.phone}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">National ID / Passport</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.nationalId}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.nationalId}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Date of Birth</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.dob}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.dob}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Gender</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.gender}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.gender}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Residential Address</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.address}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.address}</p>
               </div>
             </div>
 
@@ -173,15 +210,15 @@ export default async function StaffDetailPage({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 bg-slate-50 p-4 rounded-xl">
                 <div>
                   <p className="text-xs text-slate-400">Name</p>
-                  <p className="text-sm font-medium text-slate-800">{STAFF_DETAILS.emergencyContact.name}</p>
+                  <p className="text-sm font-medium text-slate-800">{staffData.emergencyContact.name}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">Relationship</p>
-                  <p className="text-sm font-medium text-slate-800">{STAFF_DETAILS.emergencyContact.relationship}</p>
+                  <p className="text-sm font-medium text-slate-800">{staffData.emergencyContact.relationship}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">Phone</p>
-                  <p className="text-sm font-medium text-slate-800">{STAFF_DETAILS.emergencyContact.phone}</p>
+                  <p className="text-sm font-medium text-slate-800">{staffData.emergencyContact.phone}</p>
                 </div>
               </div>
             </div>
@@ -195,30 +232,30 @@ export default async function StaffDetailPage({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Employment Type</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.employmentType}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.employmentType}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Contract Type</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.contractType}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.contractType}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Salary Grade</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.salaryGrade}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.salaryGrade}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">KRA Tax PIN</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{STAFF_DETAILS.taxPin}</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">{staffData.taxPin}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Bank Account</p>
                 <p className="mt-1 text-sm font-medium text-slate-800">
-                  {STAFF_DETAILS.bankName} ({STAFF_DETAILS.accountNumber})
+                  {staffData.bankName} ({staffData.accountNumber})
                 </p>
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">NHIF / NSSF</p>
                 <p className="mt-1 text-sm font-medium text-slate-800">
-                  {STAFF_DETAILS.nhifNumber} / {STAFF_DETAILS.nssfNumber}
+                  {staffData.nhifNumber} / {staffData.nssfNumber}
                 </p>
               </div>
             </div>
@@ -245,7 +282,7 @@ export default async function StaffDetailPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {STAFF_DETAILS.recentLeaves.map((leave) => (
+                  {staffData.recentLeaves.map((leave) => (
                     <tr key={leave.id}>
                       <td className="py-3 text-sm font-medium text-slate-800">{leave.type}</td>
                       <td className="py-3 text-sm text-slate-600">{leave.dates}</td>
@@ -280,7 +317,7 @@ export default async function StaffDetailPage({
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                 <div>
                   <p className="text-xs font-medium text-slate-500">Annual Leave</p>
-                  <p className="text-lg font-bold text-slate-900">{STAFF_DETAILS.leaveBalance.annual} days</p>
+                  <p className="text-lg font-bold text-slate-900">{staffData.leaveBalance.annual} days</p>
                 </div>
                 <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#006FBF]/10 text-[#006FBF]">
                   <i className="fa-solid fa-calendar-check" />
@@ -290,7 +327,7 @@ export default async function StaffDetailPage({
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                 <div>
                   <p className="text-xs font-medium text-slate-500">Sick Leave</p>
-                  <p className="text-lg font-bold text-slate-900">{STAFF_DETAILS.leaveBalance.sick} days</p>
+                  <p className="text-lg font-bold text-slate-900">{staffData.leaveBalance.sick} days</p>
                 </div>
                 <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
                   <i className="fa-solid fa-notes-medical" />
@@ -300,7 +337,7 @@ export default async function StaffDetailPage({
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                 <div>
                   <p className="text-xs font-medium text-slate-500">Maternity Leave</p>
-                  <p className="text-lg font-bold text-slate-900">{STAFF_DETAILS.leaveBalance.maternity} days</p>
+                  <p className="text-lg font-bold text-slate-900">{staffData.leaveBalance.maternity} days</p>
                 </div>
                 <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
                   <i className="fa-solid fa-person-breastfeeding" />
@@ -320,7 +357,7 @@ export default async function StaffDetailPage({
               </button>
             </div>
             <ul className="divide-y divide-slate-100">
-              {STAFF_DETAILS.documents.map((doc, idx) => (
+              {staffData.documents.map((doc, idx) => (
                 <li key={idx} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3 overflow-hidden">
                     <i className="fa-regular fa-file-pdf text-red-500 text-lg flex-shrink-0" />

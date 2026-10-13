@@ -1,9 +1,13 @@
 // apps/web/app/dashboard/teachers/[id]/page.tsx
 'use client';
 export const runtime = 'edge';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 interface TeacherDetail {
   id: string;
@@ -31,17 +35,25 @@ export default function TeacherProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getHeaders = () => {
-    const token = localStorage.getItem('elimix_token');
+  const getHeaders = (): Record<string, string> => {
+    if (typeof window === 'undefined') return {};
+    
+    const token = localStorage.getItem('elimix_token') || '';
     const userStr = localStorage.getItem('elimix_user');
     let tenantId = '00000000-0000-0000-0000-000000000000';
+    
     if (userStr && userStr !== 'undefined' && userStr !== 'null') {
       try {
         const userJson = JSON.parse(userStr);
         if (userJson && userJson.tenantId) tenantId = userJson.tenantId;
       } catch (e) {}
     }
-    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'x-tenant-id': tenantId };
+    
+    return { 
+      'Content-Type': 'application/json', 
+      'Authorization': `Bearer ${token}`, 
+      'x-tenant-id': tenantId 
+    };
   };
 
   useEffect(() => {
@@ -51,15 +63,13 @@ export default function TeacherProfilePage() {
         const headers = getHeaders();
 
         // 1. Fetch Teacher Profile
-        const res = await fetch(`http://localhost:3001/api/v1/teachers/${id}`, { headers });
+        const res = await fetch(`${API_BASE_URL}/teachers/${id}`, { headers });
         const result = await res.json();
         if (!res.ok) throw new Error(result.message || 'Failed to fetch teacher profile');
         setTeacher(result.data);
 
         // 2. Fetch Recent Attendance (Last 5 Days)
-        // Note: For now, we will fetch today's attendance just to show the UI integration. 
-        // A dedicated /api/v1/teachers/attendance/:id route could fetch history later.
-        const attRes = await fetch(`http://localhost:3001/api/v1/teachers/attendance?date=${new Date().toISOString().split('T')[0]}`, { headers });
+        const attRes = await fetch(`${API_BASE_URL}/teachers/attendance?date=${new Date().toISOString().split('T')[0]}`, { headers });
         if (attRes.ok) {
           const attResult = await attRes.json();
           const myAtt = (attResult.data || []).find((r: any) => r.teacherId === id);
@@ -137,8 +147,8 @@ export default function TeacherProfilePage() {
             <div className="h-28 bg-gradient-to-br from-[#012E54] via-[#006FBF] to-[#04B1D6] relative">
               <div className="absolute top-4 right-4">
                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm backdrop-blur-md bg-white/90 ${
-                    teacher.status === 'Active' ? 'text-emerald-600' : 'text-amber-600'
-                  }`}>
+                   teacher.status === 'Active' ? 'text-emerald-600' : 'text-amber-600'
+                 }`}>
                   {teacher.status === 'Active' ? <i className="fa-solid fa-circle-check mr-1.5"></i> : <i className="fa-solid fa-clock mr-1.5"></i>}
                   {teacher.status}
                 </span>
