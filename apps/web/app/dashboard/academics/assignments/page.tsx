@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface Assignment {
   id: string;
   title: string;
@@ -73,10 +76,10 @@ export default function AssignmentsPage() {
     try {
       const headers = getHeaders();
       const [asnRes, subRes, teachRes, streamsRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/academics/assignments', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/subjects', { headers }),
-        fetch('http://localhost:3001/api/v1/teachers', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/timetables/streams', { headers })
+        fetch(`${API_BASE_URL}/academics/assignments`, { headers }),
+        fetch(`${API_BASE_URL}/academics/subjects`, { headers }),
+        fetch(`${API_BASE_URL}/teachers`, { headers }),
+        fetch(`${API_BASE_URL}/academics/timetables/streams`, { headers })
       ]);
 
       if (asnRes.ok) setAssignments((await asnRes.json()).data || []);
@@ -99,8 +102,8 @@ export default function AssignmentsPage() {
     setFormError(null);
     try {
       const url = isEditing 
-        ? `http://localhost:3001/api/v1/academics/assignments/${selectedAsn?.id}` 
-        : 'http://localhost:3001/api/v1/academics/assignments';
+        ? `${API_BASE_URL}/academics/assignments/${selectedAsn?.id}` 
+        : `${API_BASE_URL}/academics/assignments`;
         
       const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -126,7 +129,7 @@ export default function AssignmentsPage() {
     if (!selectedAsn) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/assignments/${selectedAsn.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/assignments/${selectedAsn.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -145,7 +148,7 @@ export default function AssignmentsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`http://localhost:3001/api/v1/academics/assignments/${id}/status`, {
+      await fetch(`${API_BASE_URL}/academics/assignments/${id}/status`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify({ status })

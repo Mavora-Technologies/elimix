@@ -4,6 +4,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface TimetableBlock {
   id: string;
   dayOfWeek: string;
@@ -23,7 +26,7 @@ export default function TimetablesPage() {
   const [blocks, setBlocks] = useState<TimetableBlock[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
-  const [streams, setStreams] = useState<any[]>([]); // Assuming an API for streams exists
+  const [streams, setStreams] = useState<any[]>([]); 
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +69,10 @@ export default function TimetablesPage() {
       const filterQuery = activeFilterId ? `?${viewMode === 'Stream' ? 'streamId' : 'teacherId'}=${activeFilterId}` : '';
       
       const [blocksRes, subRes, teachRes, streamsRes] = await Promise.all([
-        fetch(`http://localhost:3001/api/v1/academics/timetables${filterQuery}`, { headers }),
-        fetch('http://localhost:3001/api/v1/academics/subjects', { headers }),
-        fetch('http://localhost:3001/api/v1/teachers', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/timetables/streams', { headers }) // Updated endpoint!
+        fetch(`${API_BASE_URL}/academics/timetables${filterQuery}`, { headers }),
+        fetch(`${API_BASE_URL}/academics/subjects`, { headers }),
+        fetch(`${API_BASE_URL}/teachers`, { headers }),
+        fetch(`${API_BASE_URL}/academics/timetables/streams`, { headers }) 
       ]);
 
       if (!blocksRes.ok) throw new Error('Failed to load master schedule.');
@@ -126,7 +129,7 @@ export default function TimetablesPage() {
     setFormError(null);
 
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/timetables`, {
+      const res = await fetch(`${API_BASE_URL}/academics/timetables`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(formData),
@@ -151,7 +154,7 @@ export default function TimetablesPage() {
   const handleDeleteBlock = async (id: string) => {
     if (!confirm('Remove this block from the timetable?')) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/timetables/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/timetables/${id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -239,7 +242,6 @@ export default function TimetablesPage() {
                     </td>
                     {DAYS.map(day => {
                       const block = getBlockForSlot(day, time);
-                      // Visual breaks for lunch/recess
                       if (time === '13:00') return <td key={day} className="border-b border-r border-slate-100 bg-slate-50/80 text-center text-[10px] font-bold text-slate-400 italic py-4" colSpan={1}>{idx === 5 ? 'LUNCH BREAK' : ''}</td>;
 
                       return (

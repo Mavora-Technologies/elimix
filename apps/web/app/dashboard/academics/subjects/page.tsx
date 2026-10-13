@@ -15,6 +15,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface Teacher {
   id: string;
   userId?: string;
@@ -91,9 +94,9 @@ export default function SubjectsPage() {
     setError(null);
     try {
       const [subRes, deptRes, teachRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/academics/subjects', { headers: getHeaders() }),
-        fetch('http://localhost:3001/api/v1/departments', { headers: getHeaders() }),
-        fetch('http://localhost:3001/api/v1/teachers', { headers: getHeaders() })
+        fetch(`${API_BASE_URL}/academics/subjects`, { headers: getHeaders() }),
+        fetch(`${API_BASE_URL}/departments`, { headers: getHeaders() }),
+        fetch(`${API_BASE_URL}/teachers`, { headers: getHeaders() })
       ]);
 
       const subData = await subRes.json();
@@ -182,7 +185,7 @@ export default function SubjectsPage() {
     if (!selectedSubjectId) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/subjects/${selectedSubjectId}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/subjects/${selectedSubjectId}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -216,8 +219,8 @@ export default function SubjectsPage() {
       };
 
       const url = editMode 
-        ? `http://localhost:3001/api/v1/academics/subjects/${selectedSubjectId}`
-        : 'http://localhost:3001/api/v1/academics/subjects';
+        ? `${API_BASE_URL}/academics/subjects/${selectedSubjectId}`
+        : `${API_BASE_URL}/academics/subjects`;
         
       const res = await fetch(url, {
         method: editMode ? 'PUT' : 'POST',

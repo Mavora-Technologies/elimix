@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface TeacherAttendanceRecord {
   id: string;
   teacherId: string;
@@ -63,7 +66,7 @@ export default function TeacherAttendancePage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/teachers/attendance?date=${queryDate}`, { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/teachers/attendance?date=${queryDate}`, { headers: getHeaders() });
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Failed to load attendance records');
       setAttendanceRecords(result.data || []);
@@ -111,7 +114,7 @@ export default function TeacherAttendancePage() {
         checkOut: attFormData.checkOut || null,
       };
 
-      const res = await fetch(`http://localhost:3001/api/v1/teachers/attendance`, {
+      const res = await fetch(`${API_BASE_URL}/teachers/attendance`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -303,7 +306,7 @@ export default function TeacherAttendancePage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">Update Attendance</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5">{selectedRecord.teacherName} • {queryDate}</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{selectedRecord.teacherName} - {queryDate}</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><i className="fa-solid fa-xmark text-sm" /></button>
             </div>

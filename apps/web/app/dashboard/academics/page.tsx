@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface AcademicStream {
   id: string;
   gradeName: string;
@@ -70,8 +73,8 @@ export default function AcademicsOverviewPage() {
     try {
       const headers = getHeaders();
       const [streamsRes, refRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/academics/classes', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/reference', { headers }),
+        fetch(`${API_BASE_URL}/academics/classes`, { headers }),
+        fetch(`${API_BASE_URL}/academics/reference`, { headers }),
       ]);
 
       if (streamsRes.ok) {
@@ -102,8 +105,8 @@ export default function AcademicsOverviewPage() {
     setFormError(null);
     try {
       const url = isEditing 
-        ? `http://localhost:3001/api/v1/academics/streams/${selectedStream?.id}`
-        : `http://localhost:3001/api/v1/academics/streams`;
+        ? `${API_BASE_URL}/academics/streams/${selectedStream?.id}`
+        : `${API_BASE_URL}/academics/streams`;
         
       const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -133,7 +136,7 @@ export default function AcademicsOverviewPage() {
     if (!selectedStream) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/streams/${selectedStream.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/streams/${selectedStream.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -164,7 +167,6 @@ export default function AcademicsOverviewPage() {
     setSelectedStream(stream);
     setFormError(null);
     
-    // Reverse lookup IDs from the mapped names
     const classMatch = referenceData.classes.find(c => c.name === stream.gradeName);
     const teacherMatch = referenceData.teachers.find(t => `${t.firstName} ${t.lastName}`.trim() === stream.classTeacher);
 

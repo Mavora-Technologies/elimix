@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface LessonPlan {
   id: string;
   title: string;
@@ -74,10 +77,10 @@ export default function LessonPlansPage() {
     try {
       const headers = getHeaders();
       const [lpRes, subRes, teachRes, streamsRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/academics/lesson-plans', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/subjects', { headers }),
-        fetch('http://localhost:3001/api/v1/teachers', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/timetables/streams', { headers })
+        fetch(`${API_BASE_URL}/academics/lesson-plans`, { headers }),
+        fetch(`${API_BASE_URL}/academics/subjects`, { headers }),
+        fetch(`${API_BASE_URL}/teachers`, { headers }),
+        fetch(`${API_BASE_URL}/academics/timetables/streams`, { headers })
       ]);
 
       if (lpRes.ok) setLessonPlans((await lpRes.json()).data || []);
@@ -100,8 +103,8 @@ export default function LessonPlansPage() {
     setFormError(null);
     try {
       const url = isEditing
-        ? `http://localhost:3001/api/v1/academics/lesson-plans/${selectedPlan?.id}`
-        : 'http://localhost:3001/api/v1/academics/lesson-plans';
+        ? `${API_BASE_URL}/academics/lesson-plans/${selectedPlan?.id}`
+        : `${API_BASE_URL}/academics/lesson-plans`;
 
       const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -127,7 +130,7 @@ export default function LessonPlansPage() {
     if (!selectedPlan) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/lesson-plans/${selectedPlan.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/lesson-plans/${selectedPlan.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -146,7 +149,7 @@ export default function LessonPlansPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`http://localhost:3001/api/v1/academics/lesson-plans/${id}/status`, {
+      await fetch(`${API_BASE_URL}/academics/lesson-plans/${id}/status`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify({ status })
@@ -172,7 +175,6 @@ export default function LessonPlansPage() {
     setSelectedPlan(plan);
     setFormError(null);
 
-    // We need to reverse-lookup the IDs from the names since the table only shows names
     const subj = subjects.find(s => s.name === plan.subject);
     const stream = streams.find(s => s.name === plan.gradeStream);
     const teach = teachers.find(t => `${t.firstName} ${t.lastName}`.trim() === plan.teacherName || t.fullName === plan.teacherName);
@@ -335,7 +337,6 @@ export default function LessonPlansPage() {
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold ${getStatusBadge(plan.status)}`}>{plan.status}</span>
                     </td>
                     <td className="py-4 pl-3 pr-5 text-right">
-                      {/* FIX: Removed opacity-0 and group-hover to make actions permanently visible */}
                       <div className="flex items-center justify-end gap-1.5 transition-opacity">
                         <button onClick={() => openEditModal(plan)} className="h-7 w-7 rounded-lg bg-slate-50 text-slate-500 hover:text-[#006FBF] hover:bg-[#006FBF]/10 flex items-center justify-center border border-slate-200/60 transition-colors" title="Edit Plan">
                           <i className="fa-solid fa-pen-to-square text-[10px]"></i>

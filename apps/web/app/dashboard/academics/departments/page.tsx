@@ -12,6 +12,9 @@ const BRAND = {
     teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface Department {
     id: string;
     name: string;
@@ -85,8 +88,8 @@ export default function DepartmentsPage() {
         setError(null);
         try {
             const [deptRes, teachersRes] = await Promise.all([
-                fetch('http://localhost:3001/api/v1/departments', { headers: getHeaders() }),
-                fetch('http://localhost:3001/api/v1/teachers', { headers: getHeaders() })
+                fetch(`${API_BASE_URL}/departments`, { headers: getHeaders() }),
+                fetch(`${API_BASE_URL}/teachers`, { headers: getHeaders() })
             ]);
 
             const deptData = await deptRes.json();
@@ -160,7 +163,7 @@ export default function DepartmentsPage() {
         if (!selectedDeptId) return;
         setIsSubmitting(true);
         try {
-            const res = await fetch(`http://localhost:3001/api/v1/departments/${selectedDeptId}`, {
+            const res = await fetch(`${API_BASE_URL}/departments/${selectedDeptId}`, {
                 method: 'DELETE',
                 headers: getHeaders(),
             });
@@ -195,8 +198,8 @@ export default function DepartmentsPage() {
             };
 
             const url = editMode
-                ? `http://localhost:3001/api/v1/departments/${selectedDeptId}`
-                : 'http://localhost:3001/api/v1/departments';
+                ? `${API_BASE_URL}/departments/${selectedDeptId}`
+                : `${API_BASE_URL}/departments`;
 
             const res = await fetch(url, {
                 method: editMode ? 'PUT' : 'POST',

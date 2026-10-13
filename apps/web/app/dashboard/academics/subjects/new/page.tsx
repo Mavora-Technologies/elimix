@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/academics/subjects/new/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -15,6 +16,9 @@ const BRAND = {
   cyan: '#04B1D6',
   teal: '#0199B9',
 };
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export default function AddSubjectPage() {
   const router = useRouter();
@@ -37,7 +41,7 @@ export default function AddSubjectPage() {
       const tenantId = userJson ? JSON.parse(userJson).tenantId : '';
       const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
 
-      const res = await fetch('http://localhost:3001/api/v1/academics/subjects', {
+      const res = await fetch(`${API_BASE_URL}/academics/subjects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

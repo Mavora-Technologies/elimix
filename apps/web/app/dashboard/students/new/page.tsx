@@ -13,6 +13,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 export default function AddStudentPage() {
   const router = useRouter();
   
@@ -58,7 +61,7 @@ export default function AddStudentPage() {
         throw new Error('Authentication or Tenant context missing. Please log in again.');
       }
 
-      const res = await fetch('http://localhost:3001/api/v1/students', {
+      const res = await fetch(`${API_BASE_URL}/students`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
