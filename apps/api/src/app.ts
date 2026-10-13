@@ -24,7 +24,28 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// ==========================================
+// CORS CONFIGURATION
+// ==========================================
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://elimix.pages.dev',
+  'https://elimix.mavoratechnologies.com',
+  'https://www.elimix.mavoratechnologies.com'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(tenantMiddleware);
 
@@ -61,14 +82,18 @@ app.use('/api/v1/departments', departmentRoutes);
 // HEALTH CHECK
 // ==========================================
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'Elimix API', timestamp: new Date() });
+  res.json({ status: 'ok', service: 'Elimix API (Vercel Serverless)', timestamp: new Date() });
 });
 
 // ==========================================
 // SERVER INITIALIZATION
 // ==========================================
-app.listen(PORT, () => {
-  console.log(`Elimix API running securely on port ${PORT}`);
-});
+// Only listen locally. Vercel handles routing automatically without app.listen()
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Elimix API running securely on port ${PORT}`);
+  });
+}
 
+// MUST export the app for Vercel's serverless builder
 export default app;
