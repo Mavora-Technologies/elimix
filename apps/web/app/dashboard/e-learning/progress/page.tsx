@@ -1,7 +1,19 @@
+// apps/web/app/dashboard/e-learning/progress/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
+
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // TypeScript interface for a Student Learning Progress record
 interface StudentProgress {
@@ -133,7 +145,7 @@ export default function ELearningProgressPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -147,13 +159,16 @@ export default function ELearningProgressPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/e-learning/courses"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
           >
-            <i className="fa-solid fa-laptop-code mr-2 text-xs text-blue-600"></i> All Courses
+            <i className="fa-solid fa-laptop-code mr-2 text-xs text-[#006FBF]"></i> All Courses
           </Link>
           <button
             onClick={() => setExportModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
             <i className="fa-solid fa-file-arrow-down mr-2 text-xs"></i> Export Progress
           </button>
@@ -172,10 +187,10 @@ export default function ELearningProgressPage() {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tracked Learners</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+            <div className="rounded-xl bg-[#006FBF]/10 p-2 text-[#006FBF]">
               <i className="fa-solid fa-user-graduate text-sm"></i>
             </div>
           </div>
@@ -183,10 +198,10 @@ export default function ELearningProgressPage() {
           <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Active in LMS</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg Course Completion</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
               <i className="fa-solid fa-chart-line text-sm"></i>
             </div>
           </div>
@@ -194,10 +209,10 @@ export default function ELearningProgressPage() {
           <span className="text-xs text-emerald-600 font-medium">+4.2% vs last month</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Certified Completed</p>
-            <div className="rounded-lg bg-purple-50 p-2 text-purple-600">
+            <div className="rounded-xl bg-purple-50 p-2 text-purple-600">
               <i className="fa-solid fa-award text-sm"></i>
             </div>
           </div>
@@ -205,10 +220,10 @@ export default function ELearningProgressPage() {
           <span className="text-xs text-purple-600 font-medium">Finished all modules</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">At-Risk Learners</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
+            <div className="rounded-xl bg-rose-50 p-2 text-rose-600">
               <i className="fa-solid fa-triangle-exclamation text-sm"></i>
             </div>
           </div>
@@ -218,7 +233,7 @@ export default function ELearningProgressPage() {
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
@@ -227,7 +242,7 @@ export default function ELearningProgressPage() {
             placeholder="Search student name, ID, course, or subject..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-xl border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#006FBF]"
           />
         </div>
 
@@ -239,7 +254,7 @@ export default function ELearningProgressPage() {
             <select
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
             >
               <option value="All">All Subjects</option>
               <option value="Algebra II">Algebra II</option>
@@ -256,7 +271,7 @@ export default function ELearningProgressPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
             >
               <option value="All">All Statuses</option>
               <option value="Completed">Completed</option>
@@ -269,7 +284,7 @@ export default function ELearningProgressPage() {
       </div>
 
       {/* Progress Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -306,7 +321,7 @@ export default function ELearningProgressPage() {
                             item.completionPercentage === 100
                               ? 'bg-emerald-500'
                               : item.completionPercentage > 50
-                              ? 'bg-blue-600'
+                              ? 'bg-[#006FBF]'
                               : 'bg-amber-500'
                           }`}
                           style={{ width: `${item.completionPercentage}%` }}
@@ -321,7 +336,7 @@ export default function ELearningProgressPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
+                      <button className="text-[#006FBF] hover:text-[#012E54] font-medium text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 transition-colors">
                         Details
                       </button>
                     </td>
@@ -357,7 +372,7 @@ export default function ELearningProgressPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Export Format
                 </label>
-                <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
                   <option value="CSV">CSV Spreadsheet (.csv)</option>
                   <option value="PDF">Comprehensive PDF Report (.pdf)</option>
                   <option value="Excel">Microsoft Excel (.xlsx)</option>
@@ -368,7 +383,7 @@ export default function ELearningProgressPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Subject Scope
                 </label>
-                <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
                   <option value="All">All Subjects & Courses</option>
                   <option value="Algebra II">Algebra II</option>
                   <option value="General Science">General Science</option>
@@ -384,15 +399,15 @@ export default function ELearningProgressPage() {
                 </label>
                 <div className="space-y-2 pt-1 text-sm text-slate-700">
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
                     <span>Module Completion Percentage</span>
                   </label>
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
                     <span>Quiz Scores & Averages</span>
                   </label>
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
                     <span>Active Study Time (Hours)</span>
                   </label>
                 </div>
@@ -402,13 +417,16 @@ export default function ELearningProgressPage() {
                 <button
                   type="button"
                   onClick={() => setExportModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  }}
                 >
                   Download Export
                 </button>

@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/communication/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -14,6 +15,9 @@ const BRAND = {
   cyan: '#04B1D6',
   teal: '#0199B9',
 };
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 type Broadcast = {
   id: string;

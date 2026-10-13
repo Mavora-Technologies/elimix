@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface ExamResult {
   id: string;
   studentId: string;
@@ -74,11 +77,11 @@ export default function ExamResultsPage() {
     try {
       const headers = getHeaders();
       const [resRes, stuRes, examRes, subRes, streamRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/academics/exam-results', { headers }),
-        fetch('http://localhost:3001/api/v1/students', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/exams', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/subjects', { headers }),
-        fetch('http://localhost:3001/api/v1/academics/timetables/streams', { headers })
+        fetch(`${API_BASE_URL}/academics/exam-results`, { headers }),
+        fetch(`${API_BASE_URL}/students`, { headers }),
+        fetch(`${API_BASE_URL}/academics/exams`, { headers }),
+        fetch(`${API_BASE_URL}/academics/subjects`, { headers }),
+        fetch(`${API_BASE_URL}/academics/timetables/streams`, { headers })
       ]);
 
       if (resRes.ok) setResults((await resRes.json()).data || []);
@@ -101,8 +104,8 @@ export default function ExamResultsPage() {
     setFormError(null);
     try {
       const url = isEditing 
-        ? `http://localhost:3001/api/v1/academics/exam-results/${selectedResult?.id}` 
-        : 'http://localhost:3001/api/v1/academics/exam-results';
+        ? `${API_BASE_URL}/academics/exam-results/${selectedResult?.id}` 
+        : `${API_BASE_URL}/academics/exam-results`;
         
       const payload = {
         ...formData,
@@ -134,7 +137,7 @@ export default function ExamResultsPage() {
     if (!selectedResult) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/exam-results/${selectedResult.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/exam-results/${selectedResult.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });

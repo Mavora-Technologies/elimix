@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface Exam {
   id: string;
   title: string;
@@ -67,7 +70,7 @@ export default function ExamsPage() {
   const fetchExams = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/v1/academics/exams', { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/academics/exams`, { headers: getHeaders() });
       if (res.ok) {
         const result = await res.json();
         setExams(result.data || []);
@@ -88,8 +91,8 @@ export default function ExamsPage() {
     setFormError(null);
     try {
       const url = isEditing 
-        ? `http://localhost:3001/api/v1/academics/exams/${selectedExam?.id}` 
-        : 'http://localhost:3001/api/v1/academics/exams';
+        ? `${API_BASE_URL}/academics/exams/${selectedExam?.id}` 
+        : `${API_BASE_URL}/academics/exams`;
         
       const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -115,7 +118,7 @@ export default function ExamsPage() {
     if (!selectedExam) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/exams/${selectedExam.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/exams/${selectedExam.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -135,7 +138,7 @@ export default function ExamsPage() {
   // --- QUICK ACTION: UPDATE STATUS ---
   const updateExamStatus = async (id: string, newStatus: string) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/exams/${id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/academics/exams/${id}/status`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify({ status: newStatus })
@@ -296,7 +299,7 @@ export default function ExamsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                <tr><td colSpan={6} className="py-12 text-center text-slate-500"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading exams...</td></tr>
+                <tr><td colSpan={5} className="py-12 text-center text-slate-500"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading exams...</td></tr>
               ) : filteredExams.length > 0 ? (
                 filteredExams.map((exam) => (
                   <tr key={exam.id} className="hover:bg-slate-50/40 transition-colors text-xs group">
@@ -357,7 +360,7 @@ export default function ExamsPage() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={6} className="py-12 text-center text-slate-400 text-xs">No matching exams found.</td></tr>
+                <tr><td colSpan={5} className="py-12 text-center text-slate-400 text-xs">No matching exams found.</td></tr>
               )}
             </tbody>
           </table>
@@ -387,7 +390,9 @@ export default function ExamsPage() {
                   <span className="truncate flex-1 font-medium text-slate-700">{exam.academicYearName} <span className="text-slate-400">({exam.term})</span></span>
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
-                  <span className="font-mono text-[10px] text-slate-500">{getFormatDate(exam.startDate)} - {getFormatDate(exam.endDate)}</span>
+                  <span className="font-mono text-[10px] text-slate-500">
+                    {getFormatDate(exam.startDate)} - {getFormatDate(exam.endDate)}
+                  </span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold ${getStatusBadge(exam.status)}`}>{exam.status}</span>
                 </div>
               </div>

@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface ExamReport {
   id: string;
   title: string;
@@ -60,7 +63,7 @@ export default function ExamReportsPage() {
   const fetchReports = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/v1/academics/exam-reports', { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/academics/exam-reports`, { headers: getHeaders() });
       if (res.ok) {
         const result = await res.json();
         setReports(result.data || []);
@@ -80,8 +83,8 @@ export default function ExamReportsPage() {
     setFormError(null);
     try {
       const url = isEditing 
-        ? `http://localhost:3001/api/v1/academics/exam-reports/${selectedReport?.id}` 
-        : 'http://localhost:3001/api/v1/academics/exam-reports';
+        ? `${API_BASE_URL}/academics/exam-reports/${selectedReport?.id}` 
+        : `${API_BASE_URL}/academics/exam-reports`;
         
       const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -107,7 +110,7 @@ export default function ExamReportsPage() {
     if (!selectedReport) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/academics/exam-reports/${selectedReport.id}`, {
+      const res = await fetch(`${API_BASE_URL}/academics/exam-reports/${selectedReport.id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });

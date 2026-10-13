@@ -1,7 +1,19 @@
+// apps/web/app/dashboard/e-learning/courses/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
+
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // TypeScript interface for an E-Learning Course
 interface CourseItem {
@@ -106,7 +118,7 @@ export default function ELearningCoursesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -120,13 +132,16 @@ export default function ELearningCoursesPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/academics"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
           >
-            <i className="fa-solid fa-book-open mr-2 text-xs text-blue-600"></i> Academics Overview
+            <i className="fa-solid fa-book-open mr-2 text-xs text-[#006FBF]"></i> Academics Overview
           </Link>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
             <i className="fa-solid fa-plus mr-2 text-xs"></i> Create Course
           </button>
@@ -145,10 +160,10 @@ export default function ELearningCoursesPage() {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Courses</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+            <div className="rounded-xl bg-[#006FBF]/10 p-2 text-[#006FBF]">
               <i className="fa-solid fa-laptop-code text-sm"></i>
             </div>
           </div>
@@ -156,10 +171,10 @@ export default function ELearningCoursesPage() {
           <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Active online catalog</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Enrolled Learners</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
               <i className="fa-solid fa-users text-sm"></i>
             </div>
           </div>
@@ -167,10 +182,10 @@ export default function ELearningCoursesPage() {
           <span className="text-xs text-emerald-600 font-medium">Across all course modules</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Virtual Classes Today</p>
-            <div className="rounded-lg bg-purple-50 p-2 text-purple-600">
+            <div className="rounded-xl bg-purple-50 p-2 text-purple-600">
               <i className="fa-solid fa-video text-sm"></i>
             </div>
           </div>
@@ -178,10 +193,10 @@ export default function ELearningCoursesPage() {
           <span className="text-xs text-purple-600 font-medium">Live sessions scheduled</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Course Completion</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
+            <div className="rounded-xl bg-amber-50 p-2 text-amber-600">
               <i className="fa-solid fa-award text-sm"></i>
             </div>
           </div>
@@ -191,7 +206,7 @@ export default function ELearningCoursesPage() {
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
@@ -200,7 +215,7 @@ export default function ELearningCoursesPage() {
             placeholder="Search course title, instructor, or subject..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-xl border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#006FBF]"
           />
         </div>
 
@@ -212,7 +227,7 @@ export default function ELearningCoursesPage() {
             <select
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
             >
               <option value="All">All Subjects</option>
               <option value="Algebra II">Algebra II</option>
@@ -229,7 +244,7 @@ export default function ELearningCoursesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
             >
               <option value="All">All Statuses</option>
               <option value="Active">Active</option>
@@ -241,7 +256,7 @@ export default function ELearningCoursesPage() {
       </div>
 
       {/* Courses Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -273,7 +288,7 @@ export default function ELearningCoursesPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
+                      <button className="text-[#006FBF] hover:text-[#012E54] font-medium text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 transition-colors">
                         Manage Course
                       </button>
                     </td>
@@ -313,7 +328,7 @@ export default function ELearningCoursesPage() {
                   type="text"
                   required
                   placeholder="e.g. Introduction to Organic Chemistry"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]"
                 />
               </div>
 
@@ -322,7 +337,7 @@ export default function ELearningCoursesPage() {
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Subject
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
                     <option value="Algebra II">Algebra II</option>
                     <option value="General Science">General Science</option>
                     <option value="World History">World History</option>
@@ -335,7 +350,7 @@ export default function ELearningCoursesPage() {
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Lead Instructor
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
                     <option value="Mr. David Wilson">Mr. David Wilson</option>
                     <option value="Ms. Emily Davis">Ms. Emily Davis</option>
                     <option value="Dr. James Anderson">Dr. James Anderson</option>
@@ -352,7 +367,7 @@ export default function ELearningCoursesPage() {
                   rows={4}
                   required
                   placeholder="Summarize learning outcomes, prerequisite skills, and syllabus outline..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF] resize-none"
                 ></textarea>
               </div>
 
@@ -360,13 +375,16 @@ export default function ELearningCoursesPage() {
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  }}
                 >
                   Publish Course
                 </button>

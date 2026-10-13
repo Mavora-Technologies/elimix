@@ -1,3 +1,4 @@
+// apps/web/app/login/page.tsx
 'use client';
 
 import { useState } from "react";
@@ -13,8 +14,8 @@ export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   
   // Login States
-  const [loginEmail, setLoginEmail] = useState("superadmin@elimix.com");
-  const [loginPassword, setLoginPassword] = useState("Admin@123456");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   
   // Register States
   const [institutionName, setInstitutionName] = useState("");
@@ -35,7 +36,7 @@ export default function AuthPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       if (!apiUrl) {
-        throw new Error("API endpoint not configured. Simulating secure login...");
+        throw new Error("API endpoint not configured.");
       }
 
       const res = await fetch(`${apiUrl}/auth/login`, {
@@ -52,19 +53,14 @@ export default function AuthPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || "Invalid email or password.");
       }
 
       localStorage.setItem("elimix_token", data.data.token);
       localStorage.setItem("elimix_user", JSON.stringify(data.data.user));
       router.push("/dashboard");
     } catch (err: any) {
-      // Set mock token so protected dashboard route doesn't bounce back
-      localStorage.setItem("elimix_token", "mock_elimix_session_token");
-      localStorage.setItem("elimix_user", JSON.stringify({ email: loginEmail, role: "Super Admin" }));
-      
-      setError("Secure institutional session established. Redirecting to workspace...");
-      setTimeout(() => router.push("/dashboard"), 1000);
+      setError(err.message || "Unable to connect to the server. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +74,7 @@ export default function AuthPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (!apiUrl) {
-        throw new Error("Simulation mode");
+        throw new Error("API endpoint not configured.");
       }
 
       const res = await fetch(`${apiUrl}/auth/register`, {
@@ -93,16 +89,23 @@ export default function AuthPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Registration failed");
+      const data = await res.json();
 
-      router.push("/dashboard");
+      if (!res.ok) {
+        throw new Error(data.message || "Registration failed. Please try again.");
+      }
+
+      // Automatically log the user in or push them to a confirmation state
+      if (data.data?.token) {
+        localStorage.setItem("elimix_token", data.data.token);
+        localStorage.setItem("elimix_user", JSON.stringify(data.data.user));
+        router.push("/dashboard");
+      } else {
+        setError("Registration successful. Please log in.");
+        setMode('login');
+      }
     } catch (err: any) {
-      // Set mock token for registration fallback as well
-      localStorage.setItem("elimix_token", "mock_elimix_session_token");
-      localStorage.setItem("elimix_user", JSON.stringify({ email: regEmail || "admin@school.edu", role: "Institution Admin" }));
-
-      setError("Institutional tenant provisioning initiated. Redirecting to workspace...");
-      setTimeout(() => router.push("/dashboard"), 1000);
+      setError(err.message || "Unable to connect to the server. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -202,7 +205,7 @@ export default function AuthPage() {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-700 font-medium">
+              <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700 font-medium">
                 {error}
               </div>
             )}
@@ -214,7 +217,7 @@ export default function AuthPage() {
                   <Label className="text-xs font-semibold text-slate-700">Institutional Email</Label>
                   <Input 
                     type="email" 
-                    placeholder="superadmin@elimix.com" 
+                    placeholder="admin@elimix.com" 
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required 
