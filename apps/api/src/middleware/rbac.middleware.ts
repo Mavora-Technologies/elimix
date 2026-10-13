@@ -2,7 +2,7 @@
 import { Response, NextFunction } from 'express';
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../config/db.js';
-import { userRoles, rolePermissions, permissions } from '../modules/auth/auth.schema.js';
+import { userRoles, rolePermissions, permissions, roles } from '../modules/auth/auth.schema.js';
 import { AuthenticatedRequest } from './auth.middleware.js';
 
 export const requirePermission = (requiredPermission: string) => {
@@ -14,12 +14,12 @@ export const requirePermission = (requiredPermission: string) => {
         return res.status(401).json({ success: false, message: 'Unauthorized access', code: 'UNAUTHORIZED' });
       }
 
-      // Platform Super Admins implicitly bypass all permission checks
+      // Platform Super Admins implicitly bypass all permission checks across all tenants
       if (user.isSuperAdmin) {
         return next();
       }
 
-      // Retrieve all roles assigned to the user
+      // Retrieve all role IDs assigned to the user
       const userRolesList = await db
         .select({ roleId: userRoles.roleId })
         .from(userRoles)
@@ -31,7 +31,19 @@ export const requirePermission = (requiredPermission: string) => {
         return res.status(403).json({ success: false, message: 'Forbidden. No roles assigned.', code: 'FORBIDDEN' });
       }
 
-      // Resolve permission codes for those roles
+      // Check if the user has an 'isSystem' role (Tenant Owner/Admin)
+      const assignedRoles = await db
+        .select({ isSystem: roles.isSystem })
+        .from(roles)
+        .where(inArray(roles.id, roleIds));
+
+      const isTenantAdmin = assignedRoles.some((r) => r.isSystem);
+      if (isTenantAdmin) {
+        // Institution Administrators bypass granular permission checks within their tenant
+        return next(); 
+      }
+
+      // Resolve permission codes for normal staff/student roles
       const permissionList = await db
         .select({ code: permissions.code })
         .from(rolePermissions)

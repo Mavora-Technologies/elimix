@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 export default function AuthPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -41,13 +49,16 @@ export default function AuthPage() {
 
       const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-tenant-id": "00000000-0000-0000-0000-000000000000" 
+        },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Invalid server response format.");
+        throw new Error(`Server returned a non-JSON response (${res.status} ${res.statusText}). Is the backend running?`);
       }
 
       const data = await res.json();
@@ -79,7 +90,10 @@ export default function AuthPage() {
 
       const res = await fetch(`${apiUrl}/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-tenant-id": "00000000-0000-0000-0000-000000000000"
+        },
         body: JSON.stringify({
           institutionName,
           adminName,
@@ -89,13 +103,17 @@ export default function AuthPage() {
         }),
       });
 
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(`Backend endpoint not found (${res.status} ${res.statusText}). Please implement the /auth/register route.`);
+      }
+
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.message || "Registration failed. Please try again.");
       }
 
-      // Automatically log the user in or push them to a confirmation state
       if (data.data?.token) {
         localStorage.setItem("elimix_token", data.data.token);
         localStorage.setItem("elimix_user", JSON.stringify(data.data.user));
@@ -112,216 +130,260 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-slate-50 font-sans selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-slate-50 font-sans selection:bg-[#0088CE] selection:text-white">
       
-      {/* Left Branding Panel (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:col-span-5 bg-[#0F2942] text-white p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
-        <div className="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+      {/* ==================================================================
+          LEFT BRANDING PANEL
+          ================================================================== */}
+      <div className="hidden lg:flex lg:col-span-5 bg-[#012E54] text-white p-12 flex-col justify-between relative overflow-hidden">
+        {/* Abstract Background Glows */}
+        <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-[#0088CE]/20 blur-[100px] pointer-events-none"></div>
+        <div className="absolute -left-32 -bottom-32 h-[500px] w-[500px] rounded-full bg-[#04B1D6]/20 blur-[100px] pointer-events-none"></div>
+        
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10 pointer-events-none mix-blend-overlay"></div>
 
-        <div className="space-y-4 relative z-10">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative h-10 w-36 bg-white/10 p-2 rounded-lg backdrop-blur-sm flex items-center">
-              <Image 
-                src="/logo.png" 
-                alt="Elimix Logo" 
-                width={130} 
-                height={32}
-                className="object-contain filter brightness-0 invert" 
-                priority
-              />
-            </div>
+        <div className="space-y-6 relative z-10">
+          <Link href="/" className="inline-block transition-transform hover:scale-105 duration-300">
+            <Image 
+              src="/logo.png" 
+              alt="Elimix Logo" 
+              width={140} 
+              height={40}
+              className="object-contain filter brightness-0 invert" 
+              priority
+            />
           </Link>
-          <div className="inline-flex items-center gap-2 rounded-md bg-blue-900/60 px-3 py-1 text-xs font-semibold text-cyan-300 border border-blue-800">
-            <i className="fa-solid fa-shield-halved"></i> Enterprise Multi-Tenant Core
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-xs font-semibold text-[#04B1D6] border border-white/10 shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#04B1D6] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#04B1D6]"></span>
+            </span>
+            Comprehensive School Management System
           </div>
         </div>
 
         <div className="space-y-6 relative z-10 max-w-md">
-          <h1 className="text-3xl font-extrabold tracking-tight leading-snug">
-            Secure Academic Governance & Financial Auditing
+          <h1 className="text-4xl font-bold tracking-tight leading-tight text-white">
+            Simplify Your Institution's Operations
           </h1>
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-            Access isolated database schemas, granular RBAC matrices, and automated term billing dashboards designed for elite educational institutions.
+          <p className="text-slate-300 text-sm leading-relaxed font-medium">
+            Unify your admissions, academics, fee collections, and parent communication in a single, secure platform designed for modern educational excellence.
           </p>
         </div>
 
-        <div className="text-xs text-slate-400 relative z-10 flex items-center justify-between border-t border-slate-800 pt-6">
-          <span>© 2026 Elimix Technologies Ltd</span>
-          <Link href="/contact" className="hover:text-white transition-colors">Support Desk →</Link>
+        <div className="text-xs text-slate-400 relative z-10 flex items-center justify-between border-t border-white/10 pt-8 mt-12">
+          <span>© {new Date().getFullYear()} Mavora Technologies</span>
+          <Link href="/contact" className="hover:text-white transition-colors flex items-center gap-1">
+            Support Desk <i className="fa-solid fa-arrow-right-long text-[10px]"></i>
+          </Link>
         </div>
       </div>
 
-      {/* Right Form Console Panel */}
-      <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-6">
-          
-          {/* Mobile Brand Header */}
-          <div className="lg:hidden text-center space-y-2 flex justify-center">
-            <Link href="/" className="relative h-10 w-36 flex items-center justify-center">
-              <Image 
-                src="/logo.png" 
-                alt="Elimix Logo" 
-                width={130} 
-                height={32}
-                className="object-contain" 
-                priority
-              />
-            </Link>
-          </div>
+      {/* ==================================================================
+          RIGHT FORM CONSOLE PANEL
+          ================================================================== */}
+      <div className="col-span-1 lg:col-span-7 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-20 relative">
+        
+        {/* Mobile Header */}
+        <div className="lg:hidden w-full max-w-[420px] mb-8 flex justify-center">
+          <Link href="/">
+            <Image 
+              src="/logo.png" 
+              alt="Elimix Logo" 
+              width={130} 
+              height={32}
+              className="object-contain" 
+              priority
+            />
+          </Link>
+        </div>
 
-          {/* Mode Switcher Tabs */}
-          <div className="bg-slate-200 p-1 rounded-xl flex items-center text-xs font-semibold">
+        <div className="w-full max-w-[420px]">
+          
+          {/* Mode Switcher Segmented Control */}
+          <div className="bg-slate-200/70 p-1.5 rounded-xl flex items-center text-sm font-semibold mb-8 shadow-inner">
             <button
               onClick={() => { setMode('login'); setError(""); }}
-              className={`flex-1 py-2.5 rounded-lg transition-all ${
-                mode === 'login' ? 'bg-white text-[#0F2942] shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`flex-1 py-2.5 rounded-lg transition-all duration-300 ${
+                mode === 'login' 
+                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' 
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Sign In to Workspace
+              Sign In
             </button>
             <button
               onClick={() => { setMode('register'); setError(""); }}
-              className={`flex-1 py-2.5 rounded-lg transition-all ${
-                mode === 'register' ? 'bg-[#0F2942] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`flex-1 py-2.5 rounded-lg transition-all duration-300 ${
+                mode === 'register' 
+                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' 
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Register With Us
+              Register Workspace
             </button>
           </div>
 
-          {/* Form Card Container */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm space-y-6">
+          {/* Main Form Container */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-8 sm:p-10 shadow-xl shadow-slate-200/40">
             
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold text-[#0F2942]">
-                {mode === 'login' ? 'Welcome Back' : 'Provision Institution'}
+            <div className="space-y-2 mb-8">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                {mode === 'login' ? 'Welcome back' : 'Provision your institution'}
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-slate-500">
                 {mode === 'login' 
-                  ? 'Enter your institutional credentials to access your console.' 
-                  : 'Complete your details to set up an isolated tenant workspace.'}
+                  ? 'Enter your credentials to access your administrative console.' 
+                  : 'Complete these details to set up your isolated tenant workspace.'}
               </p>
             </div>
 
             {error && (
-              <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700 font-medium">
-                {error}
+              <div className={`mb-6 rounded-xl border p-4 text-sm font-medium flex items-start gap-3 ${
+                error.includes("successful") 
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
+                  : "bg-rose-50 border-rose-200 text-rose-800"
+              }`}>
+                <i className={`fa-solid mt-0.5 ${error.includes("successful") ? "fa-circle-check text-emerald-600" : "fa-triangle-exclamation text-rose-600"}`}></i>
+                <span className="leading-snug">{error}</span>
               </div>
             )}
 
             {mode === 'login' ? (
-              /* LOGIN FORM */
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Institutional Email</Label>
+              /* ================= LOGIN FORM ================= */
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Work Email</Label>
                   <Input 
                     type="email" 
                     placeholder="admin@elimix.com" 
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-slate-700">Password</Label>
-                    <Link href="/contact" className="text-[11px] text-blue-600 hover:underline">Forgot password?</Link>
+                    <Label className="text-sm font-semibold text-slate-700">Password</Label>
+                    <Link href="/contact" className="text-xs font-semibold text-[#006FBF] hover:text-[#012E54] transition-colors">Forgot password?</Link>
                   </div>
                   <Input 
                     type="password" 
+                    placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="pt-2">
-                  <Button className="w-full bg-[#0F2942] hover:bg-[#1a3d63] text-white text-xs font-semibold h-10 shadow-sm" type="submit" disabled={isLoading}>
-                    {isLoading ? "Authenticating Session..." : "Sign In to Console"}
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="w-full h-11 rounded-xl text-white font-semibold text-sm shadow-sm hover:opacity-95 transition-all flex items-center justify-center gap-2"
+                    style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+                  >
+                    {isLoading ? (
+                      <><i className="fa-solid fa-spinner animate-spin"></i> Authenticating...</>
+                    ) : (
+                      "Sign In to Console"
+                    )}
                   </Button>
                 </div>
               </form>
             ) : (
-              /* REGISTER WITH US FORM */
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Institution Name</Label>
+              /* ================= REGISTER FORM ================= */
+              <form onSubmit={handleRegister} className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Institution Name</Label>
                   <Input 
                     type="text" 
                     placeholder="e.g., Strathmore Academy" 
                     value={institutionName}
                     onChange={(e) => setInstitutionName(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Administrator Full Name</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Administrator Full Name</Label>
                   <Input 
                     type="text" 
                     placeholder="Dr. Valary Femy" 
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Institutional Email</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Institutional Email</Label>
                   <Input 
                     type="email" 
                     placeholder="admin@school.edu" 
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Secure Password</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Secure Password</Label>
                   <Input 
                     type="password" 
                     placeholder="Minimum 8 characters"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     required 
-                    className="text-xs"
+                    className="h-11 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF]"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Select Student Capacity Tier</Label>
-                  <select 
-                    value={selectedTier}
-                    onChange={(e) => setSelectedTier(e.target.value)}
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#0F2942]"
-                  >
-                    <option>Starter (Up to 300 students)</option>
-                    <option>Business (Up to 800 students)</option>
-                    <option>Professional (Up to 2,000 students)</option>
-                    <option>Enterprise (2,000+ / custom)</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">Student Capacity Tier</Label>
+                  <div className="relative">
+                    <select 
+                      value={selectedTier}
+                      onChange={(e) => setSelectedTier(e.target.value)}
+                      className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm text-slate-700 shadow-sm appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#006FBF]/20 focus:border-[#006FBF] transition-all"
+                    >
+                      <option>Starter (Up to 300 students)</option>
+                      <option>Business (Up to 800 students)</option>
+                      <option>Professional (Up to 2,000 students)</option>
+                      <option>Enterprise (2,000+ / custom)</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                      <i className="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                  </div>
                 </div>
-                <div className="pt-2">
-                  <Button className="w-full bg-[#0F2942] hover:bg-[#1a3d63] text-white text-xs font-semibold h-10 shadow-sm" type="submit" disabled={isLoading}>
-                    {isLoading ? "Provisioning Tenant..." : "Register & Provision Workspace"}
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="w-full h-11 rounded-xl text-white font-semibold text-sm shadow-sm hover:opacity-95 transition-all flex items-center justify-center gap-2"
+                    style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+                  >
+                    {isLoading ? (
+                      <><i className="fa-solid fa-spinner animate-spin"></i> Provisioning Tenant...</>
+                    ) : (
+                      "Register & Provision Workspace"
+                    )}
                   </Button>
                 </div>
               </form>
             )}
-
           </div>
 
-          <div className="text-center">
-            <Link href="/" className="text-xs text-slate-500 hover:text-slate-800 font-medium">
-              ← Back to Elimix Homepage
+          <div className="text-center mt-8">
+            <Link href="/" className="text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors flex items-center justify-center gap-2">
+              <i className="fa-solid fa-arrow-left text-xs"></i> Back to Homepage
             </Link>
           </div>
 
         </div>
       </div>
-
     </div>
   );
 }

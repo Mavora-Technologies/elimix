@@ -6,10 +6,11 @@ export const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+// Updated to match the frontend registration payload
 export const registerSchema = z.object({
+  institutionName: z.string().min(2, 'Institution name is required'),
+  adminName: z.string().min(2, 'Admin name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  firstName: z.string().min(2, 'First name is required'),
-  lastName: z.string().min(2, 'Last name is required'),
-  tenantId: z.string().uuid('Invalid tenant ID').optional(),
+  tier: z.string().optional(),
 });

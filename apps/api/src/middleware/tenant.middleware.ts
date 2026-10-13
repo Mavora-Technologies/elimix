@@ -9,7 +9,7 @@ export const tenantMiddleware = (req: TenantRequest, res: Response, next: NextFu
   const tenantId = req.headers['x-tenant-id'] as string;
 
   // Platform endpoints or public auth don't require tenantId
-  if (req.path.startsWith('/api/v1/platform') || req.path.startsWith('/api/v1/auth/login')) {
+  if (req.path.startsWith('/api/v1/platform') || req.path.startsWith('/api/v1/auth/')) {
     return next();
   }
 
