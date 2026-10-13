@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface TeacherProfile {
   id: string;
   fullName: string;
@@ -56,8 +59,9 @@ export default function TeachersDirectoryPage() {
     status: 'Active' as TeacherProfile['status'],
   });
 
-  const getHeaders = () => {
-    const token = localStorage.getItem('elimix_token');
+  const getHeaders = (): Record<string, string> => {
+    if (typeof window === 'undefined') return {};
+    const token = localStorage.getItem('elimix_token') || '';
     const userStr = localStorage.getItem('elimix_user');
     
     let tenantId = '00000000-0000-0000-0000-000000000000';
@@ -85,8 +89,8 @@ export default function TeachersDirectoryPage() {
     setError(null);
     try {
       const [teachersRes, deptsRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/teachers', { headers: getHeaders() }),
-        fetch('http://localhost:3001/api/v1/teachers/departments', { headers: getHeaders() })
+        fetch(`${API_BASE_URL}/teachers`, { headers: getHeaders() }),
+        fetch(`${API_BASE_URL}/teachers/departments`, { headers: getHeaders() })
       ]);
 
       const teachersResult = await teachersRes.json();
@@ -123,7 +127,7 @@ export default function TeachersDirectoryPage() {
   const openEditModal = async (teacherId: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/teachers/${teacherId}`, { headers: getHeaders() });
+      const res = await fetch(`${API_BASE_URL}/teachers/${teacherId}`, { headers: getHeaders() });
       const result = await res.json();
       if (!res.ok) throw new Error(result.message);
       
@@ -158,7 +162,7 @@ export default function TeachersDirectoryPage() {
     if (!selectedTeacherId) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/teachers/${selectedTeacherId}`, {
+      const res = await fetch(`${API_BASE_URL}/teachers/${selectedTeacherId}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -194,8 +198,8 @@ export default function TeachersDirectoryPage() {
       };
 
       const url = editMode 
-        ? `http://localhost:3001/api/v1/teachers/${selectedTeacherId}`
-        : 'http://localhost:3001/api/v1/teachers';
+        ? `${API_BASE_URL}/teachers/${selectedTeacherId}`
+        : `${API_BASE_URL}/teachers`;
         
       const res = await fetch(url, {
         method: editMode ? 'PUT' : 'POST',
