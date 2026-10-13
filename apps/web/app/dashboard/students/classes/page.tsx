@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 // TypeScript interface matched exactly to the AcademicsService output
 interface ClassStream {
   id: string;
@@ -46,7 +49,7 @@ export default function ClassesStreamsPage() {
     async function fetchClasses() {
       try {
         setIsLoading(true);
-        const res = await fetch('http://localhost:3001/api/v1/academics/classes', { headers: getHeaders() });
+        const res = await fetch(`${API_BASE_URL}/academics/classes`, { headers: getHeaders() });
         const result = await res.json();
         if (!res.ok) throw new Error(result.message || 'Failed to fetch class and stream records.');
         setClasses(result.data || []);

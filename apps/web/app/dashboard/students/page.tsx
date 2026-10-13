@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface Student {
   id: string;
   admissionNumber: string;
@@ -49,7 +52,7 @@ export default function StudentDirectoryPage() {
           'x-tenant-id': activeTenantId,
         };
 
-        const res = await fetch('http://localhost:3001/api/v1/students', { headers });
+        const res = await fetch(`${API_BASE_URL}/students`, { headers });
         const result = await res.json();
         if (!res.ok) throw new Error(result.message || 'Failed to fetch student records.');
 

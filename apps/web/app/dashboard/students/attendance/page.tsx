@@ -12,6 +12,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 interface AttendanceStudent {
   id: string;
   admissionNo: string;
@@ -47,8 +50,8 @@ export default function DailyAttendancePage() {
         const headers = { 'Authorization': `Bearer ${token}`, 'x-tenant-id': activeTenantId };
 
         const [studentsRes, attendanceRes] = await Promise.all([
-          fetch('http://localhost:3001/api/v1/students', { headers }),
-          fetch(`http://localhost:3001/api/v1/attendance?date=${selectedDate}`, { headers })
+          fetch(`${API_BASE_URL}/students`, { headers }),
+          fetch(`${API_BASE_URL}/attendance?date=${selectedDate}`, { headers })
         ]);
 
         const studentsResult = await studentsRes.json();
@@ -124,7 +127,7 @@ export default function DailyAttendancePage() {
         records: currentClassStudents.map(s => ({ studentId: s.id, status: s.status }))
       };
 
-      const res = await fetch('http://localhost:3001/api/v1/attendance', {
+      const res = await fetch(`${API_BASE_URL}/attendance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'x-tenant-id': activeTenantId },
         body: JSON.stringify(attendancePayload),

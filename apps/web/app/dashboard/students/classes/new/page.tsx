@@ -13,6 +13,9 @@ const BRAND = {
   teal: '#0199B9',
 };
 
+// Dynamic API URL for Local/Production compatibility
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 export default function AddStreamPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +40,7 @@ export default function AddStreamPage() {
         const tenantId = userJson ? JSON.parse(userJson).tenantId : '';
         const activeTenantId = tenantId || '00000000-0000-0000-0000-000000000000';
 
-        const res = await fetch('http://localhost:3001/api/v1/academics/reference', {
+        const res = await fetch(`${API_BASE_URL}/academics/reference`, {
           headers: { 'Authorization': `Bearer ${token}`, 'x-tenant-id': activeTenantId },
         });
         const result = await res.json();
@@ -67,7 +70,7 @@ export default function AddStreamPage() {
         classTeacherId: formData.classTeacherId || null,
       };
 
-      const res = await fetch('http://localhost:3001/api/v1/academics/streams', {
+      const res = await fetch(`${API_BASE_URL}/academics/streams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
