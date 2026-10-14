@@ -18,6 +18,7 @@ import assignmentRoutes from './modules/academics/assignments.routes.js';
 import examRoutes from './modules/academics/exams.routes.js';
 import examResultsRoutes from './modules/academics/exam_results.routes.js';
 import examReportsRoutes from './modules/academics/exam_reports.routes.js';
+import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use(tenantMiddleware);
 // 1. Core Authentication & Identity
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // 2. Specific Academic Sub-Routes (MUST go before base academic route)
 app.use('/api/v1/academics/subjects', subjectRoutes);
