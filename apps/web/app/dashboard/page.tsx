@@ -70,7 +70,7 @@ export default function DashboardOverviewPage() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   // --- Filter States ---
-  const [timeFilter, setTimeFilter] = useState<string>('this_month');
+  const [timeFilter, setTimeFilter] = useState<string>('all_time');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
   const [selectedStream, setSelectedStream] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -149,7 +149,6 @@ export default function DashboardOverviewPage() {
     return metrics.streams.filter((s) => s.classId === selectedGrade);
   }, [metrics?.streams, selectedGrade]);
 
-  // Reset stream selection if selected stream doesn't belong to the new class
   useEffect(() => {
     if (selectedGrade !== 'all' && selectedStream !== 'all') {
       const exists = availableStreams.some((s) => s.id === selectedStream);
@@ -162,7 +161,7 @@ export default function DashboardOverviewPage() {
     const male = metrics?.maleStudents || 0;
     const female = metrics?.femaleStudents || 0;
     const total = metrics?.filteredStudents || metrics?.totalStudents || 0;
-    const circumference = 2 * Math.PI * 30;
+    const circumference = 2 * Math.PI * 34;
 
     if (total === 0) {
       return {
@@ -190,37 +189,73 @@ export default function DashboardOverviewPage() {
     };
   }, [metrics]);
 
-  // --- Dynamic SVG Area Path Generator ---
+  // --- DUAL-AXIS ELIMIX BRAND CHART SCALING ENGINE ---
   const trendChart = useMemo(() => {
     const series = metrics?.weeklyTrend || [];
-    const maxVal = Math.max(
-      ...series.map((d) => Math.max(d.primaryValue, d.secondaryValue)),
-      10
-    );
+    
+    const maxPrimary = Math.max(...series.map((d) => d.primaryValue), 10) * 1.25;
 
-    const buildAreaPath = (key: 'primaryValue' | 'secondaryValue') => {
+    const secValues = series.map((d) => d.secondaryValue);
+    const minSec = secValues.length > 0 ? Math.min(...secValues) : 0;
+    const maxSec = secValues.length > 0 ? Math.max(...secValues) : 100;
+    
+    const secRange = maxSec === minSec ? Math.max(maxSec * 0.2, 100) : (maxSec - minSec) * 1.5;
+    const secBaseline = Math.max(0, minSec - secRange * 0.2);
+
+    const buildPrimaryPath = () => {
+      if (series.length === 0) return "M0,180 L500,180 Z";
       const points = series.map((item, idx) => {
         const x = (idx / Math.max(series.length - 1, 1)) * 500;
-        const y = 200 - (item[key] / maxVal) * 170;
+        const y = 180 - (item.primaryValue / maxPrimary) * 150;
         return { x, y };
       });
 
-      const lineCoords = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-      return `${lineCoords} L500,200 L0,200 Z`;
+      let path = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cpX = (p0.x + p1.x) / 2;
+        path += ` C ${cpX.toFixed(1)},${p0.y.toFixed(1)} ${cpX.toFixed(1)},${p1.y.toFixed(1)} ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`;
+      }
+      return `${path} L 500,190 L 0,190 Z`;
+    };
+
+    const buildSecondaryLine = () => {
+      if (series.length === 0) {
+        return { linePath: "M0,100 L500,100", areaPath: "M0,100 L500,100 L500,190 L0,190 Z" };
+      }
+      const points = series.map((item, idx) => {
+        const x = (idx / Math.max(series.length - 1, 1)) * 500;
+        const normalizedVal = (item.secondaryValue - secBaseline) / secRange;
+        const y = 170 - Math.min(Math.max(normalizedVal, 0.05), 0.95) * 130;
+        return { x, y };
+      });
+
+      let path = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cpX = (p0.x + p1.x) / 2;
+        path += ` C ${cpX.toFixed(1)},${p0.y.toFixed(1)} ${cpX.toFixed(1)},${p1.y.toFixed(1)} ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`;
+      }
+      return { linePath: path, areaPath: `${path} L 500,190 L 0,190 Z` };
     };
 
     const yAxisLabels = [
-      Math.round(maxVal),
-      Math.round(maxVal * 0.75),
-      Math.round(maxVal * 0.5),
-      Math.round(maxVal * 0.25),
+      Math.round(maxPrimary * 0.8),
+      Math.round(maxPrimary * 0.6),
+      Math.round(maxPrimary * 0.4),
+      Math.round(maxPrimary * 0.2),
       0,
     ];
 
+    const secPaths = buildSecondaryLine();
+
     return {
       series,
-      primaryPath: buildAreaPath('primaryValue'),
-      secondaryPath: buildAreaPath('secondaryValue'),
+      primaryPath: buildPrimaryPath(),
+      secondaryLinePath: secPaths.linePath,
+      secondaryAreaPath: secPaths.areaPath,
       yAxisLabels,
     };
   }, [metrics]);
@@ -232,30 +267,30 @@ export default function DashboardOverviewPage() {
   }, [metrics]);
 
   return (
-    <div className="flex-1 w-full min-w-0 bg-[#f0f1f3] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#111]">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#042954]">
       
       {/* 1. Header Section */}
       <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[18px] font-semibold text-[#111] mb-1.5 tracking-wide">
-            {metrics?.tenant?.name ? `${metrics.tenant.name} — Dashboard` : 'Admin Dashboard'}
+          <h2 className="text-[20px] font-extrabold text-[#042954] mb-1 tracking-tight">
+            {metrics?.tenant?.name ? `${metrics.tenant.name} — Executive Dashboard` : 'Elimix Admin Dashboard'}
           </h2>
-          <div className="flex items-center text-[12px] text-[#a0aab8]">
-            <span className="hover:text-[#ff9d01] cursor-pointer transition-colors">Home</span>
-            <i className="fa-solid fa-chevron-right text-[9px] mx-3"></i>
-            <span className="text-[#ff9d01]">Executive Overview</span>
+          <div className="flex items-center text-[12px] text-[#64748b]">
+            <span className="hover:text-[#0ea5e9] cursor-pointer transition-colors font-medium">Home</span>
+            <i className="fa-solid fa-chevron-right text-[9px] mx-2 text-[#cbd5e1]"></i>
+            <span className="text-[#0ea5e9] font-semibold">Executive Overview</span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => user && fetchLiveDashboardData(user)}
-            className="h-[36px] px-4 rounded-[4px] bg-white border border-[#e0e0e0] text-[#111] text-[12px] font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            className="h-[38px] px-4 rounded-xl bg-white border border-[#cbd5e1] text-[#042954] text-[12px] font-semibold hover:bg-slate-50 transition-all shadow-sm flex items-center"
           >
-            <i className={`fa-solid fa-rotate mr-2 ${isLoadingMetrics ? 'animate-spin text-[#3282ff]' : 'text-[#a0aab8]'}`}></i>
+            <i className={`fa-solid fa-rotate mr-2 ${isLoadingMetrics ? 'animate-spin text-[#0ea5e9]' : 'text-[#64748b]'}`}></i>
             Refresh Data
           </button>
           <Link href="/dashboard/students" className="flex-1 sm:flex-none">
-            <button className="w-full sm:w-auto h-[36px] px-4 rounded-[4px] bg-[#042954] text-white text-[12px] font-medium hover:bg-[#0a386e] transition-colors shadow-sm">
+            <button className="w-full sm:w-auto h-[38px] px-4 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center">
               <i className="fa-solid fa-user-plus mr-2"></i> Register Student
             </button>
           </Link>
@@ -263,31 +298,34 @@ export default function DashboardOverviewPage() {
       </div>
 
       {apiError && (
-        <div className="mb-6 rounded-[4px] border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 flex items-center justify-between">
-          <span><i className="fa-solid fa-circle-info mr-2"></i>{apiError}</span>
-          <button onClick={() => user && fetchLiveDashboardData(user)} className="font-bold underline">Retry</button>
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 flex items-center justify-between shadow-sm">
+          <span className="flex items-center"><i className="fa-solid fa-circle-info mr-2 text-amber-600 text-sm"></i>{apiError}</span>
+          <button onClick={() => user && fetchLiveDashboardData(user)} className="font-bold underline hover:text-amber-950">Retry</button>
         </div>
       )}
 
-      {/* 2. Advanced Corporate Filter Bar */}
-      <div className="bg-white rounded-[4px] p-4 sm:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] mb-6 w-full flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-4 transition-all duration-300">
-        
-        {/* Professional Time Period Dropdown */}
+      {/* 2. Filter Bar */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_-4px_rgba(4,41,84,0.06)] border border-[#e2e8f0] mb-6 w-full flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 w-full 2xl:w-auto">
           <div className="relative w-full sm:w-[220px]">
-            <i className="fa-regular fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-[#3282ff] text-[13px]"></i>
+            <i className="fa-regular fa-calendar-days absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0ea5e9] text-[13px]"></i>
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="w-full h-[38px] pl-9 pr-8 rounded-[4px] border border-[#d1d5db] text-[12px] font-bold text-[#111] bg-[#f8fafc] focus:outline-none focus:border-[#3282ff] focus:bg-white appearance-none cursor-pointer transition-colors"
+              className="w-full h-[40px] pl-10 pr-8 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20 appearance-none cursor-pointer transition-all"
             >
-              <optgroup label="Preset Periods">
+              <optgroup label="General">
+                <option value="all_time">All Time</option>
+              </optgroup>
+              <optgroup label="Recent Periods">
                 <option value="today">Today</option>
                 <option value="yesterday">Yesterday</option>
                 <option value="this_week">This Week</option>
                 <option value="last_week">Last Week</option>
                 <option value="this_month">This Month</option>
                 <option value="last_month">Last Month</option>
+              </optgroup>
+              <optgroup label="Academic Terms & Years">
                 <option value="this_term">This Term</option>
                 <option value="last_term">Last Term</option>
                 <option value="this_year">This Year</option>
@@ -297,203 +335,222 @@ export default function DashboardOverviewPage() {
                 <option value="custom">Custom Date Range...</option>
               </optgroup>
             </select>
-            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[10px] pointer-events-none"></i>
+            <i className="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[10px] pointer-events-none"></i>
           </div>
 
           {timeFilter === 'custom' && (
-            <div className="flex items-center gap-2 w-full sm:w-auto animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <input 
                 type="date" 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="h-[38px] px-3 rounded-[4px] border border-[#d1d5db] text-[12px] font-medium text-[#111] bg-white"
+                className="h-[40px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-white focus:outline-none focus:border-[#0ea5e9]"
               />
-              <span className="text-[#a0aab8] text-[12px] font-bold">To</span>
+              <span className="text-[#64748b] text-[12px] font-bold">To</span>
               <input 
                 type="date" 
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="h-[38px] px-3 rounded-[4px] border border-[#d1d5db] text-[12px] font-medium text-[#111] bg-white"
+                className="h-[40px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-white focus:outline-none focus:border-[#0ea5e9]"
               />
             </div>
           )}
         </div>
 
-        {/* Global Search & Cascading Class/Stream Selectors */}
         <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full 2xl:w-auto">
           <div className="relative w-full sm:w-[200px]">
-            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[12px]"></i>
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
             <input
               type="text"
               placeholder="Search student/ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-[38px] pl-8 pr-3 rounded-[4px] border border-[#d1d5db] text-[12px] font-medium text-[#111] bg-white focus:outline-none focus:border-[#3282ff]"
+              className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-white focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20"
             />
           </div>
 
-          {/* Dynamic Class Selector */}
           <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
-            <i className="fa-solid fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[12px]"></i>
+            <i className="fa-solid fa-graduation-cap absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
             <select 
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value)}
-              className="w-full sm:w-[170px] h-[38px] pl-8 pr-8 rounded-[4px] border border-[#d1d5db] text-[12px] font-medium text-[#111] focus:outline-none focus:border-[#3282ff] bg-white appearance-none cursor-pointer"
+              className="w-full sm:w-[170px] h-[40px] pl-9 pr-8 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] focus:outline-none focus:border-[#0ea5e9] bg-white appearance-none cursor-pointer"
             >
               <option value="all">All Classes ({metrics?.classes?.length || 0})</option>
               {metrics?.classes?.map((cls) => (
                 <option key={cls.id} value={cls.id}>{cls.name}</option>
               ))}
             </select>
-            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[10px] pointer-events-none"></i>
+            <i className="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[10px] pointer-events-none"></i>
           </div>
 
-          {/* Cascading Stream Selector */}
           <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
-            <i className="fa-solid fa-layer-group absolute left-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[12px]"></i>
+            <i className="fa-solid fa-layer-group absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
             <select 
               value={selectedStream}
               onChange={(e) => setSelectedStream(e.target.value)}
-              className="w-full sm:w-[160px] h-[38px] pl-8 pr-8 rounded-[4px] border border-[#d1d5db] text-[12px] font-medium text-[#111] focus:outline-none focus:border-[#3282ff] bg-white appearance-none cursor-pointer"
+              className="w-full sm:w-[160px] h-[40px] pl-9 pr-8 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] focus:outline-none focus:border-[#0ea5e9] bg-white appearance-none cursor-pointer"
             >
               <option value="all">All Streams ({availableStreams.length})</option>
               {availableStreams.map((stream) => (
                 <option key={stream.id} value={stream.id}>{stream.name}</option>
               ))}
             </select>
-            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[#a0aab8] text-[10px] pointer-events-none"></i>
+            <i className="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[10px] pointer-events-none"></i>
           </div>
         </div>
       </div>
 
       {/* 3. Live KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
-        <div className="bg-white rounded-[4px] p-5 flex items-center justify-between shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-transform duration-300 w-full">
-          <div className="h-[65px] w-[65px] rounded-full bg-[#e1f6eb] flex items-center justify-center text-[#33d47a] shrink-0">
-            <i className="fa-solid fa-user-group text-[26px]"></i>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full">
+          <div className="h-[56px] w-[56px] rounded-2xl bg-sky-50 flex items-center justify-center text-[#0ea5e9] shrink-0">
+            <i className="fa-solid fa-user-group text-[22px]"></i>
           </div>
           <div className="text-right">
-            <p className="text-[13px] font-medium text-[#a0aab8] mb-1">Students</p>
+            <p className="text-[12px] font-semibold text-[#64748b] mb-1">Students</p>
             {isLoadingMetrics ? (
-              <div className="h-6 w-20 bg-[#f0f1f3] rounded animate-pulse ml-auto"></div>
+              <div className="h-7 w-24 bg-[#f1f5f9] rounded animate-pulse ml-auto"></div>
             ) : (
-              <h3 className="text-[22px] font-bold text-[#111]">{(metrics?.filteredStudents ?? 0).toLocaleString()}</h3>
+              <h3 className="text-[24px] font-extrabold text-[#042954]">{(metrics?.filteredStudents ?? 0).toLocaleString()}</h3>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-[4px] p-5 flex items-center justify-between shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-transform duration-300 w-full">
-          <div className="h-[65px] w-[65px] rounded-full bg-[#e4f1ff] flex items-center justify-center text-[#3282ff] shrink-0">
-            <i className="fa-solid fa-users text-[26px]"></i>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full">
+          <div className="h-[56px] w-[56px] rounded-2xl bg-sky-50 flex items-center justify-center text-[#042954] shrink-0">
+            <i className="fa-solid fa-users text-[22px]"></i>
           </div>
           <div className="text-right">
-            <p className="text-[13px] font-medium text-[#a0aab8] mb-1">Teachers</p>
+            <p className="text-[12px] font-semibold text-[#64748b] mb-1">Teachers</p>
             {isLoadingMetrics ? (
-              <div className="h-6 w-20 bg-[#f0f1f3] rounded animate-pulse ml-auto"></div>
+              <div className="h-7 w-20 bg-[#f1f5f9] rounded animate-pulse ml-auto"></div>
             ) : (
-              <h3 className="text-[22px] font-bold text-[#111]">{(metrics?.totalTeachers ?? 0).toLocaleString()}</h3>
+              <h3 className="text-[24px] font-extrabold text-[#042954]">{(metrics?.totalTeachers ?? 0).toLocaleString()}</h3>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-[4px] p-5 flex items-center justify-between shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-transform duration-300 w-full">
-          <div className="h-[65px] w-[65px] rounded-full bg-[#fff2e0] flex items-center justify-center text-[#ffa305] shrink-0">
-            <i className="fa-regular fa-user text-[26px]"></i>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full">
+          <div className="h-[56px] w-[56px] rounded-2xl bg-teal-50 flex items-center justify-center text-[#06b6d4] shrink-0">
+            <i className="fa-regular fa-user text-[22px]"></i>
           </div>
           <div className="text-right">
-            <p className="text-[13px] font-medium text-[#a0aab8] mb-1">Parents / Families</p>
+            <p className="text-[12px] font-semibold text-[#64748b] mb-1">Parents / Families</p>
             {isLoadingMetrics ? (
-              <div className="h-6 w-20 bg-[#f0f1f3] rounded animate-pulse ml-auto"></div>
+              <div className="h-7 w-20 bg-[#f1f5f9] rounded animate-pulse ml-auto"></div>
             ) : (
-              <h3 className="text-[22px] font-bold text-[#111]">{(metrics?.totalParents ?? 0).toLocaleString()}</h3>
+              <h3 className="text-[24px] font-extrabold text-[#042954]">{(metrics?.totalParents ?? 0).toLocaleString()}</h3>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-[4px] p-5 flex items-center justify-between shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-transform duration-300 w-full">
-          <div className="h-[65px] w-[65px] rounded-full bg-[#ffeaea] flex items-center justify-center text-[#ff0000] shrink-0">
-            <i className="fa-solid fa-pen-to-square text-[26px]"></i>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full">
+          <div className="h-[56px] w-[56px] rounded-2xl bg-indigo-50 flex items-center justify-center text-[#042954] shrink-0">
+            <i className="fa-solid fa-pen-to-square text-[22px]"></i>
           </div>
           <div className="text-right">
-            <p className="text-[13px] font-medium text-[#a0aab8] mb-1">Active Exams</p>
+            <p className="text-[12px] font-semibold text-[#64748b] mb-1">Active Exams</p>
             {isLoadingMetrics ? (
-              <div className="h-6 w-20 bg-[#f0f1f3] rounded animate-pulse ml-auto"></div>
+              <div className="h-7 w-20 bg-[#f1f5f9] rounded animate-pulse ml-auto"></div>
             ) : (
-              <h3 className="text-[22px] font-bold text-[#111]">{(metrics?.totalExams ?? 0).toLocaleString()}</h3>
+              <h3 className="text-[24px] font-extrabold text-[#042954]">{(metrics?.totalExams ?? 0).toLocaleString()}</h3>
             )}
           </div>
         </div>
       </div>
 
       {/* 4. Dynamic Executive Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 w-full mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full mb-6">
         
-        {/* LIVE AREA CHART: Enrollment & Activity Trend */}
-        <div className="bg-white rounded-[4px] lg:col-span-6 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] flex flex-col h-[400px] w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-semibold text-[#111]">Enrollment & Workspace Activity</h3>
-            <span className="text-[11px] text-[#a0aab8] font-medium uppercase">{timeFilter.replace('_', ' ')}</span>
+        {/* DUAL-AXIS AREA CHART: Enrollment & Activity Trend */}
+        <div className="bg-white rounded-2xl lg:col-span-6 p-6 shadow-sm border border-[#e2e8f0] flex flex-col h-[440px] w-full">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-[16px] font-bold text-[#042954]">Enrollment & Workspace Activity</h3>
+              <p className="text-[11px] text-[#64748b] mt-0.5">Comparing cumulative active student growth vs. period admissions</p>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-[#0ea5e9] px-3 py-1 rounded-full border border-sky-100">
+              {timeFilter.replace('_', ' ')}
+            </span>
           </div>
           
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8 relative z-40">
-            <div className="flex flex-wrap gap-4 sm:gap-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pt-3 border-t border-[#f1f5f9]">
+            <div className="flex items-center gap-6">
               <div className="flex flex-col">
-                <div className="flex items-center gap-2 text-[12px] text-[#a0aab8] mb-1">
-                  <div className="h-2.5 w-2.5 rounded-full bg-[#3282ff]"></div> Active Students
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#64748b] mb-0.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#042954]"></div> Cumulative Active
                 </div>
-                <span className="text-[16px] font-bold text-[#111]">
+                <span className="text-[18px] font-extrabold text-[#042954]">
                   {(metrics?.totalStudents ?? 0).toLocaleString()}
                 </span>
               </div>
+              <div className="h-8 w-px bg-slate-200"></div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-2 text-[12px] text-[#a0aab8] mb-1">
-                  <div className="h-2.5 w-2.5 rounded-full bg-[#ff0000]"></div> Period Admissions
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#64748b] mb-0.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#0ea5e9]"></div> New Admissions
                 </div>
-                <span className="text-[16px] font-bold text-[#111]">
+                <span className="text-[18px] font-extrabold text-[#042954]">
                   {(metrics?.filteredStudents ?? 0).toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="relative w-full flex-1 ml-8 sm:ml-[35px] border-b border-l border-[#f0f1f3]">
-            <div className="absolute left-[-35px] sm:left-[-40px] top-0 h-full flex flex-col justify-between text-[10px] sm:text-[11px] text-[#a0aab8] py-1 z-20 pointer-events-none">
+          <div className="relative w-full flex-1 ml-6 sm:ml-[34px] border-b border-l border-[#e2e8f0]">
+            <div className="absolute left-[-36px] top-0 h-full flex flex-col justify-between text-[10px] font-medium text-[#94a3b8] py-1 z-20 pointer-events-none">
               {trendChart.yAxisLabels.map((val, i) => (
-                <span key={i}>{val}</span>
+                <span key={i}>{val.toLocaleString()}</span>
               ))}
             </div>
 
+            {/* SVG Dual Scaled Area & Line Paths with Elimix Brand Gradients */}
             <svg viewBox="0 0 500 200" preserveAspectRatio="none" className="w-full h-full absolute bottom-0 left-0 z-10 pointer-events-none">
-              <path d={trendChart.secondaryPath} fill="#3282ff" opacity="0.25" />
-              <path d={trendChart.primaryPath} fill="#ff0000" opacity="0.75" />
+              <defs>
+                <linearGradient id="activeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#042954" stopOpacity="0.28" />
+                  <stop offset="100%" stopColor="#042954" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="admissionsGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.40" />
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              
+              <path d={trendChart.secondaryAreaPath} fill="url(#activeGrad)" className="transition-all duration-500" />
+              <path d={trendChart.secondaryLinePath} fill="none" stroke="#042954" strokeWidth="2" strokeDasharray="4 4" className="transition-all duration-500" />
+              
+              <path d={trendChart.primaryPath} fill="url(#admissionsGrad)" className="transition-all duration-500" />
             </svg>
 
+            {/* Interactive Hover Columns */}
             <div className="absolute inset-0 z-30 flex" onMouseLeave={() => setActiveTrendDay(null)}>
               {trendChart.series.map((data, index) => (
                 <div 
                   key={index}
-                  className="flex-1 h-full relative cursor-crosshair"
+                  className="flex-1 h-full relative cursor-pointer group"
                   onMouseEnter={() => setActiveTrendDay(index)}
                 >
                   {activeTrendDay === index && (
                     <>
-                      <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-slate-400 border-dashed border-l border-slate-400 opacity-50 z-30 pointer-events-none"></div>
-                      <div className="absolute bottom-[55%] left-1/2 -translate-x-1/2 bg-[#111] text-white p-3 rounded-md shadow-xl z-50 w-[140px] pointer-events-none">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-2 border-b border-gray-700 pb-1">
-                          {data.day} {data.date ? `(${data.date.slice(5)})` : ''}
+                      <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#0ea5e9]/50 border-dashed border-l border-[#0ea5e9] z-30 pointer-events-none"></div>
+                      <div className="absolute bottom-[40%] left-1/2 -translate-x-1/2 bg-[#042954] text-white p-3 rounded-xl shadow-2xl z-50 w-[160px] pointer-events-none border border-slate-700 backdrop-blur-md">
+                        <p className="text-[10px] text-slate-300 font-bold uppercase mb-1.5 border-b border-slate-700 pb-1 flex justify-between">
+                          <span>{data.day}</span>
+                          <span className="text-[#0ea5e9]">{data.date}</span>
                         </p>
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px]">Total Active</span>
-                          <span className="text-[11px] font-bold">{data.secondaryValue}</span>
+                          <span className="text-[10px] text-slate-300 font-medium">Total Active:</span>
+                          <span className="text-[11px] font-bold">{data.secondaryValue.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px]">New Added</span>
-                          <span className="text-[11px] font-bold">{data.primaryValue}</span>
+                          <span className="text-[10px] text-[#06b6d4] font-medium">Admissions:</span>
+                          <span className="text-[11px] font-bold">{data.primaryValue.toLocaleString()}</span>
                         </div>
                       </div>
                     </>
                   )}
-                  <div className={`absolute -bottom-7 w-full text-center text-[10px] sm:text-[11px] ${activeTrendDay === index ? 'text-[#111] font-bold' : 'text-[#a0aab8]'}`}>
+                  <div className={`absolute -bottom-7 w-full text-center text-[11px] transition-all ${activeTrendDay === index ? 'text-[#042954] font-bold scale-105' : 'text-[#64748b]'}`}>
                     {data.day}
                   </div>
                 </div>
@@ -502,19 +559,19 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
-        {/* LIVE BAR CHART: Monthly Admissions Breakdown */}
-        <div className="bg-white rounded-[4px] lg:col-span-3 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] flex flex-col h-[400px] w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-semibold text-[#111]">Monthly Admissions</h3>
+        {/* BAR CHART: Monthly Admissions */}
+        <div className="bg-white rounded-2xl lg:col-span-3 p-6 shadow-sm border border-[#e2e8f0] flex flex-col h-[440px] w-full">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[16px] font-bold text-[#042954]">Monthly Admissions</h3>
           </div>
           
-          <div className="flex justify-between gap-2 mb-8 relative z-30 w-full">
+          <div className="flex justify-between gap-2 mb-6 relative z-30 w-full">
             {barChart.bars.map((bar, idx) => {
-              const borderColors = ['border-[#33d47a]', 'border-[#3282ff]', 'border-[#ffa305]'];
+              const borderColors = ['border-[#06b6d4]', 'border-[#0ea5e9]', 'border-[#042954]'];
               return (
                 <div key={idx} className="flex flex-col flex-1 min-w-0">
-                  <span className="text-[10px] text-[#a0aab8] mb-1 truncate">{bar.label}</span>
-                  <span className={`text-[12px] font-bold text-[#111] border-b-[2px] ${borderColors[idx % 3]} pb-1`}>
+                  <span className="text-[10px] font-semibold text-[#64748b] mb-1 truncate">{bar.label}</span>
+                  <span className={`text-[12px] font-extrabold text-[#042954] border-b-[3px] ${borderColors[idx % 3]} pb-1`}>
                     {bar.value}
                   </span>
                 </div>
@@ -522,21 +579,21 @@ export default function DashboardOverviewPage() {
             })}
           </div>
 
-          <div className="flex items-end justify-around px-4 mt-auto flex-1 border-b border-l border-[#f0f1f3] relative w-full" onMouseLeave={() => setActiveMonthBar(null)}>
+          <div className="flex items-end justify-around px-2 mt-auto flex-1 border-b border-l border-[#e2e8f0] relative w-full" onMouseLeave={() => setActiveMonthBar(null)}>
             {barChart.bars.map((bar, idx) => {
-              const bgColors = ['bg-[#33d47a]', 'bg-[#3282ff]', 'bg-[#ffa305]'];
-              const heightPct = Math.max((bar.value / barChart.maxBarVal) * 85, 6);
+              const bgGradients = ['bg-gradient-to-t from-[#06b6d4] to-[#22d3ee]', 'bg-gradient-to-t from-[#0ea5e9] to-[#38bdf8]', 'bg-gradient-to-t from-[#042954] to-[#1e3a8a]'];
+              const heightPct = Math.max((bar.value / barChart.maxBarVal) * 85, 8);
               return (
                 <div
                   key={idx}
                   style={{ height: `${heightPct}%` }}
-                  className={`relative w-9 ${bgColors[idx % 3]} z-30 transition-all duration-300 cursor-pointer rounded-t ${
-                    activeMonthBar !== null && activeMonthBar !== idx ? 'opacity-30' : 'opacity-100'
+                  className={`relative w-10 ${bgGradients[idx % 3]} z-30 transition-all duration-300 cursor-pointer rounded-t-lg shadow-sm ${
+                    activeMonthBar !== null && activeMonthBar !== idx ? 'opacity-30 scale-95' : 'opacity-100 hover:scale-105'
                   }`}
                   onMouseEnter={() => setActiveMonthBar(idx)}
                 >
                   {activeMonthBar === idx && (
-                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-[#111] text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#042954] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-50 border border-slate-700">
                       {bar.label}: {bar.value}
                     </div>
                   )}
@@ -546,34 +603,36 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
-        {/* LIVE DONUT CHART: Student Gender Distribution */}
-        <div className="bg-white rounded-[4px] lg:col-span-3 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] flex flex-col h-[400px] items-center w-full">
-          <div className="flex items-center justify-between w-full mb-6">
-            <h3 className="text-[16px] font-semibold text-[#111]">Students by Gender</h3>
+        {/* DONUT CHART: Gender Distribution */}
+        <div className="bg-white rounded-2xl lg:col-span-3 p-6 shadow-sm border border-[#e2e8f0] flex flex-col h-[440px] items-center w-full">
+          <div className="flex items-center justify-between w-full mb-4">
+            <h3 className="text-[16px] font-bold text-[#042954]">Students by Gender</h3>
           </div>
           
-          <div className="flex-1 flex items-center justify-center w-full my-4 relative">
+          <div className="flex-1 flex items-center justify-center w-full my-2 relative">
             <svg width="190" height="190" viewBox="0 0 100 100" className="rotate-[-90deg] overflow-visible shrink-0" onMouseLeave={() => setActiveDonutSlice(null)}>
-              <circle cx="50" cy="50" r="30" fill="none" stroke="#f0f1f3" strokeWidth="30" />
+              <circle cx="50" cy="50" r="34" fill="none" stroke="#f1f5f9" strokeWidth="22" />
 
               {donutStats.total > 0 && (
                 <>
                   <circle 
-                    cx="50" cy="50" r="30" 
+                    cx="50" cy="50" r="34" 
                     fill="none" 
-                    stroke="#ffa305" 
-                    strokeWidth={activeDonutSlice === 'male' ? "35" : "30"}
+                    stroke="#06b6d4" 
+                    strokeWidth={activeDonutSlice === 'male' ? "26" : "22"}
                     strokeDasharray={donutStats.maleDash}
                     strokeDashoffset={donutStats.maleOffset}
+                    strokeLinecap="round"
                     className={`transition-all duration-300 cursor-pointer ${activeDonutSlice === 'female' ? 'opacity-30' : 'opacity-100'}`}
                     onMouseEnter={() => setActiveDonutSlice('male')}
                   />
                   <circle 
-                    cx="50" cy="50" r="30" 
+                    cx="50" cy="50" r="34" 
                     fill="none" 
-                    stroke="#3282ff" 
-                    strokeWidth={activeDonutSlice === 'female' ? "35" : "30"}
+                    stroke="#042954" 
+                    strokeWidth={activeDonutSlice === 'female' ? "26" : "22"}
                     strokeDasharray={donutStats.femaleDash}
+                    strokeLinecap="round"
                     className={`transition-all duration-300 cursor-pointer ${activeDonutSlice === 'male' ? 'opacity-30' : 'opacity-100'}`}
                     onMouseEnter={() => setActiveDonutSlice('female')}
                   />
@@ -582,45 +641,45 @@ export default function DashboardOverviewPage() {
             </svg>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-white rounded-full h-[120px] w-[120px] flex flex-col items-center justify-center shadow-inner shrink-0">
+              <div className="bg-white rounded-full h-[110px] w-[110px] flex flex-col items-center justify-center shadow-inner shrink-0 border border-slate-100">
                 {activeDonutSlice === 'female' ? (
-                  <div className="text-center">
-                    <span className="block text-[22px] font-black text-[#3282ff]">{donutStats.female.toLocaleString()}</span>
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Female</span>
+                  <div className="text-center animate-in fade-in duration-200">
+                    <span className="block text-[20px] font-black text-[#042954]">{donutStats.female.toLocaleString()}</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Female</span>
                   </div>
                 ) : activeDonutSlice === 'male' ? (
-                  <div className="text-center">
-                    <span className="block text-[22px] font-black text-[#ffa305]">{donutStats.male.toLocaleString()}</span>
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Male</span>
+                  <div className="text-center animate-in fade-in duration-200">
+                    <span className="block text-[20px] font-black text-[#06b6d4]">{donutStats.male.toLocaleString()}</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Male</span>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <span className="block text-[20px] font-black text-[#111]">{donutStats.total.toLocaleString()}</span>
-                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
+                    <span className="block text-[18px] font-black text-[#042954]">{donutStats.total.toLocaleString()}</span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Total</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
           
-          <div className="w-full flex justify-between mt-auto">
+          <div className="w-full flex justify-between mt-auto pt-4 border-t border-[#f1f5f9]">
             <div 
-              className="flex flex-col cursor-pointer"
+              className="flex flex-col cursor-pointer group"
               onMouseEnter={() => setActiveDonutSlice('female')}
               onMouseLeave={() => setActiveDonutSlice(null)}
             >
-              <span className="w-6 border-b-[3px] border-[#3282ff] mb-2"></span>
-              <span className="text-[11px] text-[#a0aab8] mb-1">Female Students</span>
-              <span className="text-[14px] font-bold text-[#111]">{donutStats.female.toLocaleString()}</span>
+              <span className="w-8 border-b-[3px] border-[#042954] mb-1.5 transition-all group-hover:w-12"></span>
+              <span className="text-[11px] font-medium text-[#64748b]">Female Students</span>
+              <span className="text-[14px] font-extrabold text-[#042954]">{donutStats.female.toLocaleString()}</span>
             </div>
             <div 
-              className="flex flex-col text-right items-end cursor-pointer"
+              className="flex flex-col text-right items-end cursor-pointer group"
               onMouseEnter={() => setActiveDonutSlice('male')}
               onMouseLeave={() => setActiveDonutSlice(null)}
             >
-              <span className="w-6 border-b-[3px] border-[#ffa305] mb-2"></span>
-              <span className="text-[11px] text-[#a0aab8] mb-1">Male Students</span>
-              <span className="text-[14px] font-bold text-[#111]">{donutStats.male.toLocaleString()}</span>
+              <span className="w-8 border-b-[3px] border-[#06b6d4] mb-1.5 transition-all group-hover:w-12"></span>
+              <span className="text-[11px] font-medium text-[#64748b]">Male Students</span>
+              <span className="text-[14px] font-extrabold text-[#042954]">{donutStats.male.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -628,110 +687,107 @@ export default function DashboardOverviewPage() {
 
       {/* 5. Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-        
-        {/* Session Governance */}
-        <div className="bg-white rounded-[4px] lg:col-span-4 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] h-full w-full">
+        <div className="bg-white rounded-2xl lg:col-span-4 p-6 shadow-sm border border-[#e2e8f0] h-full w-full">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-semibold text-[#111]">Session Governance</h3>
+            <h3 className="text-[16px] font-bold text-[#042954]">Session Governance</h3>
           </div>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f0f1f3] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#a0aab8]">Account</span>
-              <span className="text-[13px] font-bold text-[#111] break-all">{user?.email || "Not signed in"}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
+              <span className="text-[13px] font-medium text-[#64748b]">Account</span>
+              <span className="text-[13px] font-bold text-[#042954] break-all">{user?.email || "Not signed in"}</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f0f1f3] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#a0aab8]">Role</span>
-              <span className="text-[12px] font-bold text-[#3282ff]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
+              <span className="text-[13px] font-medium text-[#64748b]">Role</span>
+              <span className="text-[12px] font-bold text-[#0ea5e9]">
                 {user?.isSuperAdmin ? "Platform Super Admin" : "Institution Administrator"}
               </span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f0f1f3] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#a0aab8]">Tenant ID</span>
-              <span className="font-mono text-[11px] text-[#111] bg-[#f0f1f3] px-2 py-1 rounded w-max">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
+              <span className="text-[13px] font-medium text-[#64748b]">Tenant ID</span>
+              <span className="font-mono text-[11px] text-[#042954] bg-[#f1f5f9] px-2 py-1 rounded w-max border border-slate-200">
                 {user?.tenantId || "Unassigned"}
               </span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <span className="text-[13px] font-medium text-[#a0aab8]">Departments & Reports</span>
-              <span className="text-[12px] font-bold text-[#111]">
+              <span className="text-[13px] font-medium text-[#64748b]">Departments & Reports</span>
+              <span className="text-[12px] font-bold text-[#042954]">
                 {metrics?.totalDepartments ?? 0} Depts • {metrics?.totalExamReports ?? 0} Reports
               </span>
             </div>
           </div>
         </div>
 
-        {/* Quick Modules Hub */}
-        <div className="bg-white rounded-[4px] lg:col-span-8 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] h-full w-full">
+        <div className="bg-white rounded-2xl lg:col-span-8 p-6 shadow-sm border border-[#e2e8f0] h-full w-full">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-semibold text-[#111]">Quick Modules</h3>
+            <h3 className="text-[16px] font-bold text-[#042954]">Quick Modules</h3>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 w-full">
-            <Link href="/dashboard/students" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/students" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-user-graduate text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
                   Students ({metrics?.totalStudents ?? 0})
                 </h4>
-                <p className="text-[11px] text-[#a0aab8]">Admissions & Directory</p>
+                <p className="text-[11px] text-[#64748b]">Admissions & Directory</p>
               </div>
             </Link>
 
-            <Link href="/dashboard/teachers" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/teachers" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-chalkboard-user text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
                   Teachers ({metrics?.totalTeachers ?? 0})
                 </h4>
-                <p className="text-[11px] text-[#a0aab8]">Staff & Allocations</p>
+                <p className="text-[11px] text-[#64748b]">Staff & Allocations</p>
               </div>
             </Link>
 
-            <Link href="/dashboard/exams" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/exams" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-pen-to-square text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
                   Exams ({metrics?.totalExams ?? 0})
                 </h4>
-                <p className="text-[11px] text-[#a0aab8]">Assessments & Grading</p>
+                <p className="text-[11px] text-[#64748b]">Assessments & Grading</p>
               </div>
             </Link>
 
-            <Link href="/dashboard/academics/departments" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/academics/departments" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-building-user text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
                   Departments ({metrics?.totalDepartments ?? 0})
                 </h4>
-                <p className="text-[11px] text-[#a0aab8]">Academic Structure</p>
+                <p className="text-[11px] text-[#64748b]">Academic Structure</p>
               </div>
             </Link>
 
-            <Link href="/dashboard/users/roles" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/users/roles" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-shield-halved text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">Roles & RBAC</h4>
-                <p className="text-[11px] text-[#a0aab8]">Access Permissions</p>
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">Roles & RBAC</h4>
+                <p className="text-[11px] text-[#64748b]">Access Permissions</p>
               </div>
             </Link>
 
-            <Link href="/dashboard/users/audit-logs" className="group flex items-center gap-4 w-full">
-              <div className="h-[44px] w-[44px] rounded-full bg-[#f0f1f3] group-hover:bg-[#3282ff] text-[#a0aab8] group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <Link href="/dashboard/users/audit-logs" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
                 <i className="fa-solid fa-file-shield text-[16px]"></i>
               </div>
               <div>
-                <h4 className="text-[14px] font-bold text-[#111] group-hover:text-[#3282ff] transition-colors">Audit Logs</h4>
-                <p className="text-[11px] text-[#a0aab8]">System Trails</p>
+                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">Audit Logs</h4>
+                <p className="text-[11px] text-[#64748b]">System Trails</p>
               </div>
             </Link>
 
