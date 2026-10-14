@@ -1,9 +1,20 @@
+// apps/web/app/dashboard/library/fines/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for a Library Fine record
+/* ==========================================================================
+   ELIMIX BRAND PALETTE
+   ========================================================================== */
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 interface FineItem {
   id: string;
   borrowerName: string;
@@ -16,7 +27,6 @@ interface FineItem {
   status: 'Unpaid' | 'Paid' | 'Waived' | 'Partial Payment';
 }
 
-// Initial mock data for library fines
 const initialFines: FineItem[] = [
   {
     id: 'FIN-2026-401',
@@ -25,18 +35,18 @@ const initialFines: FineItem[] = [
     borrowerType: 'Faculty',
     reason: 'Overdue (15 days)',
     associatedBook: 'Learning Python, 5th Edition',
-    amount: '$7.50',
+    amount: 'KES 900.00',
     dateIncurred: '2026-09-25',
     status: 'Unpaid',
   },
   {
     id: 'FIN-2026-402',
-    borrowerName: 'Michael Chang',
+    borrowerName: 'Kevin Otieno',
     borrowerId: 'STD-2026-104',
     borrowerType: 'Student',
     reason: 'Lost Book Replacement',
     associatedBook: 'The Great Gatsby',
-    amount: '$25.00',
+    amount: 'KES 3,000.00',
     dateIncurred: '2026-09-28',
     status: 'Unpaid',
   },
@@ -47,7 +57,7 @@ const initialFines: FineItem[] = [
     borrowerType: 'Faculty',
     reason: 'Overdue (30 days)',
     associatedBook: 'Oxford English Dictionary',
-    amount: '$15.00',
+    amount: 'KES 1,800.00',
     dateIncurred: '2026-09-10',
     status: 'Partial Payment',
   },
@@ -58,18 +68,18 @@ const initialFines: FineItem[] = [
     borrowerType: 'Student',
     reason: 'Damaged Cover',
     associatedBook: 'Campbell Biology (11th Edition)',
-    amount: '$10.00',
+    amount: 'KES 1,200.00',
     dateIncurred: '2026-09-05',
     status: 'Paid',
   },
   {
     id: 'FIN-2026-405',
-    borrowerName: 'John Smith',
-    borrowerId: 'STD-2026-305',
+    borrowerName: 'Brian Kiprop',
+    borrowerId: 'STD-2026-088',
     borrowerType: 'Student',
     reason: 'Overdue (3 days)',
-    associatedBook: 'A People\'s History of the United States',
-    amount: '$1.50',
+    associatedBook: "A People's History of the United States",
+    amount: 'KES 180.00',
     dateIncurred: '2026-10-02',
     status: 'Waived',
   },
@@ -84,7 +94,7 @@ export default function LibraryFinesPage() {
   const [selectedFine, setSelectedFine] = useState<FineItem | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search, status, and borrower type
+  // Filter logic
   const filteredFines = fines.filter((fine) => {
     const matchesSearch =
       fine.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,15 +108,15 @@ export default function LibraryFinesPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: FineItem['status']) => {
     switch (status) {
       case 'Paid':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Unpaid':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       case 'Partial Payment':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'Waived':
         return 'bg-slate-100 text-slate-700 border-slate-300';
       default:
@@ -128,26 +138,30 @@ export default function LibraryFinesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#012E54]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#012E54] mb-1 tracking-tight">
             Library Fines & Penalties
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Track overdue book fines, manage lost book penalties, and process student/faculty payments.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/library/circulation"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-hand-holding-hand mr-2 text-xs text-blue-600"></i> Circulation Desk
+            <i className="fa-solid fa-hand-holding-hand mr-2 text-xs text-[#006FBF]"></i> Circulation Desk
           </Link>
           <button
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="h-[38px] px-4 rounded-xl text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
             <i className="fa-solid fa-file-invoice mr-2 text-xs"></i> Generate Fine Report
           </button>
@@ -156,84 +170,83 @@ export default function LibraryFinesPage() {
 
       {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
+            <span className="font-semibold">{successBanner}</span>
           </div>
         </div>
       )}
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Outstanding Fines</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Outstanding Fines</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">KES 40,860</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">Across 28 accounts</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">$340.50</p>
-          <span className="text-xs text-rose-600 font-medium">Across 28 accounts</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Collected YTD</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-sack-dollar text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Collected YTD</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">KES 154,200</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> Transferred to Finance
+            </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">$1,285.00</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Transferred to Finance</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-sack-dollar text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fines Waived YTD</p>
-            <div className="rounded-lg bg-slate-100 p-2 text-slate-600">
-              <i className="fa-solid fa-handshake-angle text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Fines Waived YTD</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">KES 17,040</h3>
+            <span className="text-[11px] text-[#64748b] font-semibold mt-1 block">Amnesty / Grace exceptions</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">$142.00</p>
-          <span className="text-xs text-slate-500 font-medium">Amnesty / Grace exceptions</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-handshake-angle text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lost Books</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-book-skull text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Lost Books</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">12</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Replacement fees pending</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">12</p>
-          <span className="text-xs text-amber-600 font-medium">Replacement fees pending</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-book-skull text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search borrower name, ID, or book title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Borrower Type Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Borrower:</span>
             <select
               value={borrowerTypeFilter}
               onChange={(e) => setBorrowerTypeFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Types</option>
               <option value="Student">Student</option>
@@ -242,13 +255,12 @@ export default function LibraryFinesPage() {
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Unpaid">Unpaid</option>
@@ -261,55 +273,56 @@ export default function LibraryFinesPage() {
       </div>
 
       {/* Fines Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Fine ID</th>
-                <th className="py-3 px-4">Borrower</th>
-                <th className="py-3 px-4">Reason / Associated Book</th>
-                <th className="py-3 px-4">Amount / Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">Fine ID</th>
+                <th className="py-3.5 px-5">Borrower</th>
+                <th className="py-3.5 px-5">Reason / Associated Book</th>
+                <th className="py-3.5 px-5">Amount / Date</th>
+                <th className="py-3.5 px-5">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredFines.length > 0 ? (
                 filteredFines.map((fine) => (
-                  <tr key={fine.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-slate-900">
+                  <tr key={fine.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5 font-mono text-[12px] font-bold text-[#012E54]">
                       {fine.id}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 text-xs">{fine.borrowerName}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">
-                        {fine.borrowerId} • <span className="text-blue-600 font-medium">{fine.borrowerType}</span>
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#012E54] text-[12px]">{fine.borrowerName}</div>
+                      <div className="text-[11px] text-[#64748b] font-mono mt-0.5 flex items-center gap-1.5">
+                        <span>{fine.borrowerId}</span>
+                        <span className="text-[#006FBF] font-semibold">• {fine.borrowerType}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 max-w-xs">
-                      <div className="font-medium text-slate-900 text-xs truncate">{fine.reason}</div>
-                      <div className="text-[11px] text-slate-500 truncate">{fine.associatedBook}</div>
+                    <td className="py-4 px-5 max-w-xs">
+                      <div className="font-semibold text-[#012E54] text-[12px] truncate">{fine.reason}</div>
+                      <div className="text-[11px] text-[#64748b] truncate mt-0.5">{fine.associatedBook}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="text-slate-900 text-sm font-bold font-mono">{fine.amount}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">{fine.dateIncurred}</div>
+                    <td className="py-4 px-5 font-mono text-[12px]">
+                      <div className="font-bold text-[#012E54]">{fine.amount}</div>
+                      <div className="text-[#64748b] text-[11px] mt-0.5">{fine.dateIncurred}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(fine.status)}`}>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(fine.status)}`}>
                         {fine.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
+                    <td className="py-4 px-5 text-right space-x-2">
                       {(fine.status === 'Unpaid' || fine.status === 'Partial Payment') ? (
                         <button 
                           onClick={() => openProcessModal(fine)}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                          className="h-[32px] px-3 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-[12px] transition-colors"
                         >
                           Process
                         </button>
                       ) : (
-                        <button className="text-slate-600 hover:text-slate-800 font-medium text-xs px-2 py-1 rounded hover:bg-slate-100 transition-colors">
+                        <button className="h-[32px] px-3 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold text-[12px] transition-colors">
                           Receipt
                         </button>
                       )}
@@ -318,7 +331,7 @@ export default function LibraryFinesPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-[#64748b] text-[13px]">
                     No fine records found matching your criteria.
                   </td>
                 </tr>
@@ -330,45 +343,46 @@ export default function LibraryFinesPage() {
 
       {/* Process Fine Modal */}
       {processModalOpen && selectedFine && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Process Library Fine</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#012E54]/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+              <h3 className="font-bold text-[#012E54] text-[15px]">Process Library Fine</h3>
               <button
                 onClick={() => setProcessModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-[#012E54] transition-colors"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
             
-            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Borrower Details</span>
-                <span className="text-xs font-mono font-semibold text-slate-700">{selectedFine.id}</span>
+            <div className="px-6 py-4 bg-[#f8fafc] border-b border-[#e2e8f0]">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Borrower Details</span>
+                <span className="text-[11px] font-mono font-bold text-[#012E54]">{selectedFine.id}</span>
               </div>
-              <div className="font-medium text-slate-900">{selectedFine.borrowerName} ({selectedFine.borrowerId})</div>
-              <div className="text-sm text-slate-600 mt-1">{selectedFine.reason} — {selectedFine.associatedBook}</div>
-              <div className="mt-3 text-lg font-bold text-rose-600">Total Due: {selectedFine.amount}</div>
+              <div className="font-bold text-[#012E54] text-[13px]">{selectedFine.borrowerName} ({selectedFine.borrowerId})</div>
+              <div className="text-[12px] text-[#64748b] mt-0.5">{selectedFine.reason} — {selectedFine.associatedBook}</div>
+              <div className="mt-2 text-[16px] font-extrabold text-rose-600">Total Due: {selectedFine.amount}</div>
             </div>
 
             <form onSubmit={handleProcessFine} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                     Action Type
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]">
                     <option value="Payment">Record Payment</option>
                     <option value="Waive">Waive Fine (Amnesty)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                     Payment Method
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]">
                     <option value="Cash">Cash</option>
+                    <option value="M-Pesa">M-Pesa Mobile Money</option>
                     <option value="Card">Credit / Debit Card</option>
                     <option value="Student Account">Bill to Student Account</option>
                     <option value="N/A">N/A (If Waived)</option>
@@ -377,39 +391,39 @@ export default function LibraryFinesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Amount Processing ($)
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
+                  Amount Processing (KES)
                 </label>
                 <input
                   type="text"
                   required
-                  defaultValue={selectedFine.amount.replace('$', '')}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                  defaultValue={selectedFine.amount.replace('KES ', '')}
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Notes / Remarks
                 </label>
                 <textarea
                   rows={2}
                   placeholder="Reason for waiver or payment reference note..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-[#cbd5e1] p-3 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
                 <button
                   type="button"
                   onClick={() => setProcessModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
+                  className="h-[38px] px-5 rounded-xl bg-emerald-600 text-white text-[12px] font-semibold hover:bg-emerald-500 transition-all shadow-md shadow-emerald-600/25"
                 >
                   Confirm Transaction
                 </button>

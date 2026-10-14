@@ -1,9 +1,20 @@
+// apps/web/app/dashboard/transport/fees/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for Transport Fee Billing records
+/* ==========================================================================
+   ELIMIX BRAND PALETTE
+   ========================================================================== */
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 interface TransportFeeItem {
   id: string;
   studentName: string;
@@ -18,7 +29,6 @@ interface TransportFeeItem {
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
 }
 
-// Initial mock data for transport fee billings
 const initialFees: TransportFeeItem[] = [
   {
     id: 'TRF-2026-101',
@@ -27,9 +37,9 @@ const initialFees: TransportFeeItem[] = [
     gradeClass: 'Grade 8 - Alpha',
     zone: 'Zone 1 (Westlands / Kilimani)',
     tripType: 'Round Trip',
-    termFee: '$350.00',
-    paidAmount: '$350.00',
-    balance: '$0.00',
+    termFee: 'KES 45,000.00',
+    paidAmount: 'KES 45,000.00',
+    balance: 'KES 0.00',
     dueDate: '2026-09-15',
     status: 'Paid',
   },
@@ -40,9 +50,9 @@ const initialFees: TransportFeeItem[] = [
     gradeClass: 'Grade 10 - Science',
     zone: 'Zone 2 (Lavington / Kileleshwa)',
     tripType: 'Round Trip',
-    termFee: '$420.00',
-    paidAmount: '$200.00',
-    balance: '$220.00',
+    termFee: 'KES 54,000.00',
+    paidAmount: 'KES 25,000.00',
+    balance: 'KES 29,000.00',
     dueDate: '2026-09-30',
     status: 'Partial',
   },
@@ -53,9 +63,9 @@ const initialFees: TransportFeeItem[] = [
     gradeClass: 'Grade 6 - Blue',
     zone: 'Zone 3 (Karen / Hardy)',
     tripType: 'One Way Morning',
-    termFee: '$280.00',
-    paidAmount: '$0.00',
-    balance: '$280.00',
+    termFee: 'KES 36,000.00',
+    paidAmount: 'KES 0.00',
+    balance: 'KES 36,000.00',
     dueDate: '2026-09-10',
     status: 'Overdue',
   },
@@ -66,9 +76,9 @@ const initialFees: TransportFeeItem[] = [
     gradeClass: 'Grade 7 - Red',
     zone: 'Zone 1 (Westlands / Kilimani)',
     tripType: 'Round Trip',
-    termFee: '$350.00',
-    paidAmount: '$0.00',
-    balance: '$350.00',
+    termFee: 'KES 45,000.00',
+    paidAmount: 'KES 0.00',
+    balance: 'KES 45,000.00',
     dueDate: '2026-10-15',
     status: 'Unpaid',
   },
@@ -79,9 +89,9 @@ const initialFees: TransportFeeItem[] = [
     gradeClass: 'Grade 9 - Gold',
     zone: 'Zone 2 (Lavington / Kileleshwa)',
     tripType: 'One Way Evening',
-    termFee: '$250.00',
-    paidAmount: '$250.00',
-    balance: '$0.00',
+    termFee: 'KES 32,000.00',
+    paidAmount: 'KES 32,000.00',
+    balance: 'KES 0.00',
     dueDate: '2026-09-15',
     status: 'Paid',
   },
@@ -96,7 +106,7 @@ export default function TransportFeesPage() {
   const [selectedRecord, setSelectedRecord] = useState<TransportFeeItem | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search query, payment status, and trip type
+  // Filter logic
   const filteredFees = fees.filter((item) => {
     const matchesSearch =
       item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -110,17 +120,17 @@ export default function TransportFeesPage() {
     return matchesSearch && matchesStatus && matchesTripType;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: TransportFeeItem['status']) => {
     switch (status) {
       case 'Paid':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Partial':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'Unpaid':
         return 'bg-slate-100 text-slate-700 border-slate-300';
       case 'Overdue':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
@@ -140,26 +150,30 @@ export default function TransportFeesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#012E54]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#012E54] mb-1 tracking-tight">
             Transport Fees & Billing
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Manage student bus fare billing, track payments by zone, process receipts, and view pending balances.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/transport/routes"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-route mr-2 text-xs text-blue-600"></i> Route Catalog
+            <i className="fa-solid fa-route mr-2 text-xs text-[#006FBF]"></i> Route Catalog
           </Link>
           <button
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="h-[38px] px-4 rounded-xl text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
             <i className="fa-solid fa-file-export mr-2 text-xs"></i> Export Statement
           </button>
@@ -168,84 +182,83 @@ export default function TransportFeesPage() {
 
       {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
+            <span className="font-semibold">{successBanner}</span>
           </div>
         </div>
       )}
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Term Revenue</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-sack-dollar text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Total Term Revenue</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">KES 23,450,000</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> 82% Collected Term 3
+            </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">$182,400.00</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> 82% Collected Term 3</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-sack-dollar text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Outstanding Balances</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Outstanding Balances</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">KES 4,220,000</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">142 accounts with balance</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">$32,850.00</p>
-          <span className="text-xs text-rose-600 font-medium">142 accounts with balance</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fully Paid Students</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-circle-check text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Fully Paid Students</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">703</h3>
+            <span className="text-[11px] text-[#006FBF] font-semibold mt-1 block">Clear for bus boarding</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">703</p>
-          <span className="text-xs text-blue-600 font-medium">Clear for bus boarding</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-sky-50 text-[#006FBF] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-circle-check text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overdue Reminders</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-bell text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Overdue Reminders</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">28</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Notices auto-queued</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">28</p>
-          <span className="text-xs text-amber-600 font-medium">Notices auto-queued</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-bell text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search student name, ID, zone, or invoice..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Trip Type Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Trip Option:</span>
             <select
               value={tripTypeFilter}
               onChange={(e) => setTripTypeFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Options</option>
               <option value="Round Trip">Round Trip</option>
@@ -254,13 +267,12 @@ export default function TransportFeesPage() {
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Payment Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Paid">Paid</option>
@@ -273,62 +285,63 @@ export default function TransportFeesPage() {
       </div>
 
       {/* Transport Fees Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Invoice ID</th>
-                <th className="py-3 px-4">Student Info</th>
-                <th className="py-3 px-4">Zone & Trip Type</th>
-                <th className="py-3 px-4">Term Fee / Paid</th>
-                <th className="py-3 px-4">Balance / Due Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">Invoice ID</th>
+                <th className="py-3.5 px-5">Student Info</th>
+                <th className="py-3.5 px-5">Zone & Trip Type</th>
+                <th className="py-3.5 px-5">Term Fee / Paid</th>
+                <th className="py-3.5 px-5">Balance / Due Date</th>
+                <th className="py-3.5 px-5">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredFees.length > 0 ? (
                 filteredFees.map((fee) => (
-                  <tr key={fee.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-slate-900">
+                  <tr key={fee.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5 font-mono text-[12px] font-bold text-[#012E54]">
                       {fee.id}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 text-xs">{fee.studentName}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">
-                        {fee.studentId} • <span className="text-slate-700 font-medium">{fee.gradeClass}</span>
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#012E54] text-[13px]">{fee.studentName}</div>
+                      <div className="text-[11px] text-[#64748b] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span>{fee.studentId}</span>
+                        <span className="text-[#012E54] font-semibold">• {fee.gradeClass}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-slate-900 text-xs">{fee.zone}</div>
-                      <div className="text-[11px] text-blue-600 font-medium">{fee.tripType}</div>
+                    <td className="py-4 px-5">
+                      <div className="font-semibold text-[#012E54] text-[12px]">{fee.zone}</div>
+                      <div className="text-[11px] text-[#006FBF] font-semibold mt-0.5">{fee.tripType}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="text-slate-900 font-bold font-mono text-xs">Fee: {fee.termFee}</div>
-                      <div className="text-[11px] text-emerald-600 font-mono font-medium">Paid: {fee.paidAmount}</div>
+                    <td className="py-4 px-5 font-mono text-[12px]">
+                      <div className="font-bold text-[#012E54]">Fee: {fee.termFee}</div>
+                      <div className="text-emerald-600 font-semibold mt-0.5">Paid: {fee.paidAmount}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className={`font-mono font-bold text-xs ${fee.balance !== '$0.00' ? 'text-rose-600' : 'text-slate-500'}`}>
+                    <td className="py-4 px-5 font-mono text-[12px]">
+                      <div className={`font-bold ${fee.balance !== 'KES 0.00' ? 'text-rose-600' : 'text-[#64748b]'}`}>
                         {fee.balance}
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono">Due: {fee.dueDate}</div>
+                      <div className="text-[#64748b] text-[11px] mt-0.5">Due: {fee.dueDate}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusBadge(fee.status)}`}>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(fee.status)}`}>
                         {fee.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
+                    <td className="py-4 px-5 text-right space-x-2">
                       {fee.status !== 'Paid' ? (
                         <button
                           onClick={() => openPaymentModal(fee)}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                          className="h-[32px] px-3 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-[12px] transition-colors"
                         >
                           Record Payment
                         </button>
                       ) : (
-                        <button className="text-slate-600 hover:text-slate-800 font-medium text-xs px-2 py-1 rounded hover:bg-slate-100 transition-colors">
+                        <button className="h-[32px] px-3 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold text-[12px] transition-colors">
                           <i className="fa-solid fa-receipt mr-1"></i> Receipt
                         </button>
                       )}
@@ -337,7 +350,7 @@ export default function TransportFeesPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={7} className="py-12 text-center text-[#64748b] text-[13px]">
                     No transport fee records found matching your search.
                   </td>
                 </tr>
@@ -349,103 +362,104 @@ export default function TransportFeesPage() {
 
       {/* Record Payment Modal */}
       {paymentModalOpen && selectedRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Record Transport Payment</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#012E54]/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+              <h3 className="font-bold text-[#012E54] text-[15px]">Record Transport Payment</h3>
               <button
                 onClick={() => setPaymentModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-[#012E54] transition-colors"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+            <div className="px-6 py-4 bg-[#f8fafc] border-b border-[#e2e8f0]">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Student Transport Account</span>
-                <span className="text-xs font-mono font-semibold text-slate-700">{selectedRecord.id}</span>
+                <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Student Transport Account</span>
+                <span className="text-[11px] font-mono font-bold text-[#012E54]">{selectedRecord.id}</span>
               </div>
-              <div className="font-semibold text-slate-900">{selectedRecord.studentName} ({selectedRecord.studentId})</div>
-              <div className="text-xs text-slate-600 mt-0.5">{selectedRecord.zone} — {selectedRecord.tripType}</div>
-              <div className="mt-3 flex gap-4 text-sm font-mono">
-                <div><span className="text-slate-500 text-xs">Total Fee:</span> <strong className="text-slate-900">{selectedRecord.termFee}</strong></div>
-                <div><span className="text-slate-500 text-xs">Remaining Balance:</span> <strong className="text-rose-600">{selectedRecord.balance}</strong></div>
+              <div className="font-bold text-[#012E54] text-[13px]">{selectedRecord.studentName} ({selectedRecord.studentId})</div>
+              <div className="text-[12px] text-[#64748b] mt-0.5">{selectedRecord.zone} — {selectedRecord.tripType}</div>
+              <div className="mt-3 flex gap-6 text-[13px] font-mono">
+                <div><span className="text-[#64748b] text-[11px]">Total Fee:</span> <strong className="text-[#012E54]">{selectedRecord.termFee}</strong></div>
+                <div><span className="text-[#64748b] text-[11px]">Balance:</span> <strong className="text-rose-600">{selectedRecord.balance}</strong></div>
               </div>
             </div>
 
             <form onSubmit={handleRecordPayment} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Amount Received ($)
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
+                    Amount Received (KES)
                   </label>
                   <input
                     type="text"
                     required
-                    defaultValue={selectedRecord.balance.replace('$', '')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                    defaultValue={selectedRecord.balance.replace('KES ', '')}
+                    className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                     Payment Method
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
-                    <option value="M-Pesa / Mobile">Mobile Payment (M-Pesa / Airtel Money)</option>
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]">
+                    <option value="M-Pesa">M-Pesa Mobile Money</option>
                     <option value="Bank Transfer">Direct Bank Transfer</option>
                     <option value="Card">Credit / Debit Card</option>
+                    <option value="Cash">Cash Deposit</option>
                     <option value="Cheque">School Cheque</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Transaction / Reference No.
                 </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. QX7892KL0P or Bank Ref"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Payment Date
                 </label>
                 <input
                   type="date"
                   required
                   defaultValue={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Remarks / Notes
                 </label>
                 <textarea
                   rows={2}
                   placeholder="Optional billing note..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-[#cbd5e1] p-3 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
                 <button
                   type="button"
                   onClick={() => setPaymentModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
+                  className="h-[38px] px-5 rounded-xl bg-emerald-600 text-white text-[12px] font-semibold hover:bg-emerald-500 transition-all shadow-md shadow-emerald-600/25"
                 >
                   Confirm Payment
                 </button>

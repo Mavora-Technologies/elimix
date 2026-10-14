@@ -1,9 +1,9 @@
+// apps/web/app/dashboard/parents/access/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for Portal Access Record
 interface PortalAccessRecord {
   id: string;
   guardianName: string;
@@ -14,7 +14,6 @@ interface PortalAccessRecord {
   status: 'Active' | 'Locked' | 'Pending' | 'Revoked';
 }
 
-// Initial mock portal access data
 const initialAccessRecords: PortalAccessRecord[] = [
   {
     id: 'ACC-001',
@@ -60,7 +59,7 @@ export default function ParentPortalAccessPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  // Filter logic based on search and status
+  // Filter logic
   const filteredRecords = accessRecords.filter((record) => {
     const matchesSearch =
       record.guardianName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,15 +71,15 @@ export default function ParentPortalAccessPage() {
     return matchesSearch && matchesStatus;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: PortalAccessRecord['status']) => {
     switch (status) {
       case 'Active':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Locked':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       case 'Pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'Revoked':
         return 'bg-slate-50 text-slate-700 border-slate-200';
       default:
@@ -102,25 +101,26 @@ export default function ParentPortalAccessPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#042954]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#042954] mb-1 tracking-tight">
             Parent Portal Access & Security
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Monitor login activity, manage portal credentials, unlock accounts, and review security access logs.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/parents"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#042954] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-users mr-2 text-xs text-blue-600"></i> Parent Directory
+            <i className="fa-solid fa-users mr-2 text-xs text-[#0ea5e9]"></i> Parent Directory
           </Link>
-          <button className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
+          <button className="h-[38px] px-4 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center">
             <i className="fa-solid fa-paper-plane mr-2 text-xs"></i> Send Bulk Invites
           </button>
         </div>
@@ -128,82 +128,82 @@ export default function ParentPortalAccessPage() {
 
       {/* Action Notification Banner */}
       {actionMessage && (
-        <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 text-blue-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-sky-50 border border-sky-200 p-4 text-[#042954] text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
-            <i className="fa-solid fa-circle-info text-blue-600 mr-2 text-base"></i>
-            <span>{actionMessage}</span>
+            <i className="fa-solid fa-circle-info text-[#0ea5e9] mr-2 text-base"></i>
+            <span className="font-semibold">{actionMessage}</span>
           </div>
         </div>
       )}
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Credentials</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-key text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Active Credentials</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">682</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> Fully operational
+            </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">682</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Fully operational</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-sky-50 text-[#0ea5e9] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-key text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Logins Today</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-right-to-bracket text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Logins Today</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">148</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">Unique active sessions</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">148</p>
-          <span className="text-xs text-emerald-600 font-medium">Unique active sessions</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-teal-50 text-[#06b6d4] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-right-to-bracket text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Locked Accounts</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-user-lock text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Locked Accounts</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">4</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">Multiple failed attempts</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">4</p>
-          <span className="text-xs text-rose-600 font-medium">Multiple failed attempts</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-user-lock text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Invites</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-clock text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Pending Invites</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">82</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Activation link unclicked</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">82</p>
-          <span className="text-xs text-amber-600 font-medium">Activation link unclicked</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-clock text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filter */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search guardian name, email, or IP address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
+        <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
           <span>Access Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+            className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] cursor-pointer"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
@@ -215,46 +215,46 @@ export default function ParentPortalAccessPage() {
       </div>
 
       {/* Portal Access Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Guardian Name / Email</th>
-                <th className="py-3 px-4">Last Login</th>
-                <th className="py-3 px-4">IP Address</th>
-                <th className="py-3 px-4">Device / Browser</th>
-                <th className="py-3 px-4">Portal Status</th>
-                <th className="py-3 px-4 text-right">Security Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">Guardian Name / Email</th>
+                <th className="py-3.5 px-5">Last Login</th>
+                <th className="py-3.5 px-5">IP Address</th>
+                <th className="py-3.5 px-5">Device / Browser</th>
+                <th className="py-3.5 px-5">Portal Status</th>
+                <th className="py-3.5 px-5 text-right">Security Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredRecords.length > 0 ? (
                 filteredRecords.map((record) => (
-                  <tr key={record.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">{record.guardianName}</div>
-                      <div className="text-xs text-slate-500">{record.email}</div>
+                  <tr key={record.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#042954]">{record.guardianName}</div>
+                      <div className="text-[11px] text-[#64748b] mt-0.5">{record.email}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-700 text-xs font-medium">{record.lastLogin}</td>
-                    <td className="py-3.5 px-4 text-slate-600 font-mono text-xs">{record.ipAddress}</td>
-                    <td className="py-3.5 px-4 text-slate-600 text-xs">{record.device}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(record.status)}`}>
+                    <td className="py-4 px-5 text-slate-700 text-[12px] font-medium">{record.lastLogin}</td>
+                    <td className="py-4 px-5 text-[#64748b] font-mono text-[12px]">{record.ipAddress}</td>
+                    <td className="py-4 px-5 text-[#64748b] text-[12px]">{record.device}</td>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(record.status)}`}>
                         {record.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
+                    <td className="py-4 px-5 text-right space-x-2">
                       <button
                         onClick={() => handleResetPassword(record.guardianName)}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                        className="h-[32px] px-3 rounded-lg bg-sky-50 text-[#0ea5e9] hover:bg-sky-100 font-semibold text-[12px] transition-colors"
                       >
                         Reset Password
                       </button>
                       {record.status === 'Locked' && (
                         <button
                           onClick={() => handleUnlockAccount(record.id, record.guardianName)}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                          className="h-[32px] px-3 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-[12px] transition-colors"
                         >
                           Unlock
                         </button>
@@ -264,7 +264,7 @@ export default function ParentPortalAccessPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-[#64748b] text-[13px]">
                     No matching portal access logs found.
                   </td>
                 </tr>

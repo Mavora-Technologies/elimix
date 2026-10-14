@@ -1,12 +1,12 @@
+// apps/web/app/dashboard/library/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
 /* ==========================================================================
-   ELIMIX BRAND
+   ELIMIX BRAND PALETTE
    ========================================================================== */
-
 const BRAND = {
   navy: '#012E54',
   blue: '#006FBF',
@@ -15,421 +15,273 @@ const BRAND = {
   teal: '#0199B9',
 };
 
-type Book = {
+interface RecentActivity {
   id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  category: 'Sciences' | 'Mathematics' | 'Literature' | 'History' | 'Reference';
-  totalCopies: number;
-  availableCopies: number;
-  status: 'Available' | 'Low Stock' | 'Out of Stock';
-  lastBorrowedBy?: string;
-};
+  action: 'Checked Out' | 'Returned' | 'Fine Paid' | 'New Catalog';
+  bookTitle: string;
+  borrower: string;
+  timestamp: string;
+}
 
-const INITIAL_BOOKS: Book[] = [
+const recentActivities: RecentActivity[] = [
   {
-    id: 'BK-1001',
-    title: 'Advanced Engineering Mathematics',
-    author: 'Erwin Kreyszig',
-    isbn: '978-0470458365',
-    category: 'Mathematics',
-    totalCopies: 15,
-    availableCopies: 4,
-    status: 'Available',
-    lastBorrowedBy: 'Brian Kiprop (Form 4West)',
+    id: 'ACT-901',
+    action: 'Checked Out',
+    bookTitle: 'Campbell Biology (11th Edition)',
+    borrower: 'Brian Kiprop (STD-2026-088)',
+    timestamp: '10 mins ago',
   },
   {
-    id: 'BK-1002',
-    title: 'Comprehensive Physics for High Schools',
-    author: 'Tom Duncan & Heather Kennett',
-    isbn: '978-0719553288',
-    category: 'Sciences',
-    totalCopies: 30,
-    availableCopies: 2,
-    status: 'Low Stock',
-    lastBorrowedBy: 'Amina Mohamed (Form 3East)',
+    id: 'ACT-902',
+    action: 'Returned',
+    bookTitle: "A People's History of the United States",
+    borrower: 'Grace Wanjiku (STD-2026-045)',
+    timestamp: '45 mins ago',
   },
   {
-    id: 'BK-1003',
-    title: 'The River and the Source',
-    author: 'Margaret Ogola',
-    isbn: '978-9966846174',
-    category: 'Literature',
-    totalCopies: 50,
-    availableCopies: 18,
-    status: 'Available',
-    lastBorrowedBy: 'Kevin Otieno (Form 2North)',
+    id: 'ACT-903',
+    action: 'Fine Paid',
+    bookTitle: 'Campbell Biology (11th Edition)',
+    borrower: 'Emily Clark (STD-2026-211)',
+    timestamp: '2 hours ago',
   },
   {
-    id: 'BK-1004',
-    title: 'East Africa Through a Thousand Years',
-    author: 'G. S. Were & D. A. Wilson',
-    isbn: '978-0230534575',
-    category: 'History',
-    totalCopies: 20,
-    availableCopies: 0,
-    status: 'Out of Stock',
-    lastBorrowedBy: 'Grace Wanjiku (Form 4South)',
-  },
-  {
-    id: 'BK-1005',
-    title: 'Oxford Advanced Learner Dictionary',
-    author: 'A. S. Hornby',
-    isbn: '978-0194799003',
-    category: 'Reference',
-    totalCopies: 10,
-    availableCopies: 7,
-    status: 'Available',
-    lastBorrowedBy: 'Staff Reference Room',
+    id: 'ACT-904',
+    action: 'New Catalog',
+    bookTitle: 'Introduction to Quantum Mechanics',
+    borrower: 'Science Department Shelf Sci-P3',
+    timestamp: '3 hours ago',
   },
 ];
 
-export default function LibraryPage() {
-  const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  // New Book Form State
-  const [newTitle, setNewTitle] = useState('');
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newIsbn, setNewIsbn] = useState('');
-  const [newCategory, setNewCategory] = useState<Book['category']>('Sciences');
-  const [newCopies, setNewCopies] = useState('10');
-
-  const filteredBooks = books.filter((book) => {
-    const matchesSearch =
-      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.isbn.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === 'all' || book.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleAddBook = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newAuthor) return;
-
-    const copiesNum = parseInt(newCopies) || 10;
-    const newBook: Book = {
-      id: `BK-100${books.length + 1}`,
-      title: newTitle,
-      author: newAuthor,
-      isbn: newIsbn || '978-0000000000',
-      category: newCategory,
-      totalCopies: copiesNum,
-      availableCopies: copiesNum,
-      status: 'Available',
-      lastBorrowedBy: 'None (Newly Cataloged)',
-    };
-
-    setBooks([newBook, ...books]);
-    setNewTitle('');
-    setNewAuthor('');
-    setNewIsbn('');
-    setIsAddModalOpen(false);
-  };
-
+export default function LibraryOverviewDashboard() {
   return (
-    <div className="space-y-6 pb-12">
-      {/* ==================================================================
-         PAGE HEADER
-         ========================================================================== */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#012E54]">
+      
+      {/* Page Header */}
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-            <Link href="/dashboard" className="hover:text-[#006FBF]">
-              Dashboard
-            </Link>
-            <i className="fa-solid fa-chevron-right text-[10px]" />
-            <span className="text-slate-900">Library Management</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
-            Library Catalog & Book Loans
+          <h1 className="text-[20px] font-extrabold text-[#012E54] mb-1 tracking-tight">
+            Library & Information Center Overview
           </h1>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Track textbook inventory, active student loan circulation, and reference cataloging.
+          <p className="text-[12px] text-[#64748b]">
+            Monitor comprehensive library statistics, textbook inventories, circulation activity, and outstanding fines.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard/library/books"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
+          >
+            <i className="fa-solid fa-book mr-2 text-xs text-[#006FBF]"></i> Book Catalog
+          </Link>
+          <Link
+            href="/dashboard/library/circulation"
+            className="h-[38px] px-4 rounded-xl text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
             style={{
               background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
             }}
           >
-            <i className="fa-solid fa-plus mr-2" />
-            Add New Book
-          </button>
+            <i className="fa-solid fa-hand-holding-hand mr-2 text-xs"></i> Circulation Desk
+          </Link>
         </div>
       </div>
 
-      {/* ==================================================================
-         METRICS OVERVIEW
-         ========================================================================== */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Total Catalog Titles
-          </p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">1,450</p>
-          <span className="mt-2 inline-block text-[11px] font-medium text-[#006FBF]">
-            <i className="fa-solid fa-book mr-1" /> Across 5 categories
-          </span>
-        </div>
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <Link href="/dashboard/library/books" className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Total Catalog Titles</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54] group-hover:text-[#006FBF] transition-colors">14,208</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> +120 this semester
+            </span>
+          </div>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-sky-50 text-[#006FBF] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-book text-lg"></i>
+          </div>
+        </Link>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Active Loans
-          </p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">342</p>
-          <span className="mt-2 inline-block text-[11px] font-medium text-emerald-600">
-            <i className="fa-solid fa-arrow-right-arrow-left mr-1" /> Checked out to students
-          </span>
-        </div>
+        <Link href="/dashboard/library/circulation" className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Active Loans</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54] group-hover:text-[#006FBF] transition-colors">1,845</h3>
+            <span className="text-[11px] text-[#006FBF] font-semibold mt-1 block">1,420 Students • 425 Faculty</span>
+          </div>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-book-open-reader text-lg"></i>
+          </div>
+        </Link>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Overdue Returns
-          </p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">14</p>
-          <span className="mt-2 inline-block text-[11px] font-medium text-amber-600">
-            <i className="fa-solid fa-triangle-exclamation mr-1" /> Automated SMS reminders sent
-          </span>
-        </div>
+        <Link href="/dashboard/library/circulation" className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Overdue Returns</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54] group-hover:text-rose-600 transition-colors">42</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">Automated reminders active</span>
+          </div>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-clock-rotate-left text-lg"></i>
+          </div>
+        </Link>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Replacement Fines (Term)
-          </p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">KES 4,500</p>
-          <span className="mt-2 inline-block text-[11px] font-medium text-slate-500">
-            Collected via finance portal
-          </span>
-        </div>
+        <Link href="/dashboard/library/fines" className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Outstanding Fines</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54] group-hover:text-amber-600 transition-colors">KES 40,860</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">28 accounts pending payment</span>
+          </div>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-receipt text-lg"></i>
+          </div>
+        </Link>
       </div>
 
-      {/* ==================================================================
-         SEARCH & FILTER BAR
-         ========================================================================== */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
-        <div className="relative flex min-w-0 flex-1 items-center">
-          <i className="fa-solid fa-magnifying-glass absolute left-3 text-xs text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search books by title, author, or ISBN..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-4 text-xs text-slate-700 outline-none transition-all focus:border-[#006FBF]/40 focus:bg-white focus:ring-2 focus:ring-[#006FBF]/10"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-          >
-            <option value="all">All Categories</option>
-            <option value="Sciences">Sciences</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Literature">Literature</option>
-            <option value="History">History</option>
-            <option value="Reference">Reference</option>
-          </select>
-        </div>
-      </div>
-
-      {/* ==================================================================
-         LIBRARY BOOKS TABLE
-         ========================================================================== */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                <th className="py-3 pl-4 pr-3">Book ID & Title</th>
-                <th className="px-3 py-3">Author & ISBN</th>
-                <th className="px-3 py-3">Category</th>
-                <th className="px-3 py-3">Copies (Avail / Total)</th>
-                <th className="px-3 py-3">Status</th>
-                <th className="py-3 pl-3 pr-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
-              {filteredBooks.map((book) => (
-                <tr key={book.id} className="transition-colors hover:bg-slate-50/60">
-                  <td className="py-3 pl-4 pr-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[#006FBF]/10 text-[#006FBF]">
-                        <i className="fa-solid fa-book text-[11px]" />
-                      </span>
-                      <div>
-                        <span className="font-semibold text-slate-900 block">{book.title}</span>
-                        <span className="font-mono text-[10px] text-slate-400">{book.id}</span>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="px-3 py-3">
-                    <span className="text-slate-800 font-medium block">{book.author}</span>
-                    <span className="font-mono text-[10px] text-slate-400">{book.isbn}</span>
-                  </td>
-
-                  <td className="px-3 py-3">
-                    <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                      {book.category}
-                    </span>
-                  </td>
-
-                  <td className="px-3 py-3 font-medium text-slate-700">
-                    <span className="font-bold text-slate-900">{book.availableCopies}</span> / {book.totalCopies}
-                  </td>
-
-                  <td className="px-3 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold ${
-                        book.status === 'Available'
-                          ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20'
-                          : book.status === 'Low Stock'
-                          ? 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20'
-                          : 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20'
-                      }`}
-                    >
-                      {book.status}
-                    </span>
-                  </td>
-
-                  <td className="py-3 pl-3 pr-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        className="rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
-                      >
-                        Issue / Return
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ==================================================================
-         ADD BOOK MODAL
-         ================================================================== */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#006FBF]/10 text-[#006FBF]">
-                  <i className="fa-solid fa-book-medical text-xs" />
-                </span>
-                <h3 className="text-sm font-bold text-slate-900">Catalog New Book</h3>
+      {/* Main Grid: Category Breakdown & Recent Circulation Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        {/* Category Breakdown (2 Cols) */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-extrabold text-[#012E54] text-[15px]">Inventory Breakdown by Category</h3>
+            <Link href="/dashboard/library/books" className="text-[12px] font-semibold text-[#006FBF] hover:underline">
+              View All Books &rarr;
+            </Link>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-[12px] font-semibold mb-1">
+                <span className="text-[#012E54]">Academic Textbooks</span>
+                <span className="text-[#64748b]">6,850 copies (48%)</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <i className="fa-solid fa-xmark text-sm" />
-              </button>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-[#006FBF] h-full rounded-full" style={{ width: '48%' }}></div>
+              </div>
             </div>
 
-            <form onSubmit={handleAddBook} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Book Title</label>
-                <input
-                  type="text"
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g., Biology Form 2 Student Book"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-                />
+            <div>
+              <div className="flex justify-between text-[12px] font-semibold mb-1">
+                <span className="text-[#012E54]">Fiction & Literature</span>
+                <span className="text-[#64748b]">3,410 copies (24%)</span>
               </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Author / Publisher</label>
-                <input
-                  type="text"
-                  required
-                  value={newAuthor}
-                  onChange={(e) => setNewAuthor(e.target.value)}
-                  placeholder="e.g., KLB Kenya Literature Bureau"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-                />
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-[#04B1D6] h-full rounded-full" style={{ width: '24%' }}></div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as Book['category'])}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 font-medium text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-                  >
-                    <option value="Sciences">Sciences</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Literature">Literature</option>
-                    <option value="History">History</option>
-                    <option value="Reference">Reference</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Total Copies</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newCopies}
-                    onChange={(e) => setNewCopies(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-                  />
-                </div>
+            <div>
+              <div className="flex justify-between text-[12px] font-semibold mb-1">
+                <span className="text-[#012E54]">Non-Fiction & Research</span>
+                <span className="text-[#64748b]">2,130 copies (15%)</span>
               </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">ISBN Number</label>
-                <input
-                  type="text"
-                  value={newIsbn}
-                  onChange={(e) => setNewIsbn(e.target.value)}
-                  placeholder="978-xxxxxxxxxx"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 font-mono text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white"
-                />
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-indigo-500 h-full rounded-full" style={{ width: '15%' }}></div>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95"
-                  style={{
-                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-                  }}
-                >
-                  Save Book
-                </button>
+            <div>
+              <div className="flex justify-between text-[12px] font-semibold mb-1">
+                <span className="text-[#012E54]">Reference & Dictionaries</span>
+                <span className="text-[#64748b]">1,120 copies (8%)</span>
               </div>
-            </form>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-emerald-500 h-full rounded-full" style={{ width: '8%' }}></div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-[12px] font-semibold mb-1">
+                <span className="text-[#012E54]">Periodicals & Journals</span>
+                <span className="text-[#64748b]">698 copies (5%)</span>
+              </div>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-amber-500 h-full rounded-full" style={{ width: '5%' }}></div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Quick Actions Panel (1 Col) */}
+        <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="font-extrabold text-[#012E54] text-[15px] mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              <Link
+                href="/dashboard/library/circulation"
+                className="w-full h-[42px] px-4 rounded-xl bg-sky-50 text-[#006FBF] hover:bg-sky-100 font-semibold text-[12px] transition-colors flex items-center justify-between"
+              >
+                <span className="flex items-center"><i className="fa-solid fa-hand-holding-hand mr-2.5 text-sm"></i> Issue / Return Book</span>
+                <i className="fa-solid fa-chevron-right text-[10px]"></i>
+              </Link>
+              <Link
+                href="/dashboard/library/books"
+                className="w-full h-[42px] px-4 rounded-xl bg-slate-50 text-[#012E54] hover:bg-slate-100 font-semibold text-[12px] transition-colors flex items-center justify-between"
+              >
+                <span className="flex items-center"><i className="fa-solid fa-book-medical mr-2.5 text-sm text-[#006FBF]"></i> Add New Book to Catalog</span>
+                <i className="fa-solid fa-chevron-right text-[10px]"></i>
+              </Link>
+              <Link
+                href="/dashboard/library/fines"
+                className="w-full h-[42px] px-4 rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold text-[12px] transition-colors flex items-center justify-between"
+              >
+                <span className="flex items-center"><i className="fa-solid fa-sack-dollar mr-2.5 text-sm"></i> Process Fines & Penalties</span>
+                <i className="fa-solid fa-chevron-right text-[10px]"></i>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-[#f1f5f9]">
+            <div className="rounded-xl bg-gradient-to-br from-[#012E54] to-[#006FBF] p-4 text-white">
+              <h4 className="font-bold text-[13px] mb-1">Need a Library Report?</h4>
+              <p className="text-[11px] text-sky-100 mb-3">Export full inventory audit or term circulation summary to PDF/CSV.</p>
+              <button className="h-[32px] px-3 rounded-lg bg-white text-[#012E54] font-bold text-[11px] hover:bg-sky-50 transition-colors shadow-sm">
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Circulation Activity Feed */}
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-extrabold text-[#012E54] text-[15px]">Recent Circulation Activity</h3>
+          <Link href="/dashboard/library/circulation" className="text-[12px] font-semibold text-[#006FBF] hover:underline">
+            View All Logs &rarr;
+          </Link>
+        </div>
+
+        <div className="divide-y divide-[#f1f5f9]">
+          {recentActivities.map((act) => (
+            <div key={act.id} className="py-3.5 flex items-center justify-between first:pt-0 last:pb-0">
+              <div className="flex items-center gap-3">
+                <span className={`h-8 w-8 rounded-xl flex items-center justify-center text-xs shrink-0 ${
+                  act.action === 'Checked Out' ? 'bg-sky-50 text-[#006FBF]' :
+                  act.action === 'Returned' ? 'bg-emerald-50 text-emerald-700' :
+                  act.action === 'Fine Paid' ? 'bg-amber-50 text-amber-700' : 'bg-purple-50 text-purple-700'
+                }`}>
+                  <i className={`fa-solid ${
+                    act.action === 'Checked Out' ? 'fa-book-open-reader' :
+                    act.action === 'Returned' ? 'fa-arrow-rotate-left' :
+                    act.action === 'Fine Paid' ? 'fa-receipt' : 'fa-plus'
+                  }`}></i>
+                </span>
+                <div>
+                  <div className="font-bold text-[#012E54] text-[12px]">{act.bookTitle}</div>
+                  <div className="text-[11px] text-[#64748b]">{act.borrower}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 mb-1">
+                  {act.action}
+                </span>
+                <div className="text-[10px] text-[#94a3b8] font-mono">{act.timestamp}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }

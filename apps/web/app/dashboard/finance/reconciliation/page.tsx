@@ -1,9 +1,9 @@
+// apps/web/app/dashboard/finance/reconciliation/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for a Reconciliation Item
 interface ReconciliationItem {
   id: string;
   bankTxnRef: string;
@@ -15,16 +15,15 @@ interface ReconciliationItem {
   status: 'Matched' | 'Unmatched' | 'Discrepancy' | 'Manual Review';
 }
 
-// Initial mock data for reconciliation
 const initialReconciliations: ReconciliationItem[] = [
   {
     id: 'REC-001',
     bankTxnRef: 'BNK-9842-ACH',
     systemRef: 'TXN-9842-2026',
     entityName: 'Oliver Twist (Tuition)',
-    amount: '$3,625.00',
+    amount: 'KSh 45,000.00',
     bankDate: '2026-10-01 14:25',
-    bankAccount: 'Chase Operational (*4821)',
+    bankAccount: 'KCB Operational (*4821)',
     status: 'Matched',
   },
   {
@@ -32,9 +31,9 @@ const initialReconciliations: ReconciliationItem[] = [
     bankTxnRef: 'BNK-9843-WIRE',
     systemRef: 'TXN-9843-2026',
     entityName: 'Charlotte Brontë (Boarding)',
-    amount: '$3,400.00',
+    amount: 'KSh 45,000.00',
     bankDate: '2026-09-29 11:10',
-    bankAccount: 'Chase Operational (*4821)',
+    bankAccount: 'KCB Operational (*4821)',
     status: 'Matched',
   },
   {
@@ -42,9 +41,9 @@ const initialReconciliations: ReconciliationItem[] = [
     bankTxnRef: 'BNK-9848-DEP',
     systemRef: 'Pending Match',
     entityName: 'Unknown Depositor (Check #104)',
-    amount: '$1,250.00',
+    amount: 'KSh 15,500.00',
     bankDate: '2026-10-02 09:15',
-    bankAccount: 'Wells Fargo Trust (*9104)',
+    bankAccount: 'Equity Bank Trust (*9104)',
     status: 'Unmatched',
   },
   {
@@ -52,9 +51,9 @@ const initialReconciliations: ReconciliationItem[] = [
     bankTxnRef: 'BNK-9850-CC',
     systemRef: 'TXN-9844-2026',
     entityName: 'Arthur Conan Doyle (Tech)',
-    amount: '$445.00',
+    amount: 'KSh 6,500.00',
     bankDate: '2026-09-28 09:42',
-    bankAccount: 'Stripe Gateway (*1102)',
+    bankAccount: 'M-Pesa Gateway (*1102)',
     status: 'Discrepancy',
   },
   {
@@ -62,9 +61,9 @@ const initialReconciliations: ReconciliationItem[] = [
     bankTxnRef: 'BNK-9852-ACH',
     systemRef: 'Pending Match',
     entityName: 'Global Scholar Grants LLC',
-    amount: '$12,500.00',
+    amount: 'KSh 150,000.00',
     bankDate: '2026-10-02 11:30',
-    bankAccount: 'Chase Operational (*4821)',
+    bankAccount: 'KCB Operational (*4821)',
     status: 'Manual Review',
   },
 ];
@@ -77,7 +76,7 @@ export default function FinanceReconciliationPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search, status, and bank account
+  // Filter logic
   const filteredReconciliations = reconciliations.filter((rec) => {
     const matchesSearch =
       rec.bankTxnRef.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,17 +89,17 @@ export default function FinanceReconciliationPage() {
     return matchesSearch && matchesStatus && matchesAccount;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: ReconciliationItem['status']) => {
     switch (status) {
       case 'Matched':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Unmatched':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'Discrepancy':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       case 'Manual Review':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-50 text-purple-800 border-purple-200';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
@@ -114,27 +113,28 @@ export default function FinanceReconciliationPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#042954]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#042954] mb-1 tracking-tight">
             Bank Reconciliation & Statement Matching
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Audit bank feeds against ledger transactions, resolve payment discrepancies, and reconcile institutional accounts.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/finance/overview"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#042954] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-chart-pie mr-2 text-xs text-blue-600"></i> Finance Overview
+            <i className="fa-solid fa-chart-pie mr-2 text-xs text-[#0ea5e9]"></i> Finance Overview
           </Link>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="h-[38px] px-4 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
           >
             <i className="fa-solid fa-file-arrow-up mr-2 text-xs"></i> Import Bank Feed
           </button>
@@ -143,99 +143,97 @@ export default function FinanceReconciliationPage() {
 
       {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
+            <span className="font-semibold">{successBanner}</span>
           </div>
         </div>
       )}
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Reconciled Rate</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-scale-balanced text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Reconciled Rate</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">96.8%</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> Current period match
+            </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">96.8%</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Current period match</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-teal-50 text-[#06b6d4] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-scale-balanced text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unmatched Items</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-clock text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Unmatched Items</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">14</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Pending auto-assignment</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">14</p>
-          <span className="text-xs text-amber-600 font-medium">Pending auto-assignment</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-clock text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Discrepancies</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Discrepancies</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">3</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">Requires fee verification</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">3</p>
-          <span className="text-xs text-rose-600 font-medium">Requires fee verification</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Manual Review</p>
-            <div className="rounded-lg bg-purple-50 p-2 text-purple-600">
-              <i className="fa-solid fa-user-check text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Manual Review</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">5</h3>
+            <span className="text-[11px] text-purple-600 font-semibold mt-1 block">Grants & wire transfers</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">5</p>
-          <span className="text-xs text-purple-600 font-medium">Grants & wire transfers</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-user-check text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search bank reference, system ref, or entity name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Bank Account Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Account:</span>
             <select
               value={accountFilter}
               onChange={(e) => setAccountFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] cursor-pointer"
             >
               <option value="All">All Bank Accounts</option>
-              <option value="Chase Operational">Chase Operational (*4821)</option>
-              <option value="Wells Fargo">Wells Fargo Trust (*9104)</option>
-              <option value="Stripe">Stripe Gateway (*1102)</option>
+              <option value="KCB Operational">KCB Operational (*4821)</option>
+              <option value="Equity Bank">Equity Bank Trust (*9104)</option>
+              <option value="M-Pesa">M-Pesa Gateway (*1102)</option>
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Matched">Matched</option>
@@ -248,39 +246,39 @@ export default function FinanceReconciliationPage() {
       </div>
 
       {/* Reconciliation Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Bank Txn Ref / Date</th>
-                <th className="py-3 px-4">System Ref</th>
-                <th className="py-3 px-4">Entity / Description</th>
-                <th className="py-3 px-4">Bank Account</th>
-                <th className="py-3 px-4">Amount</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">Bank Txn Ref / Date</th>
+                <th className="py-3.5 px-5">System Ref</th>
+                <th className="py-3.5 px-5">Entity / Description</th>
+                <th className="py-3.5 px-5">Bank Account</th>
+                <th className="py-3.5 px-5">Amount</th>
+                <th className="py-3.5 px-5">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredReconciliations.length > 0 ? (
                 filteredReconciliations.map((rec) => (
-                  <tr key={rec.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 font-mono text-xs">{rec.bankTxnRef}</div>
-                      <div className="text-xs text-slate-500">{rec.bankDate}</div>
+                  <tr key={rec.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#042954] font-mono text-[12px]">{rec.bankTxnRef}</div>
+                      <div className="text-[11px] text-[#64748b] mt-0.5">{rec.bankDate}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-700 font-mono text-xs font-medium">{rec.systemRef}</td>
-                    <td className="py-3.5 px-4 text-slate-800 text-xs font-medium">{rec.entityName}</td>
-                    <td className="py-3.5 px-4 text-slate-600 text-xs">{rec.bankAccount}</td>
-                    <td className="py-3.5 px-4 text-slate-900 font-mono text-xs font-bold">{rec.amount}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(rec.status)}`}>
+                    <td className="py-4 px-5 text-[#64748b] font-mono text-[12px] font-semibold">{rec.systemRef}</td>
+                    <td className="py-4 px-5 text-[#042954] text-[12px] font-medium">{rec.entityName}</td>
+                    <td className="py-4 px-5 text-[#64748b] text-[12px]">{rec.bankAccount}</td>
+                    <td className="py-4 px-5 text-[#042954] font-mono text-[12px] font-bold">{rec.amount}</td>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(rec.status)}`}>
                         {rec.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
+                    <td className="py-4 px-5 text-right">
+                      <button className="h-[32px] px-3 rounded-lg bg-sky-50 text-[#0ea5e9] hover:bg-sky-100 font-semibold text-[12px] transition-colors">
                         Inspect
                       </button>
                     </td>
@@ -288,7 +286,7 @@ export default function FinanceReconciliationPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={7} className="py-12 text-center text-[#64748b] text-[13px]">
                     No matching reconciliation records found.
                   </td>
                 </tr>
@@ -300,71 +298,71 @@ export default function FinanceReconciliationPage() {
 
       {/* Import Bank Statement Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Import Bank Statement Feed</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#042954]/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+              <h3 className="font-bold text-[#042954] text-[15px]">Import Bank Statement Feed</h3>
               <button
                 onClick={() => setUploadModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-[#042954] transition-colors"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
             <form onSubmit={handleUploadStatement} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Select Bank Account
                 </label>
-                <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
-                  <option value="Chase Operational">Chase Operational (*4821)</option>
-                  <option value="Wells Fargo">Wells Fargo Trust (*9104)</option>
-                  <option value="Stripe">Stripe Gateway (*1102)</option>
+                <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]">
+                  <option value="KCB Operational">KCB Operational (*4821)</option>
+                  <option value="Equity Bank">Equity Bank Trust (*9104)</option>
+                  <option value="M-Pesa">M-Pesa Gateway (*1102)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Statement File (CSV, OFX, or MT940)
                 </label>
-                <div className="mt-1 flex justify-center rounded-lg border border-dashed border-slate-300 px-6 py-8 hover:border-blue-500 transition-colors cursor-pointer bg-slate-50/50">
+                <div className="mt-1 flex justify-center rounded-xl border border-dashed border-[#cbd5e1] px-6 py-8 hover:border-[#0ea5e9] transition-colors cursor-pointer bg-[#f8fafc]">
                   <div className="text-center">
-                    <i className="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2"></i>
-                    <div className="text-sm text-slate-600 font-medium">
+                    <i className="fa-solid fa-cloud-arrow-up text-3xl text-[#0ea5e9] mb-2"></i>
+                    <div className="text-[13px] text-[#042954] font-semibold">
                       Click to upload or drag and drop
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">CSV, QFX, OFX up to 10MB</p>
+                    <p className="text-[11px] text-[#64748b] mt-1">CSV, QFX, OFX up to 10MB</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Reconciliation Rule
                 </label>
-                <div className="space-y-2 pt-1">
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <div className="space-y-2.5 pt-1">
+                  <label className="flex items-center gap-2.5 text-[13px] font-medium text-[#042954] cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#0ea5e9] focus:ring-[#0ea5e9] w-4 h-4" />
                     <span>Run AI auto-matching for exact amount & reference matches</span>
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                    <span>Flag fee discrepancies greater than $5.00 for review</span>
+                  <label className="flex items-center gap-2.5 text-[13px] font-medium text-[#042954] cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#0ea5e9] focus:ring-[#0ea5e9] w-4 h-4" />
+                    <span>Flag fee discrepancies greater than KSh 500.00 for review</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#042954] hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="h-[38px] px-5 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20"
                 >
                   Upload & Reconcile
                 </button>

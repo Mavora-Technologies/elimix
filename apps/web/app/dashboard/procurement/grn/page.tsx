@@ -1,9 +1,9 @@
+// apps/web/app/dashboard/procurement/grn/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for a Goods Received Note (GRN)
 interface GrnItem {
   id: string;
   poNumber: string;
@@ -15,7 +15,6 @@ interface GrnItem {
   status: 'Accepted' | 'Pending Inspection' | 'Discrepancy';
 }
 
-// Initial mock data for Goods Received Notes
 const initialGrns: GrnItem[] = [
   {
     id: 'GRN-2026-0901',
@@ -67,7 +66,7 @@ export default function ProcurementGrnPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search, department, and status
+  // Filter logic
   const filteredGrns = grns.filter((item) => {
     const matchesSearch =
       item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,15 +80,15 @@ export default function ProcurementGrnPage() {
     return matchesSearch && matchesDept && matchesStatus;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: GrnItem['status']) => {
     switch (status) {
       case 'Accepted':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Pending Inspection':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'Discrepancy':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
@@ -103,27 +102,28 @@ export default function ProcurementGrnPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#042954]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#042954] mb-1 tracking-tight">
             Goods Received Notes (GRN) & Inspection
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Verify inbound vendor shipments, conduct quality inspections, and record official warehouse receipts.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/procurement/orders"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#042954] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-cart-shopping mr-2 text-xs text-blue-600"></i> Purchase Orders
+            <i className="fa-solid fa-cart-shopping mr-2 text-xs text-[#0ea5e9]"></i> Purchase Orders
           </Link>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="h-[38px] px-4 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
           >
             <i className="fa-solid fa-plus mr-2 text-xs"></i> Record New GRN
           </button>
@@ -132,84 +132,83 @@ export default function ProcurementGrnPage() {
 
       {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
+            <span className="font-semibold">{successBanner}</span>
           </div>
         </div>
       )}
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total GRNs Logged</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-clipboard-check text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Total GRNs Logged</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">94</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
+              <i className="fa-solid fa-arrow-trend-up mr-1"></i> Term shipments
+            </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">94</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Term shipments</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-sky-50 text-[#0ea5e9] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-clipboard-check text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Inspection</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-magnifying-glass text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Pending Inspection</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">5</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Awaiting QA sign-off</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">5</p>
-          <span className="text-xs text-amber-600 font-medium">Awaiting QA sign-off</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-magnifying-glass text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Verified & Accepted</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-circle-check text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Verified & Accepted</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">86</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">Stocked in warehouse</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">86</p>
-          <span className="text-xs text-emerald-600 font-medium">Stocked in warehouse</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-teal-50 text-[#06b6d4] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-circle-check text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Discrepancies Flagged</p>
-            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Discrepancies Flagged</p>
+            <h3 className="text-[24px] font-extrabold text-[#042954]">3</h3>
+            <span className="text-[11px] text-rose-600 font-semibold mt-1 block">Vendor dispute open</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">3</p>
-          <span className="text-xs text-rose-600 font-medium">Vendor dispute open</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search GRN ID, PO reference, vendor, or items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Department Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Department:</span>
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] cursor-pointer"
             >
               <option value="All">All Departments</option>
               <option value="Science">Science</option>
@@ -220,13 +219,12 @@ export default function ProcurementGrnPage() {
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Accepted">Accepted</option>
@@ -238,43 +236,43 @@ export default function ProcurementGrnPage() {
       </div>
 
       {/* GRN Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">GRN Number / PO Ref</th>
-                <th className="py-3 px-4">Vendor & Department</th>
-                <th className="py-3 px-4">Received Date / Receiver</th>
-                <th className="py-3 px-4">Items Summary</th>
-                <th className="py-3 px-4">Inspection Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">GRN Number / PO Ref</th>
+                <th className="py-3.5 px-5">Vendor & Department</th>
+                <th className="py-3.5 px-5">Received Date / Receiver</th>
+                <th className="py-3.5 px-5">Items Summary</th>
+                <th className="py-3.5 px-5">Inspection Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredGrns.length > 0 ? (
                 filteredGrns.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 font-mono text-xs">{item.id}</div>
-                      <div className="text-xs text-blue-600 font-mono font-medium">{item.poNumber}</div>
+                  <tr key={item.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#042954] font-mono text-[12px]">{item.id}</div>
+                      <div className="text-[11px] text-[#0ea5e9] font-mono font-semibold mt-0.5">{item.poNumber}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="text-slate-900 font-medium text-xs">{item.vendor}</div>
-                      <div className="text-xs text-slate-500">{item.department}</div>
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#042954] text-[12px]">{item.vendor}</div>
+                      <div className="text-[11px] text-[#64748b] mt-0.5">{item.department}</div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="text-slate-800 font-mono text-xs">{item.receivedDate}</div>
-                      <div className="text-xs text-slate-500">Receiver: {item.receiver}</div>
+                    <td className="py-4 px-5">
+                      <div className="text-[#042954] font-mono text-[12px]">{item.receivedDate}</div>
+                      <div className="text-[11px] text-[#64748b] mt-0.5">Receiver: {item.receiver}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-900 text-xs font-medium">{item.itemsSummary}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(item.status)}`}>
+                    <td className="py-4 px-5 text-[#042954] text-[12px] font-semibold">{item.itemsSummary}</td>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(item.status)}`}>
                         {item.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors">
+                    <td className="py-4 px-5 text-right">
+                      <button className="h-[32px] px-3 rounded-lg bg-sky-50 text-[#0ea5e9] hover:bg-sky-100 font-semibold text-[12px] transition-colors">
                         View Note
                       </button>
                     </td>
@@ -282,7 +280,7 @@ export default function ProcurementGrnPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-[#64748b] text-[13px]">
                     No matching Goods Received Notes found.
                   </td>
                 </tr>
@@ -294,35 +292,35 @@ export default function ProcurementGrnPage() {
 
       {/* Record New GRN Modal */}
       {createModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Record New Goods Received Note (GRN)</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#042954]/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+              <h3 className="font-bold text-[#042954] text-[15px]">Record New Goods Received Note (GRN)</h3>
               <button
                 onClick={() => setCreateModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-[#042954] transition-colors"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
             <form onSubmit={handleCreateGrn} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                     Purchase Order Ref
                   </label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. PO-2026-0506"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                    className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                     Department
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]">
                     <option value="Science">Science</option>
                     <option value="IT">IT</option>
                     <option value="Athletics">Athletics</option>
@@ -333,46 +331,46 @@ export default function ProcurementGrnPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Vendor Name
                 </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Fisher Scientific"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Received Items Summary
                 </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Laboratory Glassware Set (Qty: 15)"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                     Receiver / Inspector
                   </label>
                   <input
                     type="text"
                     required
                     defaultValue="Tom Bradley"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                    className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                     Inspection Status
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]">
                     <option value="Accepted">Accepted</option>
                     <option value="Pending Inspection">Pending Inspection</option>
                     <option value="Discrepancy">Discrepancy / Damaged</option>
@@ -381,27 +379,27 @@ export default function ProcurementGrnPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#042954] uppercase tracking-wider mb-1.5">
                   Receiving Notes / Comments
                 </label>
                 <textarea
                   rows={2}
                   placeholder="Note package condition, serial numbers, or missing components..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-[#cbd5e1] p-3 text-[13px] text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#042954] hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="h-[38px] px-5 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20"
                 >
                   Save & Log GRN
                 </button>

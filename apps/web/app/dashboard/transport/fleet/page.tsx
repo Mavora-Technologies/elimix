@@ -1,9 +1,20 @@
+// apps/web/app/dashboard/transport/fleet/page.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 
-// TypeScript interface for a Fleet Vehicle record
+/* ==========================================================================
+   ELIMIX BRAND PALETTE
+   ========================================================================== */
+const BRAND = {
+  navy: '#012E54',
+  blue: '#006FBF',
+  brightBlue: '#0088CE',
+  cyan: '#04B1D6',
+  teal: '#0199B9',
+};
+
 interface FleetVehicle {
   id: string;
   registrationNumber: string;
@@ -18,7 +29,6 @@ interface FleetVehicle {
   status: 'Operational' | 'Service Due' | 'In Maintenance' | 'Out of Service';
 }
 
-// Initial mock data for the transport fleet overview
 const initialFleet: FleetVehicle[] = [
   {
     id: 'BUS-402',
@@ -109,7 +119,7 @@ export default function FleetOverviewPage() {
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search, status, and vehicle type
+  // Filter logic
   const filteredFleet = fleet.filter((vehicle) => {
     const matchesSearch =
       vehicle.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,23 +133,23 @@ export default function FleetOverviewPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  // Helper for status badge styling
+  // Status badge styling
   const getStatusBadge = (status: FleetVehicle['status']) => {
     switch (status) {
       case 'Operational':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Service Due':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'In Maintenance':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-sky-50 text-sky-800 border-sky-200';
       case 'Out of Service':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-50 text-rose-800 border-rose-200';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
-  // Helper for fuel level bar color
+  // Fuel level bar color
   const getFuelColor = (level: number) => {
     if (level <= 20) return 'bg-rose-500';
     if (level <= 50) return 'bg-amber-500';
@@ -160,27 +170,31 @@ export default function FleetOverviewPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 w-full min-w-0 bg-[#f4f7fb] min-h-screen p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden text-[#012E54]">
+      
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 lg:mb-8 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-[20px] font-extrabold text-[#012E54] mb-1 tracking-tight">
             Fleet Overview & Maintenance
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-[12px] text-[#64748b]">
             Monitor real-time vehicle status, track mileage, fuel levels, and schedule preventive maintenance.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/transport/routes"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm flex items-center"
           >
-            <i className="fa-solid fa-route mr-2 text-xs text-blue-600"></i> Route Directory
+            <i className="fa-solid fa-route mr-2 text-xs text-[#006FBF]"></i> Route Directory
           </Link>
           <Link
             href="/dashboard/transport/vehicles"
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+            className="h-[38px] px-4 rounded-xl text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+            }}
           >
             <i className="fa-solid fa-plus mr-2 text-xs"></i> Vehicle Inventory
           </Link>
@@ -189,84 +203,81 @@ export default function FleetOverviewPage() {
 
       {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
+        <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-xs flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
+            <span className="font-semibold">{successBanner}</span>
           </div>
         </div>
       )}
 
       {/* Fleet KPI Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fleet Readiness</p>
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-shield-halved text-sm"></i>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 w-full">
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Fleet Readiness</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">87.5%</h3>
+            <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">21 of 24 vehicles operational</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">87.5%</p>
-          <span className="text-xs text-emerald-600 font-medium">21 of 24 vehicles operational</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-shield-halved text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Service Due Soon</p>
-            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Service Due Soon</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">3</h3>
+            <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Scheduled within 14 days</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">3</p>
-          <span className="text-xs text-amber-600 font-medium">Scheduled within 14 days</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">In Maintenance</p>
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-              <i className="fa-solid fa-wrench text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">In Maintenance</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">2</h3>
+            <span className="text-[11px] text-[#006FBF] font-semibold mt-1 block">Currently in garage workshop</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">2</p>
-          <span className="text-xs text-blue-600 font-medium">Currently in garage workshop</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-sky-50 text-[#006FBF] flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-wrench text-lg"></i>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg Fuel Economy</p>
-            <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
-              <i className="fa-solid fa-gas-pump text-sm"></i>
-            </div>
+        <div className="bg-white rounded-2xl p-5 flex items-center justify-between border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Avg Fuel Economy</p>
+            <h3 className="text-[24px] font-extrabold text-[#012E54]">4.2 km/L</h3>
+            <span className="text-[11px] text-indigo-600 font-semibold mt-1 block">Optimal consumption rate</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">4.2 km/L</p>
-          <span className="text-xs text-indigo-600 font-medium">Optimal consumption rate</span>
+          <div className="h-[52px] w-[52px] rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-gas-pump text-lg"></i>
+          </div>
         </div>
       </div>
 
       {/* Toolbar: Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-[#e2e8f0] mb-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-[360px]">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-[12px]"></i>
           <input
             type="text"
             placeholder="Search fleet ID, license plate, model, driver..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[12px] font-medium text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] focus:ring-2 focus:ring-sky-500/20"
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Type Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Type:</span>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Types</option>
               <option value="Bus">Bus</option>
@@ -275,13 +286,12 @@ export default function FleetOverviewPage() {
             </select>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-[#64748b]">
             <span>Health Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+              className="h-[38px] px-3 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Operational">Operational</option>
@@ -294,51 +304,51 @@ export default function FleetOverviewPage() {
       </div>
 
       {/* Fleet Data Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden w-full">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Vehicle Identifier</th>
-                <th className="py-3 px-4">Driver & Mileage</th>
-                <th className="py-3 px-4">Fuel Level</th>
-                <th className="py-3 px-4">Service Schedule</th>
-                <th className="py-3 px-4">Health Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                <th className="py-3.5 px-5">Vehicle Identifier</th>
+                <th className="py-3.5 px-5">Driver & Mileage</th>
+                <th className="py-3.5 px-5">Fuel Level</th>
+                <th className="py-3.5 px-5">Service Schedule</th>
+                <th className="py-3.5 px-5">Health Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-sm">
+            <tbody className="divide-y divide-[#f1f5f9] text-[13px]">
               {filteredFleet.length > 0 ? (
                 filteredFleet.map((vehicle) => (
-                  <tr key={vehicle.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                        <i className="fa-solid fa-bus text-slate-400"></i> {vehicle.id}
+                  <tr key={vehicle.id} className="hover:bg-slate-50/75 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#012E54] text-[13px] flex items-center gap-2">
+                        <i className="fa-solid fa-bus text-[#006FBF]"></i> {vehicle.id}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
-                        <span className="font-mono bg-slate-100 border border-slate-200 rounded px-1.5 py-0.2">
+                      <div className="text-[11px] text-[#64748b] mt-1 flex items-center gap-2 flex-wrap">
+                        <span className="font-mono bg-slate-100 border border-[#cbd5e1] rounded px-1.5 py-0.5 font-bold">
                           {vehicle.registrationNumber}
                         </span>
-                        <span>• {vehicle.makeModel} ({vehicle.capacity} seats)</span>
+                        <span>{vehicle.makeModel} ({vehicle.capacity} seats)</span>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
+                    <td className="py-4 px-5">
+                      <div className="font-semibold text-[#012E54] text-[12px] flex items-center gap-1.5">
                         <i className="fa-solid fa-user text-slate-400 text-[11px]"></i> {vehicle.driverName}
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                      <div className="text-[11px] text-[#64748b] font-mono mt-0.5">
                         Odometer: {vehicle.mileage}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-4 px-5">
                       <div className="w-32">
                         <div className="flex justify-between items-center text-[11px] font-mono mb-1">
-                          <span className="text-slate-500">Fuel</span>
-                          <span className="font-semibold text-slate-900">{vehicle.fuelLevel}%</span>
+                          <span className="text-[#64748b]">Fuel</span>
+                          <span className="font-bold text-[#012E54]">{vehicle.fuelLevel}%</span>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-[#cbd5e1]">
                           <div
                             className={`h-full rounded-full ${getFuelColor(vehicle.fuelLevel)}`}
                             style={{ width: `${vehicle.fuelLevel}%` }}
@@ -347,29 +357,29 @@ export default function FleetOverviewPage() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="text-xs text-slate-900 font-medium">
-                        Next: <span className="font-mono font-semibold">{vehicle.nextServiceDate}</span>
+                    <td className="py-4 px-5">
+                      <div className="text-[12px] text-[#012E54] font-semibold">
+                        Next: <span className="font-mono">{vehicle.nextServiceDate}</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                      <div className="text-[11px] text-[#64748b] font-mono mt-0.5">
                         Last: {vehicle.lastServiceDate}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(vehicle.status)}`}>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${getStatusBadge(vehicle.status)}`}>
                         {vehicle.status}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right space-x-2">
+                    <td className="py-4 px-5 text-right space-x-2">
                       <button
                         onClick={() => openServiceModal(vehicle)}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                        className="h-[32px] px-3 rounded-lg bg-sky-50 text-[#006FBF] hover:bg-sky-100 font-semibold text-[12px] transition-colors"
                       >
                         Schedule Service
                       </button>
-                      <button className="text-slate-600 hover:text-slate-800 font-medium text-xs px-2 py-1 rounded hover:bg-slate-100 transition-colors">
+                      <button className="h-[32px] px-3 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold text-[12px] transition-colors">
                         Logs
                       </button>
                     </td>
@@ -377,7 +387,7 @@ export default function FleetOverviewPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-[#64748b] text-[13px]">
                     No fleet vehicles found matching your criteria.
                   </td>
                 </tr>
@@ -389,34 +399,34 @@ export default function FleetOverviewPage() {
 
       {/* Schedule Service Modal */}
       {serviceModalOpen && selectedVehicle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Schedule Maintenance Service</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#012E54]/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+              <h3 className="font-bold text-[#012E54] text-[15px]">Schedule Maintenance Service</h3>
               <button
                 onClick={() => setServiceModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 hover:text-[#012E54] transition-colors"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+            <div className="px-6 py-4 bg-[#f8fafc] border-b border-[#e2e8f0]">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Selected Vehicle</span>
-                <span className="text-xs font-mono font-semibold text-blue-600">{selectedVehicle.id}</span>
+                <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Selected Vehicle</span>
+                <span className="text-[11px] font-mono font-bold text-[#006FBF]">{selectedVehicle.id}</span>
               </div>
-              <div className="font-bold text-slate-900">{selectedVehicle.makeModel} — {selectedVehicle.registrationNumber}</div>
-              <div className="text-xs text-slate-500 mt-1">Current Mileage: {selectedVehicle.mileage}</div>
+              <div className="font-bold text-[#012E54] text-[13px]">{selectedVehicle.makeModel} — {selectedVehicle.registrationNumber}</div>
+              <div className="text-[11px] text-[#64748b] mt-0.5">Current Mileage: {selectedVehicle.mileage}</div>
             </div>
 
             <form onSubmit={handleScheduleService} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                     Service Type
                   </label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500">
+                  <select className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]">
                     <option value="Routine Service">Routine Oil & Filter Change</option>
                     <option value="Brake Inspection">Brake & Suspension Inspection</option>
                     <option value="Tire Replacement">Tire Replacement & Alignment</option>
@@ -425,63 +435,66 @@ export default function FleetOverviewPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                     Scheduled Date
                   </label>
                   <input
                     type="date"
                     required
                     defaultValue={selectedVehicle.nextServiceDate}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                    className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Service Provider / Workshop
                 </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Isuzu Kenya Authorized Service Center"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Estimated Cost ($)
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
+                  Estimated Cost (KES)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. 450.00"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                  placeholder="e.g. 58,000.00"
+                  className="w-full h-[40px] rounded-xl border border-[#cbd5e1] px-3.5 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF] font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#012E54] uppercase tracking-wider mb-1.5">
                   Technician Instructions / Notes
                 </label>
                 <textarea
                   rows={3}
                   placeholder="Specific maintenance tasks, known issues or driver observations..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-xl border border-[#cbd5e1] p-3 text-[13px] text-[#012E54] bg-[#f8fafc] focus:outline-none focus:border-[#006FBF]"
                 ></textarea>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
                 <button
                   type="button"
                   onClick={() => setServiceModalOpen(false)}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="h-[38px] px-4 rounded-xl border border-[#cbd5e1] bg-white text-[12px] font-semibold text-[#012E54] hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                  className="h-[38px] px-5 rounded-xl text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  }}
                 >
                   Confirm Service Booking
                 </button>

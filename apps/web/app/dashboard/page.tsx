@@ -289,7 +289,7 @@ export default function DashboardOverviewPage() {
             <i className={`fa-solid fa-rotate mr-2 ${isLoadingMetrics ? 'animate-spin text-[#0ea5e9]' : 'text-[#64748b]'}`}></i>
             Refresh Data
           </button>
-          <Link href="/dashboard/students" className="flex-1 sm:flex-none">
+          <Link href="/dashboard/students/admissions" className="flex-1 sm:flex-none">
             <button className="w-full sm:w-auto h-[38px] px-4 rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] text-white text-[12px] font-semibold hover:opacity-95 transition-all shadow-md shadow-sky-500/20 flex items-center justify-center">
               <i className="fa-solid fa-user-plus mr-2"></i> Register Student
             </button>
@@ -463,7 +463,7 @@ export default function DashboardOverviewPage() {
       {/* 4. Dynamic Executive Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full mb-6">
         
-        {/* DUAL-AXIS AREA CHART: Enrollment & Activity Trend */}
+        {/* DUAL-AXIS AREA CHART */}
         <div className="bg-white rounded-2xl lg:col-span-6 p-6 shadow-sm border border-[#e2e8f0] flex flex-col h-[440px] w-full">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -504,7 +504,6 @@ export default function DashboardOverviewPage() {
               ))}
             </div>
 
-            {/* SVG Dual Scaled Area & Line Paths with Elimix Brand Gradients */}
             <svg viewBox="0 0 500 200" preserveAspectRatio="none" className="w-full h-full absolute bottom-0 left-0 z-10 pointer-events-none">
               <defs>
                 <linearGradient id="activeGrad" x1="0" y1="0" x2="0" y2="1">
@@ -516,14 +515,11 @@ export default function DashboardOverviewPage() {
                   <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
-              
               <path d={trendChart.secondaryAreaPath} fill="url(#activeGrad)" className="transition-all duration-500" />
               <path d={trendChart.secondaryLinePath} fill="none" stroke="#042954" strokeWidth="2" strokeDasharray="4 4" className="transition-all duration-500" />
-              
               <path d={trendChart.primaryPath} fill="url(#admissionsGrad)" className="transition-all duration-500" />
             </svg>
 
-            {/* Interactive Hover Columns */}
             <div className="absolute inset-0 z-30 flex" onMouseLeave={() => setActiveTrendDay(null)}>
               {trendChart.series.map((data, index) => (
                 <div 
@@ -685,116 +681,166 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* 5. Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-        <div className="bg-white rounded-2xl lg:col-span-4 p-6 shadow-sm border border-[#e2e8f0] h-full w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-bold text-[#042954]">Session Governance</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#64748b]">Account</span>
-              <span className="text-[13px] font-bold text-[#042954] break-all">{user?.email || "Not signed in"}</span>
+      {/* 5. Comprehensive Sidebar-Driven Quick Modules Grid (All Categories Covered) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-6">
+        
+        {/* People & Students Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-user-graduate mr-2 text-[#0ea5e9]"></i>People & Students
+              </h4>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#64748b]">Role</span>
-              <span className="text-[12px] font-bold text-[#0ea5e9]">
-                {user?.isSuperAdmin ? "Platform Super Admin" : "Institution Administrator"}
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] pb-3 gap-1">
-              <span className="text-[13px] font-medium text-[#64748b]">Tenant ID</span>
-              <span className="font-mono text-[11px] text-[#042954] bg-[#f1f5f9] px-2 py-1 rounded w-max border border-slate-200">
-                {user?.tenantId || "Unassigned"}
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <span className="text-[13px] font-medium text-[#64748b]">Departments & Reports</span>
-              <span className="text-[12px] font-bold text-[#042954]">
-                {metrics?.totalDepartments ?? 0} Depts • {metrics?.totalExamReports ?? 0} Reports
-              </span>
-            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/students/admissions" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Admissions & Enrollment <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/students/attendance" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Daily Attendance <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/parents" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Parent Portal <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl lg:col-span-8 p-6 shadow-sm border border-[#e2e8f0] h-full w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[16px] font-bold text-[#042954]">Quick Modules</h3>
+        {/* Academics Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-chalkboard-user mr-2 text-[#042954]"></i>Academics & Exams
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/academics/timetables" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Timetables & Lessons <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/exams/results" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Marks Entry & Results <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/e-learning/courses" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">E-Learning Courses <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 w-full">
-            <Link href="/dashboard/students" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-user-graduate text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
-                  Students ({metrics?.totalStudents ?? 0})
-                </h4>
-                <p className="text-[11px] text-[#64748b]">Admissions & Directory</p>
-              </div>
-            </Link>
+        </div>
 
-            <Link href="/dashboard/teachers" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-chalkboard-user text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
-                  Teachers ({metrics?.totalTeachers ?? 0})
-                </h4>
-                <p className="text-[11px] text-[#64748b]">Staff & Allocations</p>
-              </div>
-            </Link>
+        {/* Finance & Fees Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-wallet mr-2 text-[#06b6d4]"></i>Finance & Fees
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/finance/invoices" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Invoices & Billing <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/finance/payments" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Payments & Receipts <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/finance/reconciliation" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Bank Reconciliation <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
+          </div>
+        </div>
 
-            <Link href="/dashboard/exams" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-pen-to-square text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
-                  Exams ({metrics?.totalExams ?? 0})
-                </h4>
-                <p className="text-[11px] text-[#64748b]">Assessments & Grading</p>
-              </div>
-            </Link>
+        {/* Operations Hub (Procurement, Library, HR, Hostel, Transport) */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-building-user mr-2 text-[#0ea5e9]"></i>Operations Hub
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/hr" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Human Resources (HR) <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/hostel" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Hostel & Boarding <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/transport/routes" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Transport & Vehicles <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
+          </div>
+        </div>
 
-            <Link href="/dashboard/academics/departments" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-building-user text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">
-                  Departments ({metrics?.totalDepartments ?? 0})
-                </h4>
-                <p className="text-[11px] text-[#64748b]">Academic Structure</p>
-              </div>
-            </Link>
+        {/* Reports & Analytics Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-chart-line mr-2 text-[#042954]"></i>Reports & Analytics
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/reports/academics/exams" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Exam Performance <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/reports/finance/collections" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Fee Collections <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/reports/custom/builder" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Custom Report Builder <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
+          </div>
+        </div>
 
-            <Link href="/dashboard/users/roles" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-shield-halved text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">Roles & RBAC</h4>
-                <p className="text-[11px] text-[#64748b]">Access Permissions</p>
-              </div>
-            </Link>
+        {/* Security & Access Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-user-shield mr-2 text-[#06b6d4]"></i>Security & Access
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/users/roles" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Roles & Permissions <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/users/security" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Authentication & Security <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/users/audit-logs" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Audit Logs & Activity <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
+          </div>
+        </div>
 
-            <Link href="/dashboard/users/audit-logs" className="group flex items-center gap-4 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="h-[44px] w-[44px] rounded-xl bg-slate-100 group-hover:bg-[#042954] text-slate-500 group-hover:text-white flex items-center justify-center transition-all shrink-0 shadow-sm">
-                <i className="fa-solid fa-file-shield text-[16px]"></i>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-bold text-[#042954] group-hover:text-[#0ea5e9] transition-colors">Audit Logs</h4>
-                <p className="text-[11px] text-[#64748b]">System Trails</p>
-              </div>
-            </Link>
+        {/* System & Support Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-life-ring mr-2 text-[#0ea5e9]"></i>System & Support
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/support" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Knowledge Base <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/support/tickets" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Support Tickets <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/settings" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">System Settings <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
+          </div>
+        </div>
 
+        {/* Library & Stock Hub */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[14px] font-bold text-[#042954] flex items-center">
+                <i className="fa-solid fa-book-open mr-2 text-[#042954]"></i>Library & Procurement
+              </h4>
+            </div>
+            <ul className="space-y-2 text-[12px]">
+              <li><Link href="/dashboard/library/books" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Book Catalog <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/procurement/inventory" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1 border-b border-slate-100">Inventory & Stock <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+              <li><Link href="/dashboard/procurement/orders" className="text-slate-600 hover:text-[#0ea5e9] flex items-center justify-between py-1">Purchase Orders <i className="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></Link></li>
+            </ul>
           </div>
         </div>
 
       </div>
+
+      {/* 6. Bottom Session Governance Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+        <div className="bg-white rounded-2xl lg:col-span-12 p-6 shadow-sm border border-[#e2e8f0] w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-sky-50 flex items-center justify-center text-[#0ea5e9]">
+              <i className="fa-solid fa-shield-halved text-lg"></i>
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-[#042954]">Session Governance & User State</p>
+              <p className="text-[11px] text-[#64748b]">Connected as <span className="font-semibold text-[#042954]">{user?.email || "Administrator"}</span> ({user?.isSuperAdmin ? "Platform Super Admin" : "Institution Admin"}) • Tenant: <span className="font-mono">{user?.tenantId || "Unassigned"}</span></p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard/users/audit-logs">
+              <button className="h-[36px] px-4 rounded-xl bg-slate-100 text-[#042954] text-[12px] font-semibold hover:bg-slate-200 transition-colors">
+                View Audit Logs
+              </button>
+            </Link>
+            <Link href="/dashboard/settings">
+              <button className="h-[36px] px-4 rounded-xl bg-[#042954] text-white text-[12px] font-semibold hover:bg-[#0a386e] transition-colors shadow-sm">
+                System Settings
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

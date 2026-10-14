@@ -157,6 +157,7 @@ const navigationSections: NavSection[] = [
         icon: 'fa-solid fa-book-open',
         description: 'Books, circulation and fines',
         children: [
+          {name: 'Center Overview', href: '/dashboard/library'},
           { name: 'Book Catalog', href: '/dashboard/library/books' },
           { name: 'Borrow & Return', href: '/dashboard/library/circulation' },
           { name: 'Fines & Overdues', href: '/dashboard/library/fines' },
@@ -201,9 +202,11 @@ const navigationSections: NavSection[] = [
         icon: 'fa-solid fa-bus',
         description: 'Routes, vehicles and transport fees',
         children: [
+          {name: 'Fleet Overview', href: '/dashboard/transport/fleet' },
           { name: 'Routes & Stages', href: '/dashboard/transport/routes' },
           { name: 'Vehicles & Drivers', href: '/dashboard/transport/vehicles' },
           { name: 'Transport Fee Billing', href: '/dashboard/transport/fees' },
+      
         ],
       },
     ],
