@@ -1,6 +1,6 @@
 // apps/api/src/modules/dashboard/dashboard.controller.ts
 import { Response } from 'express';
-import { and, desc, eq, gte, lte, sql, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../../config/db.js';
 import { AuthenticatedRequest } from '../../middleware/auth.middleware.js';
 
@@ -13,80 +13,120 @@ import { subjects } from '../academics/subjects.schema.js';
 import { lessonPlans } from '../academics/lesson_plans.schema.js';
 import { classes, streams } from '../academics/academics.schema.js';
 import { tenants } from '../tenant/tenant.schema.js';
-import { auditLogs } from '../audit/audit.schema.js';
 
 export class DashboardController {
   static async getOverviewMetrics(req: AuthenticatedRequest, res: Response) {
     try {
-      const tenantId = req.tenantId || req.user?.tenantId;
+      const rawTenantId = req.tenantId || req.user?.tenantId;
+      const tenantId = Array.isArray(rawTenantId) ? rawTenantId[0] : rawTenantId;
 
       if (!tenantId && !req.user?.isSuperAdmin) {
         return res.status(400).json({ success: false, message: 'Tenant context required' });
       }
 
-      const { timeFilter = 'this_month', grade = 'all', stream = 'all', search, startDate, endDate } = req.query as Record<string, string>;
+      const {
+        timeFilter = 'this_month',
+        grade = 'all',
+        stream = 'all',
+        search,
+        startDate,
+        endDate,
+      } = req.query as Record<string, string>;
 
-      // Professional Date Range Calculation
+      // 1. Date Range Calculation (Default: 'this_month')
       const now = new Date();
       let filterStartDate: Date | null = null;
-      let filterEndDate: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      let filterEndDate: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
       switch (timeFilter) {
-        case 'today':
-          filterStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        case 'today': {
+          filterStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
           break;
-        case 'yesterday':
-          filterStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
-          filterEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+        }
+        case 'yesterday': {
+          filterStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
           break;
-        case 'this_week':
+        }
+        case 'this_week': {
           const dayOfWeek = now.getDay();
           const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-          filterStartDate = new Date(now.getFullYear(), now.getMonth(), diffToMonday, 0, 0, 0);
+          filterStartDate = new Date(now.getFullYear(), now.getMonth(), diffToMonday, 0, 0, 0, 0);
+          filterEndDate = new Date(
+            filterStartDate.getFullYear(),
+            filterStartDate.getMonth(),
+            filterStartDate.getDate() + 6,
+            23,
+            59,
+            59,
+            999
+          );
           break;
-        case 'last_week':
-          const lastWeekStart = new Date(now);
-          lastWeekStart.setDate(now.getDate() - now.getDay() - 6);
-          filterStartDate = new Date(lastWeekStart.getFullYear(), lastWeekStart.getMonth(), lastWeekStart.getDate(), 0, 0, 0);
-          filterEndDate = new Date(lastWeekStart.getFullYear(), lastWeekStart.getMonth(), lastWeekStart.getDate() + 6, 23, 59, 59);
+        }
+        case 'last_week': {
+          const dayOfWeek = now.getDay();
+          const diffToLastMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) - 7;
+          filterStartDate = new Date(now.getFullYear(), now.getMonth(), diffToLastMonday, 0, 0, 0, 0);
+          filterEndDate = new Date(
+            filterStartDate.getFullYear(),
+            filterStartDate.getMonth(),
+            filterStartDate.getDate() + 6,
+            23,
+            59,
+            59,
+            999
+          );
           break;
-        case 'this_month':
-          filterStartDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        }
+        case 'this_month': {
+          filterStartDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
           break;
-        case 'last_month':
-          filterStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
-          filterEndDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        }
+        case 'last_month': {
+          filterStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
           break;
-        case 'this_term':
+        }
+        case 'this_term': {
           const month = now.getMonth();
           const termStartMonth = month < 4 ? 0 : month < 8 ? 4 : 8;
-          filterStartDate = new Date(now.getFullYear(), termStartMonth, 1, 0, 0, 0);
+          filterStartDate = new Date(now.getFullYear(), termStartMonth, 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), termStartMonth + 4, 0, 23, 59, 59, 999);
           break;
-        case 'last_term':
+        }
+        case 'last_term': {
           const m = now.getMonth();
-          const prevTermEndMonth = m < 4 ? 0 : m < 8 ? 4 : 8;
-          const prevTermStartMonth = prevTermEndMonth - 4;
-          filterStartDate = new Date(now.getFullYear(), prevTermStartMonth, 1, 0, 0, 0);
-          filterEndDate = new Date(now.getFullYear(), prevTermEndMonth, 0, 23, 59, 59);
+          const currentTermStart = m < 4 ? 0 : m < 8 ? 4 : 8;
+          filterStartDate = new Date(now.getFullYear(), currentTermStart - 4, 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), currentTermStart, 0, 23, 59, 59, 999);
           break;
-        case 'this_year':
-          filterStartDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+        }
+        case 'this_year': {
+          filterStartDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
           break;
-        case 'last_year':
-          filterStartDate = new Date(now.getFullYear() - 1, 0, 1, 0, 0, 0);
-          filterEndDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
+        }
+        case 'last_year': {
+          filterStartDate = new Date(now.getFullYear() - 1, 0, 1, 0, 0, 0, 0);
+          filterEndDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
           break;
-        case 'custom':
-          if (startDate) filterStartDate = new Date(startDate);
-          if (endDate) filterEndDate = new Date(endDate);
+        }
+        case 'custom': {
+          if (startDate) filterStartDate = new Date(`${startDate}T00:00:00`);
+          if (endDate) filterEndDate = new Date(`${endDate}T23:59:59.999`);
           break;
-        default:
+        }
+        case 'all_time':
+        default: {
           filterStartDate = null;
+          break;
+        }
       }
 
       const tenantOnly = tenantId ? eq(students.tenantId, tenantId) : undefined;
 
-      // Fetch all records for the tenant concurrently
+      // 2. Fetch all records for the tenant concurrently
       const [
         allStudents,
         allTeachers,
@@ -115,32 +155,29 @@ export class DashboardController {
         tenantId ? db.select().from(tenants).where(eq(tenants.id, tenantId)).limit(1) : Promise.resolve([]),
       ]);
 
-      // Filter students dynamically based on date range, grade (classId), stream, and search query
-      const filteredStudents = allStudents.filter((s: any) => {
-        // Date range filter
-        if (filterStartDate && s.createdAt && new Date(s.createdAt) < filterStartDate) return false;
-        if (filterEndDate && s.createdAt && new Date(s.createdAt) > filterEndDate) return false;
-
-        // Class / Grade filter (matching classId or gradeLevel)
+      // 3. Base Cohort Filter (Class/Grade, Stream, and Search Query — independent of time)
+      const cohortStudents = allStudents.filter((s: any) => {
         if (grade && grade !== 'all') {
           const matchesClass = s.classId === grade || s.gradeLevel === grade;
           if (!matchesClass) return false;
         }
-
-        // Stream filter
         if (stream && stream !== 'all') {
           const matchesStream = s.streamId === stream;
           if (!matchesStream) return false;
         }
-
-        // Search query filter (admission number, first name, or last name)
         if (search && search.trim() !== '') {
           const q = search.toLowerCase();
           const fullName = `${s.firstName || ''} ${s.lastName || ''}`.toLowerCase();
           const admNo = String(s.admissionNumber || '').toLowerCase();
           if (!fullName.includes(q) && !admNo.includes(q)) return false;
         }
+        return true;
+      });
 
+      // 4. Period-Filtered Students (applies date range on top of cohort)
+      const filteredStudents = cohortStudents.filter((s: any) => {
+        if (filterStartDate && s.createdAt && new Date(s.createdAt) < filterStartDate) return false;
+        if (filterEndDate && s.createdAt && new Date(s.createdAt) > filterEndDate) return false;
         return true;
       });
 
@@ -152,33 +189,170 @@ export class DashboardController {
         else if (g === 'female' || g === 'f' || g === 'girl') femaleCount++;
       });
 
-      // Weekly trend chart based on filtered student results
+      // 5. Dynamic X-Axis Buckets for Enrollment & Workspace Activity
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const weeklyTrend = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(now);
-        d.setDate(now.getDate() - (6 - i));
-        const dayStr = d.toISOString().split('T')[0];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        const dayCount = filteredStudents.filter((s: any) => {
+      interface TimeBucket {
+        label: string;
+        subLabel: string;
+        start: Date;
+        end: Date;
+      }
+
+      const buckets: TimeBucket[] = [];
+
+      if (timeFilter === 'this_month' || timeFilter === 'last_month') {
+        // MONTHLY -> Show Weeks on X-Axis (Wk 1, Wk 2, Wk 3, Wk 4, Wk 5)
+        const targetYear = timeFilter === 'this_month' ? now.getFullYear() : (now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear());
+        const targetMonth = timeFilter === 'this_month' ? now.getMonth() : (now.getMonth() === 0 ? 11 : now.getMonth() - 1);
+        const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+        const mLabel = monthNames[targetMonth];
+
+        let startDay = 1;
+        let weekNum = 1;
+        while (startDay <= daysInMonth) {
+          const endDay = Math.min(startDay + 6, daysInMonth);
+          buckets.push({
+            label: `Wk ${weekNum}`,
+            subLabel: `${mLabel} ${startDay}-${endDay}`,
+            start: new Date(targetYear, targetMonth, startDay, 0, 0, 0, 0),
+            end: new Date(targetYear, targetMonth, endDay, 23, 59, 59, 999),
+          });
+          startDay += 7;
+          weekNum++;
+        }
+      } else if (timeFilter === 'this_week' || timeFilter === 'last_week') {
+        // WEEKLY -> Show Days on X-Axis (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+        const baseMonday = filterStartDate
+          ? new Date(filterStartDate)
+          : new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+
+        for (let i = 0; i < 7; i++) {
+          const dStart = new Date(baseMonday.getFullYear(), baseMonday.getMonth(), baseMonday.getDate() + i, 0, 0, 0, 0);
+          const dEnd = new Date(baseMonday.getFullYear(), baseMonday.getMonth(), baseMonday.getDate() + i, 23, 59, 59, 999);
+          buckets.push({
+            label: dayNames[dStart.getDay()],
+            subLabel: `${monthNames[dStart.getMonth()]} ${dStart.getDate()}`,
+            start: dStart,
+            end: dEnd,
+          });
+        }
+      } else if (timeFilter === 'this_year' || timeFilter === 'last_year' || timeFilter === 'all_time') {
+        // YEARLY / ALL TIME -> Show 12 Months on X-Axis (Jan .. Dec)
+        const targetYear = timeFilter === 'last_year' ? now.getFullYear() - 1 : now.getFullYear();
+        for (let m = 0; m < 12; m++) {
+          buckets.push({
+            label: monthNames[m],
+            subLabel: `${monthNames[m]} ${targetYear}`,
+            start: new Date(targetYear, m, 1, 0, 0, 0, 0),
+            end: new Date(targetYear, m + 1, 0, 23, 59, 59, 999),
+          });
+        }
+      } else if (timeFilter === 'this_term' || timeFilter === 'last_term') {
+        // TERMLY -> Show the 4 Months of the Term on X-Axis
+        const baseStart = filterStartDate || new Date(now.getFullYear(), 0, 1);
+        for (let i = 0; i < 4; i++) {
+          const mStart = new Date(baseStart.getFullYear(), baseStart.getMonth() + i, 1, 0, 0, 0, 0);
+          const mEnd = new Date(baseStart.getFullYear(), baseStart.getMonth() + i + 1, 0, 23, 59, 59, 999);
+          buckets.push({
+            label: monthNames[mStart.getMonth()],
+            subLabel: `${monthNames[mStart.getMonth()]} ${mStart.getFullYear()}`,
+            start: mStart,
+            end: mEnd,
+          });
+        }
+      } else if (timeFilter === 'today' || timeFilter === 'yesterday') {
+        // DAILY -> Show 4-Hour Time Blocks on X-Axis
+        const targetDay = filterStartDate || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        for (let h = 0; h < 24; h += 4) {
+          const bStart = new Date(targetDay.getFullYear(), targetDay.getMonth(), targetDay.getDate(), h, 0, 0, 0);
+          const bEnd = new Date(targetDay.getFullYear(), targetDay.getMonth(), targetDay.getDate(), h + 3, 59, 59, 999);
+          const pad = (n: number) => String(n).padStart(2, '0');
+          buckets.push({
+            label: `${pad(h)}:00`,
+            subLabel: `${pad(h)}:00 - ${pad(h + 3)}:59`,
+            start: bStart,
+            end: bEnd,
+          });
+        }
+      } else {
+        // CUSTOM DATE RANGE -> Dynamically scale into Days, Weeks, or Months
+        const cStart = filterStartDate || new Date(now.getFullYear(), now.getMonth(), 1);
+        const cEnd = filterEndDate || now;
+        const spanDays = Math.max(1, Math.ceil((cEnd.getTime() - cStart.getTime()) / (1000 * 60 * 60 * 24)));
+
+        if (spanDays <= 14) {
+          for (let i = 0; i < spanDays; i++) {
+            const dStart = new Date(cStart.getFullYear(), cStart.getMonth(), cStart.getDate() + i, 0, 0, 0, 0);
+            const dEnd = new Date(cStart.getFullYear(), cStart.getMonth(), cStart.getDate() + i, 23, 59, 59, 999);
+            buckets.push({
+              label: `${monthNames[dStart.getMonth()]} ${dStart.getDate()}`,
+              subLabel: dayNames[dStart.getDay()],
+              start: dStart,
+              end: dEnd,
+            });
+          }
+        } else if (spanDays <= 90) {
+          const numWeeks = Math.ceil(spanDays / 7);
+          for (let w = 0; w < numWeeks; w++) {
+            const wStart = new Date(cStart.getFullYear(), cStart.getMonth(), cStart.getDate() + w * 7, 0, 0, 0, 0);
+            const wEnd = new Date(
+              Math.min(
+                cEnd.getTime(),
+                new Date(wStart.getFullYear(), wStart.getMonth(), wStart.getDate() + 6, 23, 59, 59, 999).getTime()
+              )
+            );
+            buckets.push({
+              label: `Wk ${w + 1}`,
+              subLabel: `${monthNames[wStart.getMonth()]} ${wStart.getDate()}`,
+              start: wStart,
+              end: wEnd,
+            });
+          }
+        } else {
+          let cursor = new Date(cStart.getFullYear(), cStart.getMonth(), 1, 0, 0, 0, 0);
+          while (cursor <= cEnd && buckets.length < 12) {
+            const mStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1, 0, 0, 0, 0);
+            const mEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 23, 59, 59, 999);
+            buckets.push({
+              label: monthNames[mStart.getMonth()],
+              subLabel: `${monthNames[mStart.getMonth()]} ${mStart.getFullYear()}`,
+              start: mStart,
+              end: mEnd,
+            });
+            cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+          }
+        }
+      }
+
+      const weeklyTrend = buckets.map((b) => {
+        const periodAdmissions = cohortStudents.filter((s: any) => {
           if (!s.createdAt) return false;
-          return new Date(s.createdAt).toISOString().split('T')[0] === dayStr;
+          const dt = new Date(s.createdAt);
+          return dt >= b.start && dt <= b.end;
+        }).length;
+
+        const cumulativeActive = cohortStudents.filter((s: any) => {
+          if (!s.createdAt) return true;
+          return new Date(s.createdAt) <= b.end;
         }).length;
 
         return {
-          day: dayNames[d.getDay()],
-          date: dayStr,
-          primaryValue: dayCount,
-          secondaryValue: filteredStudents.length,
+          day: b.label,
+          date: b.subLabel,
+          primaryValue: periodAdmissions,
+          secondaryValue: cumulativeActive,
         };
       });
 
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      // 6. Monthly Admissions Bar Chart (Last 3 Months)
       const monthlyBreakdown = [2, 1, 0].map((offset) => {
         const target = new Date(now.getFullYear(), now.getMonth() - offset, 1);
         const m = target.getMonth();
         const y = target.getFullYear();
 
-        const count = filteredStudents.filter((s: any) => {
+        const count = cohortStudents.filter((s: any) => {
           if (!s.createdAt) return false;
           const dt = new Date(s.createdAt);
           return dt.getMonth() === m && dt.getFullYear() === y;
@@ -193,7 +367,7 @@ export class DashboardController {
       return res.status(200).json({
         success: true,
         data: {
-          totalStudents: allStudents.length,
+          totalStudents: cohortStudents.length,
           filteredStudents: filteredStudents.length,
           maleStudents: maleCount || Math.round(filteredStudents.length * 0.6),
           femaleStudents: femaleCount || Math.round(filteredStudents.length * 0.4),

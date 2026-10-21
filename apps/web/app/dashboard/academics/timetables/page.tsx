@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// Dynamic API URL for Local/Production compatibility
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 interface TimetableBlock {
@@ -26,10 +25,11 @@ export default function TimetablesPage() {
   const [blocks, setBlocks] = useState<TimetableBlock[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
-  const [streams, setStreams] = useState<any[]>([]); 
+  const [streams, setStreams] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
   
   // UI Filters
   const [viewMode, setViewMode] = useState<'Stream' | 'Teacher'>('Stream');
@@ -48,7 +48,7 @@ export default function TimetablesPage() {
     startTime: '08:00',
     endTime: '09:00',
     room: '',
-    term: 'Term 1 2026', // Default term
+    term: 'Term 3 2026',
   });
 
   const getHeaders = () => {
@@ -91,7 +91,6 @@ export default function TimetablesPage() {
       setSubjects(subResult.data || []);
       setTeachers(teachResult.data || []);
       setStreams(realStreams); 
-      
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -99,9 +98,8 @@ export default function TimetablesPage() {
     }
   };
 
-  useEffect(() => { fetchTimetableData(); }, [activeFilterId]);
+  useEffect(() => { fetchTimetableData(); }, [activeFilterId, viewMode]);
 
-  // --- Modal Handlers ---
   const openAddModal = (day?: string, timeSlot?: string) => {
     let endTimeStr = '09:00';
     if (timeSlot) {
@@ -112,12 +110,12 @@ export default function TimetablesPage() {
     setFormData({
       subjectId: '',
       teacherId: '',
-      streamId: '',
+      streamId: streams[0]?.id || '',
       dayOfWeek: day || 'Monday',
       startTime: timeSlot || '08:00',
       endTime: endTimeStr,
       room: '',
-      term: 'Term 1 2026',
+      term: 'Term 3 2026',
     });
     setFormError(null);
     setIsModalOpen(true);
@@ -136,14 +134,14 @@ export default function TimetablesPage() {
       });
 
       const result = await res.json();
-      
       if (!res.ok) {
-        if (result.errors) throw new Error(result.errors.map((err: any) => err.message).join(', '));
-        throw new Error(result.message || 'Failed to schedule block');
+        throw new Error(result.message || 'Conflict detected or failed to schedule block.');
       }
 
       await fetchTimetableData();
       setIsModalOpen(false);
+      setSuccessBanner('Time block successfully scheduled.');
+      setTimeout(() => setSuccessBanner(null), 3000);
     } catch (err: any) {
       setFormError(err.message);
     } finally {
@@ -152,19 +150,22 @@ export default function TimetablesPage() {
   };
 
   const handleDeleteBlock = async (id: string) => {
-    if (!confirm('Remove this block from the timetable?')) return;
+    if (!confirm('Remove this block from the master timetable?')) return;
     try {
       const res = await fetch(`${API_BASE_URL}/academics/timetables/${id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
-      if (res.ok) await fetchTimetableData();
+      if (res.ok) {
+        await fetchTimetableData();
+        setSuccessBanner('Time block removed.');
+        setTimeout(() => setSuccessBanner(null), 3000);
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Visual Mapper: Find block for specific day and exact hour
   const getBlockForSlot = (day: string, hour: string) => {
     return blocks.find(b => b.dayOfWeek === day && b.startTime.startsWith(hour));
   };
@@ -182,11 +183,11 @@ export default function TimetablesPage() {
             <span className="text-slate-900 truncate">Master Schedule</span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">Master Schedule & Timetables</h1>
-          <p className="mt-0.5 text-xs text-slate-500 truncate">Manage weekly class rosters, room allocations, and faculty slots.</p>
+          <p className="mt-0.5 text-xs text-slate-500 truncate">Conflict-checked weekly schedules with teacher and room double-booking prevention.</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="inline-flex justify-center items-center rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50">
+          <button onClick={() => window.print()} className="inline-flex justify-center items-center rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50">
             <i className="fa-solid fa-print mr-2 text-[#006FBF]" /> Print Schedule
           </button>
           <button onClick={() => openAddModal()} className="inline-flex justify-center items-center rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95" style={{ background: `linear-gradient(135deg, #006FBF, #04B1D6)` }}>
@@ -194,6 +195,12 @@ export default function TimetablesPage() {
           </button>
         </div>
       </div>
+
+      {successBanner && (
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 text-emerald-800 text-xs font-medium flex items-center shadow-sm">
+          <i className="fa-solid fa-check text-emerald-600 mr-2"></i><span>{successBanner}</span>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-rose-800 text-sm flex items-center shadow-sm">
@@ -203,9 +210,9 @@ export default function TimetablesPage() {
 
       {/* Toolbar / Filters */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
-        <div className="flex p-1 bg-slate-100 rounded-lg max-w-[200px]">
-          <button onClick={() => setViewMode('Stream')} className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${viewMode === 'Stream' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>By Class</button>
-          <button onClick={() => setViewMode('Teacher')} className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${viewMode === 'Teacher' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>By Teacher</button>
+        <div className="flex p-1 bg-slate-100 rounded-lg max-w-[220px]">
+          <button onClick={() => { setViewMode('Stream'); setActiveFilterId(''); }} className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${viewMode === 'Stream' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>By Class</button>
+          <button onClick={() => { setViewMode('Teacher'); setActiveFilterId(''); }} className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${viewMode === 'Teacher' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>By Teacher</button>
         </div>
 
         <div className="flex items-center gap-3 w-full lg:w-auto">
@@ -292,7 +299,7 @@ export default function TimetablesPage() {
             <form onSubmit={handleCreateBlock} className="p-6 space-y-4 text-xs">
               {formError && (
                 <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl flex items-center font-medium">
-                  <i className="fa-solid fa-circle-exclamation mr-2"></i> <span className="truncate">{formError}</span>
+                  <i className="fa-solid fa-circle-exclamation mr-2 text-base"></i> <span className="truncate">{formError}</span>
                 </div>
               )}
 
@@ -346,7 +353,7 @@ export default function TimetablesPage() {
               <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200 transition-colors">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="rounded-xl px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:opacity-95 disabled:opacity-50" style={{ background: `linear-gradient(135deg, #006FBF, #04B1D6)` }}>
-                  {isSubmitting ? 'Booking...' : 'Book Slot'}
+                  {isSubmitting ? 'Checking Conflicts...' : 'Book Slot'}
                 </button>
               </div>
             </form>

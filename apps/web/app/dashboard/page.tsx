@@ -69,8 +69,8 @@ export default function DashboardOverviewPage() {
   const [isLoadingMetrics, setIsLoadingMetrics] = useState<boolean>(true);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // --- Filter States ---
-  const [timeFilter, setTimeFilter] = useState<string>('all_time');
+  // --- Filter States (Default set to 'this_month' -> Monthly view showing Weeks) ---
+  const [timeFilter, setTimeFilter] = useState<string>('this_month');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
   const [selectedStream, setSelectedStream] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -155,6 +155,30 @@ export default function DashboardOverviewPage() {
       if (!exists) setSelectedStream('all');
     }
   }, [selectedGrade, availableStreams, selectedStream]);
+
+  // --- Dynamic X-Axis Granularity Subtitle ---
+  const xAxisGranularityLabel = useMemo(() => {
+    switch (timeFilter) {
+      case 'this_month':
+      case 'last_month':
+        return 'Weekly Breakdown (Weeks of the Month)';
+      case 'this_week':
+      case 'last_week':
+        return 'Daily Breakdown (Mon – Sun)';
+      case 'this_year':
+      case 'last_year':
+      case 'all_time':
+        return 'Monthly Breakdown (Jan – Dec)';
+      case 'this_term':
+      case 'last_term':
+        return 'Termly Breakdown (Months in Term)';
+      case 'today':
+      case 'yesterday':
+        return 'Hourly Breakdown (4-Hour Intervals)';
+      default:
+        return 'Custom Period Breakdown';
+    }
+  }, [timeFilter]);
 
   // --- Dynamic Donut Chart Calculations ---
   const donutStats = useMemo(() => {
@@ -314,16 +338,13 @@ export default function DashboardOverviewPage() {
               onChange={(e) => setTimeFilter(e.target.value)}
               className="w-full h-[40px] pl-10 pr-8 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-sky-500/20 appearance-none cursor-pointer transition-all"
             >
-              <optgroup label="General">
-                <option value="all_time">All Time</option>
-              </optgroup>
               <optgroup label="Recent Periods">
-                <option value="today">Today</option>
-                <option value="yesterday">Yesterday</option>
-                <option value="this_week">This Week</option>
-                <option value="last_week">Last Week</option>
                 <option value="this_month">This Month</option>
                 <option value="last_month">Last Month</option>
+                <option value="this_week">This Week</option>
+                <option value="last_week">Last Week</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
               </optgroup>
               <optgroup label="Academic Terms & Years">
                 <option value="this_term">This Term</option>
@@ -331,7 +352,8 @@ export default function DashboardOverviewPage() {
                 <option value="this_year">This Year</option>
                 <option value="last_year">Last Year</option>
               </optgroup>
-              <optgroup label="Advanced">
+              <optgroup label="General & Custom">
+                <option value="all_time">All Time</option>
                 <option value="custom">Custom Date Range...</option>
               </optgroup>
             </select>
@@ -468,7 +490,7 @@ export default function DashboardOverviewPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-[16px] font-bold text-[#042954]">Enrollment & Workspace Activity</h3>
-              <p className="text-[11px] text-[#64748b] mt-0.5">Comparing cumulative active student growth vs. period admissions</p>
+              <p className="text-[11px] text-[#64748b] mt-0.5">{xAxisGranularityLabel}</p>
             </div>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-[#0ea5e9] px-3 py-1 rounded-full border border-sky-100">
               {timeFilter.replace('_', ' ')}
@@ -488,7 +510,7 @@ export default function DashboardOverviewPage() {
               <div className="h-8 w-px bg-slate-200"></div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#64748b] mb-0.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-[#0ea5e9]"></div> New Admissions
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#0ea5e9]"></div> Period Admissions
                 </div>
                 <span className="text-[18px] font-extrabold text-[#042954]">
                   {(metrics?.filteredStudents ?? 0).toLocaleString()}
@@ -497,7 +519,7 @@ export default function DashboardOverviewPage() {
             </div>
           </div>
 
-          <div className="relative w-full flex-1 ml-6 sm:ml-[34px] border-b border-l border-[#e2e8f0]">
+          <div className="relative w-full flex-1 ml-6 sm:ml-[34px] mb-5 border-b border-l border-[#e2e8f0]">
             <div className="absolute left-[-36px] top-0 h-full flex flex-col justify-between text-[10px] font-medium text-[#94a3b8] py-1 z-20 pointer-events-none">
               {trendChart.yAxisLabels.map((val, i) => (
                 <span key={i}>{val.toLocaleString()}</span>
@@ -530,10 +552,10 @@ export default function DashboardOverviewPage() {
                   {activeTrendDay === index && (
                     <>
                       <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#0ea5e9]/50 border-dashed border-l border-[#0ea5e9] z-30 pointer-events-none"></div>
-                      <div className="absolute bottom-[40%] left-1/2 -translate-x-1/2 bg-[#042954] text-white p-3 rounded-xl shadow-2xl z-50 w-[160px] pointer-events-none border border-slate-700 backdrop-blur-md">
-                        <p className="text-[10px] text-slate-300 font-bold uppercase mb-1.5 border-b border-slate-700 pb-1 flex justify-between">
+                      <div className="absolute bottom-[40%] left-1/2 -translate-x-1/2 bg-[#042954] text-white p-3 rounded-xl shadow-2xl z-50 w-[165px] pointer-events-none border border-slate-700 backdrop-blur-md">
+                        <p className="text-[10px] text-slate-300 font-bold uppercase mb-1.5 border-b border-slate-700 pb-1 flex justify-between gap-2">
                           <span>{data.day}</span>
-                          <span className="text-[#0ea5e9]">{data.date}</span>
+                          <span className="text-[#0ea5e9] truncate">{data.date}</span>
                         </p>
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-[10px] text-slate-300 font-medium">Total Active:</span>
@@ -546,7 +568,11 @@ export default function DashboardOverviewPage() {
                       </div>
                     </>
                   )}
-                  <div className={`absolute -bottom-7 w-full text-center text-[11px] transition-all ${activeTrendDay === index ? 'text-[#042954] font-bold scale-105' : 'text-[#64748b]'}`}>
+                  <div
+                    className={`absolute -bottom-6 w-full text-center transition-all truncate px-0.5 ${
+                      trendChart.series.length > 8 ? 'text-[9px] sm:text-[10px]' : 'text-[11px]'
+                    } ${activeTrendDay === index ? 'text-[#042954] font-bold scale-105' : 'text-[#64748b]'}`}
+                  >
                     {data.day}
                   </div>
                 </div>
@@ -681,7 +707,7 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* 5. Comprehensive Sidebar-Driven Quick Modules Grid (All Categories Covered) */}
+      {/* 5. Comprehensive Sidebar-Driven Quick Modules Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-6">
         
         {/* People & Students Hub */}
@@ -732,7 +758,7 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
-        {/* Operations Hub (Procurement, Library, HR, Hostel, Transport) */}
+        {/* Operations Hub */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">

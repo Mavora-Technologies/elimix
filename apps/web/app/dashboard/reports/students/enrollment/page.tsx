@@ -1,224 +1,237 @@
 // apps/web/app/dashboard/reports/students/enrollment/page.tsx
+'use client';
 
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 
-/* ==========================================================================
-   MOCK DATA
-   ========================================================================== */
+interface ClassEnrollmentItem {
+  id: string;
+  className: string;
+  classTeacher: string;
+  capacity: number;
+  enrolled: number;
+  boys: number;
+  girls: number;
+  vacancies: number;
+  status: 'optimal' | 'full' | 'under-enrolled';
+}
 
-const STATS = [
-  {
-    title: 'Total Enrolled Students',
-    value: '480',
-    subtext: 'Across 16 streams / classes',
-    icon: 'fa-users',
-    color: 'from-[#006FBF] to-[#04B1D6]',
-  },
-  {
-    title: 'New Admissions',
-    value: '24',
-    subtext: 'Joined in current academic year',
-    icon: 'fa-user-plus',
-    color: 'from-emerald-600 to-emerald-500',
-  },
-  {
-    title: 'Gender Distribution',
-    value: '52% M / 48% F',
-    subtext: '250 Boys, 230 Girls',
-    icon: 'fa-venus-mars',
-    color: 'from-indigo-600 to-indigo-500',
-  },
-  {
-    title: 'Average Class Size',
-    value: '30',
-    subtext: 'Standard capacity is 40',
-    icon: 'fa-chair',
-    color: 'from-amber-500 to-amber-600',
-  },
-];
-
-const ENROLLMENT_BY_FORM = [
-  { form: 'Form 1', enrolled: 125, capacity: 160, boys: 65, girls: 60, percentage: 78.1, color: 'bg-emerald-500' },
-  { form: 'Form 2', enrolled: 118, capacity: 160, boys: 62, girls: 56, percentage: 73.7, color: 'bg-[#006FBF]' },
-  { form: 'Form 3', enrolled: 122, capacity: 160, boys: 63, girls: 59, percentage: 76.2, color: 'bg-indigo-500' },
-  { form: 'Form 4', enrolled: 115, capacity: 160, boys: 60, girls: 55, percentage: 71.8, color: 'bg-amber-500' },
-];
-
-const CLASS_ENROLLMENT = [
-  {
-    id: 'CLS-1N',
-    className: 'Form 1 North',
-    classTeacher: 'Mr. David Ochieng',
-    capacity: 40,
-    enrolled: 32,
-    boys: 17,
-    girls: 15,
-    vacancies: 8,
-    status: 'optimal', // optimal, full, under-enrolled
-  },
-  {
-    id: 'CLS-1S',
-    className: 'Form 1 South',
-    classTeacher: 'Mrs. Sarah Jenkins',
-    capacity: 40,
-    enrolled: 31,
-    boys: 16,
-    girls: 15,
-    vacancies: 9,
-    status: 'optimal',
-  },
-  {
-    id: 'CLS-1E',
-    className: 'Form 1 East',
-    classTeacher: 'Ms. Alice Wanjiku',
-    capacity: 40,
-    enrolled: 33,
-    boys: 17,
-    girls: 16,
-    vacancies: 7,
-    status: 'optimal',
-  },
-  {
-    id: 'CLS-2N',
-    className: 'Form 2 North',
-    classTeacher: 'Dr. James Mwangi',
-    capacity: 40,
-    enrolled: 30,
-    boys: 15,
-    girls: 15,
-    vacancies: 10,
-    status: 'under-enrolled',
-  },
-  {
-    id: 'CLS-3E',
-    className: 'Form 3 East',
-    classTeacher: 'Eng. Paul Njuguna',
-    capacity: 40,
-    enrolled: 40,
-    boys: 21,
-    girls: 19,
-    vacancies: 0,
-    status: 'full',
-  },
-  {
-    id: 'CLS-3W',
-    className: 'Form 3 West',
-    classTeacher: 'Mrs. Grace Njeri',
-    capacity: 40,
-    enrolled: 39,
-    boys: 20,
-    girls: 19,
-    vacancies: 1,
-    status: 'full',
-  },
-  {
-    id: 'CLS-4S',
-    className: 'Form 4 South',
-    classTeacher: 'Mwalimu Hassan Juma',
-    capacity: 40,
-    enrolled: 28,
-    boys: 15,
-    girls: 13,
-    vacancies: 12,
-    status: 'under-enrolled',
-  },
-];
-
-/* ==========================================================================
-   PAGE COMPONENT
-   ========================================================================== */
+interface EnrollmentData {
+  stats: {
+    totalStudents: number;
+    newAdmissions: number;
+    boysCount: number;
+    girlsCount: number;
+    averageClassSize: number;
+    totalStreams: number;
+  };
+  classEnrollment: ClassEnrollmentItem[];
+}
 
 export default function StudentEnrollmentReportPage() {
+  const [data, setData] = useState<EnrollmentData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filters
+  const [academicYear, setAcademicYear] = useState('2026');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const getHeaders = () => {
+    const token = localStorage.getItem('elimix_token');
+    const storedUser = localStorage.getItem('elimix_user');
+    let tenantId = '';
+    if (storedUser) {
+      try {
+        tenantId = JSON.parse(storedUser)?.tenantId || '';
+      } catch {}
+    }
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(tenantId ? { 'x-tenant-id': tenantId } : {}),
+    };
+  };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
+  const fetchReport = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/reports/enrollment`, {
+        headers: getHeaders(),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      } else {
+        setError('Failed to synchronize enrollment analytics from database.');
+      }
+    } catch (err: any) {
+      console.error('Error fetching enrollment report:', err);
+      setError('Unable to reach the backend server.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiUrl]);
+
+  useEffect(() => {
+    fetchReport();
+  }, [fetchReport]);
+
+  // Filtered class list
+  const filteredClasses = useMemo(() => {
+    if (!data?.classEnrollment) return [];
+    return data.classEnrollment.filter((cls) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        cls.className.toLowerCase().includes(q) ||
+        cls.classTeacher.toLowerCase().includes(q) ||
+        cls.id.toLowerCase().includes(q);
+
+      const matchesStatus = statusFilter === 'all' || cls.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [data?.classEnrollment, searchQuery, statusFilter]);
+
+  const genderRatioText = useMemo(() => {
+    if (!data?.stats) return '0% M / 0% F';
+    const total = data.stats.totalStudents;
+    if (total === 0) return '0% M / 0% F';
+    const mPct = Math.round((data.stats.boysCount / total) * 100);
+    const fPct = 100 - mPct;
+    return `${mPct}% M / ${fPct}% F`;
+  }, [data?.stats]);
+
   return (
-    <div className="flex w-full flex-col gap-6 p-6 md:p-8">
-      {/* ----------------------------------------------------------------------
-          BREADCRUMBS & HEADER
-          ---------------------------------------------------------------------- */}
+    <div className="flex w-full flex-col gap-6 p-4 sm:p-6 lg:p-8 font-sans bg-[#f4f7fb] min-h-screen text-[#042954]">
+      
+      {/* Breadcrumbs & Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-          <Link href="/dashboard" className="hover:text-[#006FBF]">
-            Dashboard
-          </Link>
+          <Link href="/dashboard" className="hover:text-[#006FBF]">Dashboard</Link>
           <i className="fa-solid fa-chevron-right text-[10px] text-slate-400" />
-          <Link href="/dashboard/reports" className="hover:text-[#006FBF]">
-            Reports & Analytics
-          </Link>
+          <Link href="/dashboard/reports" className="hover:text-[#006FBF]">Reports & Analytics</Link>
           <i className="fa-solid fa-chevron-right text-[10px] text-slate-400" />
-          <span className="text-slate-900">Student Enrollment</span>
+          <span className="text-slate-900 font-semibold">Student Enrollment</span>
         </div>
 
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#042954]">
               Student Enrollment Report
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Analyze student population trends, class capacities, and admission statistics.
+            <p className="mt-1 text-xs text-slate-500">
+              Live database analytics for student populations, class capacities, and gender distributions.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#006FBF]"
+              onClick={fetchReport}
+              className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-xs font-semibold text-[#042954] shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all"
             >
-              <i className="fa-solid fa-file-excel mr-2 text-emerald-600" />
-              Export Roster
+              <i className={`fa-solid fa-rotate mr-2 ${isLoading ? 'animate-spin text-[#0ea5e9]' : 'text-slate-400'}`} />
+              Refresh Analytics
             </button>
             <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#006FBF] to-[#04B1D6] px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-[#012E54] hover:to-[#006FBF] focus:outline-none focus:ring-2 focus:ring-[#006FBF] focus:ring-offset-2"
+              onClick={() => window.print()}
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#042954] to-[#0ea5e9] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
             >
               <i className="fa-solid fa-file-pdf mr-2" />
-              Download Summary PDF
+              Download Report PDF
             </button>
           </div>
         </div>
       </div>
 
-      {/* ----------------------------------------------------------------------
-          STATS GRID
-          ---------------------------------------------------------------------- */}
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-center justify-between">
+          <span><i className="fa-solid fa-triangle-exclamation mr-2"></i>{error}</span>
+          <button onClick={fetchReport} className="font-bold underline">Retry</button>
+        </div>
+      )}
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STATS.map((stat) => (
-          <div
-            key={stat.title}
-            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  {stat.title}
-                </p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold tracking-tight text-slate-900">
-                    {stat.value}
-                  </span>
-                </div>
-              </div>
-              <div
-                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} text-white shadow-inner`}
-              >
-                <i className={`fa-solid ${stat.icon} text-lg`} />
-              </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Enrolled</p>
+              <h3 className="mt-2 text-2xl font-extrabold text-[#042954]">
+                {isLoading ? '...' : (data?.stats.totalStudents ?? 0).toLocaleString()}
+              </h3>
             </div>
-            <p className="mt-3 text-xs text-slate-500">{stat.subtext}</p>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-[#0ea5e9] shadow-inner">
+              <i className="fa-solid fa-users text-lg" />
+            </div>
           </div>
-        ))}
+          <p className="mt-3 text-xs text-slate-500">Across {data?.stats.totalStreams || 0} active classes</p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">New Admissions</p>
+              <h3 className="mt-2 text-2xl font-extrabold text-[#042954]">
+                {isLoading ? '...' : (data?.stats.newAdmissions ?? 0).toLocaleString()}
+              </h3>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-inner">
+              <i className="fa-solid fa-user-plus text-lg" />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">Admitted in current academic cycle</p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Gender Distribution</p>
+              <h3 className="mt-2 text-xl font-extrabold text-[#042954]">
+                {isLoading ? '...' : genderRatioText}
+              </h3>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-inner">
+              <i className="fa-solid fa-venus-mars text-lg" />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            {data?.stats.boysCount || 0} Boys, {data?.stats.girlsCount || 0} Girls
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Average Class Size</p>
+              <h3 className="mt-2 text-2xl font-extrabold text-[#042954]">
+                {isLoading ? '...' : data?.stats.averageClassSize ?? 0}
+              </h3>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-inner">
+              <i className="fa-solid fa-chair text-lg" />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">Standard institutional capacity is 40</p>
+        </div>
       </div>
 
-      {/* ----------------------------------------------------------------------
-          FILTERS BAR
-          ---------------------------------------------------------------------- */}
+      {/* Filters Bar */}
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-              Academic Year
-            </label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Academic Year</label>
             <select
-              className="rounded-xl border-0 py-2 pl-3 pr-8 text-xs font-medium text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-[#006FBF]"
-              defaultValue="2026"
+              value={academicYear}
+              onChange={(e) => setAcademicYear(e.target.value)}
+              className="rounded-xl border border-slate-200 py-2 pl-3 pr-8 text-xs font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
             >
               <option value="2026">2026 Academic Year</option>
               <option value="2025">2025 Academic Year</option>
@@ -226,197 +239,139 @@ export default function StudentEnrollmentReportPage() {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-              Form / Year Level
-            </label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Capacity Status</label>
             <select
-              className="rounded-xl border-0 py-2 pl-3 pr-8 text-xs font-medium text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-[#006FBF]"
-              defaultValue="all"
-            >
-              <option value="all">All Forms</option>
-              <option value="f1">Form 1</option>
-              <option value="f2">Form 2</option>
-              <option value="f3">Form 3</option>
-              <option value="f4">Form 4</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-              Capacity Status
-            </label>
-            <select
-              className="rounded-xl border-0 py-2 pl-3 pr-8 text-xs font-medium text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-[#006FBF]"
-              defaultValue="all"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-xl border border-slate-200 py-2 pl-3 pr-8 text-xs font-semibold text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
             >
               <option value="all">All Capacities</option>
               <option value="full">Full / Over-Enrolled</option>
               <option value="optimal">Optimal</option>
-              <option value="under">Under-Enrolled</option>
+              <option value="under-enrolled">Under-Enrolled</option>
             </select>
           </div>
         </div>
 
-        <div className="relative w-full lg:w-64">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <i className="fa-solid fa-search text-slate-400" />
-          </div>
+        <div className="relative w-full lg:w-72">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
           <input
             type="text"
-            className="block w-full rounded-xl border-0 py-2 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-[#006FBF]"
-            placeholder="Search stream or class teacher..."
+            placeholder="Search class name or teacher..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-[40px] pl-9 pr-3 rounded-xl border border-slate-200 text-xs font-medium text-[#042954] bg-[#f8fafc] focus:outline-none focus:border-[#0ea5e9]"
           />
         </div>
       </div>
 
-      {/* ----------------------------------------------------------------------
-          ENROLLMENT BY FORM BREAKDOWN
-          ---------------------------------------------------------------------- */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Enrollment by Form</h2>
-            <p className="text-xs text-slate-500">Form capacity utilization and gender breakdown</p>
-          </div>
-          <span className="inline-flex items-center rounded-md bg-[#006FBF]/10 px-2.5 py-1 text-xs font-medium text-[#006FBF] ring-1 ring-inset ring-[#006FBF]/20">
-            Total Capacity: 640
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {ENROLLMENT_BY_FORM.map((item) => (
-            <div key={item.form} className="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-900">{item.form}</span>
-                <span className="text-[10px] font-bold text-slate-400">{item.enrolled} / {item.capacity}</span>
-              </div>
-              
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                <span>Capacity Utilization</span>
-                <span className="font-semibold text-slate-700">{item.percentage}%</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                <div className={`h-full ${item.color}`} style={{ width: `${item.percentage}%` }} />
-              </div>
-
-              <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <i className="fa-solid fa-mars text-indigo-500" />
-                  <span className="font-semibold text-slate-700">{item.boys} Boys</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  <i className="fa-solid fa-venus text-rose-500" />
-                  <span className="font-semibold text-slate-700">{item.girls} Girls</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ----------------------------------------------------------------------
-          CLASS-LEVEL ENROLLMENT TABLE
-          ---------------------------------------------------------------------- */}
+      {/* Class-Level Enrollment Table */}
       <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900">Class & Stream Details</h2>
-          <span className="text-xs font-medium text-slate-500">Showing 16 streams</span>
+          <h2 className="text-base font-bold text-[#042954]">Class & Stream Roster Breakdown</h2>
+          <span className="text-xs font-semibold text-slate-500">Showing {filteredClasses.length} records</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+            <thead className="bg-[#f8fafc]">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Class / Stream
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Class Teacher
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Enrolled / Cap
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Gender Split
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Vacancies
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Status
-                </th>
-                <th scope="col" className="relative px-6 py-4 text-right">
-                  <span className="sr-only">Actions</span>
-                </th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Class / Stream</th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Class Teacher</th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Enrolled / Capacity</th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Gender Split</th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Vacancies</th>
+                <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Status</th>
+                <th className="relative px-6 py-3.5 text-right"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {CLASS_ENROLLMENT.map((cls) => (
-                <tr key={cls.id} className="transition-colors hover:bg-slate-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-[#006FBF]">
-                        {cls.className.split(' ')[0][0]}{cls.className.split(' ')[1][0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{cls.className}</p>
-                        <p className="text-xs text-slate-400 font-mono">{cls.id}</p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-600">
-                    {cls.classTeacher}
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <span className="font-bold text-slate-900">{cls.enrolled}</span>
-                    <span className="text-slate-500"> / {cls.capacity}</span>
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="font-semibold text-indigo-600" title="Boys">
-                        B: {cls.boys}
-                      </span>
-                      <span className="text-slate-300">|</span>
-                      <span className="font-semibold text-rose-600" title="Girls">
-                        G: {cls.girls}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <span className={`text-sm font-bold ${cls.vacancies === 0 ? 'text-slate-400' : 'text-emerald-600'}`}>
-                      {cls.vacancies} open
-                    </span>
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4">
-                    {cls.status === 'optimal' && (
-                      <span className="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                        Optimal
-                      </span>
-                    )}
-                    {cls.status === 'full' && (
-                      <span className="inline-flex items-center rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                        Full
-                      </span>
-                    )}
-                    {cls.status === 'under-enrolled' && (
-                      <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/20">
-                        Under-enrolled
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                    <button className="inline-flex items-center rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-all">
-                      <i className="fa-solid fa-eye mr-1.5 text-slate-500" /> View Roster
-                    </button>
+            <tbody className="divide-y divide-slate-100 bg-white text-[13px]">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <i className="fa-solid fa-circle-notch animate-spin mr-2 text-[#0ea5e9]" />
+                    Loading live class rosters from database...
                   </td>
                 </tr>
-              ))}
+              ) : filteredClasses.length > 0 ? (
+                filteredClasses.map((cls) => {
+                  const pct = Math.min(Math.round((cls.enrolled / cls.capacity) * 100), 100);
+                  return (
+                    <tr key={cls.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-sky-50 text-xs font-bold text-[#0ea5e9]">
+                            {cls.className.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-[#042954]">{cls.className}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">{cls.id}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-700">
+                        {cls.classTeacher}
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className="font-extrabold text-[#042954]">{cls.enrolled}</span>
+                        <span className="text-slate-400"> / {cls.capacity}</span>
+                        <div className="mt-1 h-1 w-24 overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-full bg-[#0ea5e9]" style={{ width: `${pct}%` }} />
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold">
+                          <span className="text-indigo-600">B: {cls.boys}</span>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-rose-600">G: {cls.girls}</span>
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className={`text-sm font-bold ${cls.vacancies === 0 ? 'text-slate-400' : 'text-emerald-600'}`}>
+                          {cls.vacancies} open
+                        </span>
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4">
+                        {cls.status === 'optimal' && (
+                          <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                            Optimal
+                          </span>
+                        )}
+                        {cls.status === 'full' && (
+                          <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-700 border border-amber-200">
+                            Full
+                          </span>
+                        )}
+                        {cls.status === 'under-enrolled' && (
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-600 border border-slate-200">
+                            Under-enrolled
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="whitespace-nowrap px-6 py-4 text-right">
+                        <Link
+                          href={`/dashboard/students?grade=${cls.id}`}
+                          className="inline-flex items-center rounded-xl bg-sky-50 px-3.5 py-1.5 text-xs font-semibold text-[#0ea5e9] hover:bg-sky-100 transition-all"
+                        >
+                          <i className="fa-solid fa-eye mr-1.5" /> View Roster
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500 text-[13px]">
+                    No matching class enrollment records found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -19,6 +19,8 @@ import examRoutes from './modules/academics/exams.routes.js';
 import examResultsRoutes from './modules/academics/exam_results.routes.js';
 import examReportsRoutes from './modules/academics/exam_reports.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
+import parentRoutes from './modules/parents/parents.routes.js';
+import reportsRoutes from './modules/reports/reports.routes.js';
 
 dotenv.config();
 
@@ -73,12 +75,15 @@ app.use('/api/v1/academics', academicRoutes);
 
 // 4. Students & Attendance
 app.use('/api/v1/students', studentRoutes);
+app.use('/api/v1/parents', parentRoutes);
 app.use('/api/v1/attendance', attendanceRoutes);
 
 // 5. Teachers & Departments
 app.use('/api/v1/teachers/attendance', teacherAttendanceRoutes);
 app.use('/api/v1/teachers', teacherRoutes);
 app.use('/api/v1/departments', departmentRoutes);
+
+app.use('/api/v1/reports', reportsRoutes);
 
 // ==========================================
 // HEALTH CHECK

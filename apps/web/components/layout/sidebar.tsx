@@ -70,6 +70,9 @@ const navigationSections: NavSection[] = [
           { name: 'Student Directory', href: '/dashboard/students' },
           { name: 'Classes & Streams', href: '/dashboard/students/classes' },
           { name: 'Daily Attendance', href: '/dashboard/students/attendance' },
+          { name: 'Health & Medical', href: '/dashboard/students/medical' },
+          { name: 'Transfer', href: '/dashboard/students/transfers'},
+          { name: 'Transfer & Withdrawal', href: '/dashboard/students/withdrawals' },
         ],
       },
       {
@@ -78,6 +81,7 @@ const navigationSections: NavSection[] = [
         description: 'Parents, guardians and portal access',
         children: [
           { name: 'Parent Directory', href: '/dashboard/parents' },
+          { name: 'Family Directory', href: '/dashboard/parents/families' },
           { name: 'Linked Children', href: '/dashboard/parents/children' },
           { name: 'Portal Access Logs', href: '/dashboard/parents/access' },
           { name: 'Notifications & Alerts', href: '/dashboard/parents/notifications' },
@@ -94,6 +98,9 @@ const navigationSections: NavSection[] = [
         description: 'Teachers, timetables, lessons and coursework',
         children: [
           { name: 'Teacher Directory', href: '/dashboard/teachers' },
+          { name: 'Teacher Allocation', href: '/dashboard/academics/allocations' },
+          { name: 'Academic Structure', href: '/dashboard/academics/structure' },
+          { name: 'Curriculum & CBC Engine', href: '/dashboard/academics/curriculum' },
           { name: 'Departments', href: '/dashboard/academics/departments' },
           { name: 'Subjects', href: '/dashboard/academics/subjects' },
           { name: 'Timetables', href: '/dashboard/academics/timetables' },

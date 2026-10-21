@@ -1,8 +1,10 @@
 // apps/api/src/modules/students/students.service.ts
+import { eq } from 'drizzle-orm';
 import { db } from '../../config/db.js';
 import { auditLogs } from '../audit/audit.schema.js';
 import { StudentsRepository } from './students.repository.js';
 import { students } from './students.schema.js';
+import { classes, streams } from '../academics/academics.schema.js';
 
 const repository = new StudentsRepository();
 
@@ -70,5 +72,13 @@ export class StudentsService {
     });
 
     return deletedStudent;
+  }
+
+  async getClassesAndStreams(tenantId: string) {
+    const [classList, streamList] = await Promise.all([
+      db.select().from(classes).where(eq(classes.tenantId, tenantId)).catch(() => []),
+      db.select().from(streams).where(eq(streams.tenantId, tenantId)).catch(() => []),
+    ]);
+    return { classes: classList, streams: streamList };
   }
 }

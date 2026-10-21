@@ -2,11 +2,11 @@
 import { z } from 'zod';
 
 export const createLessonPlanSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  teacherId: z.string().uuid('Invalid Teacher ID'),
-  subjectId: z.string().uuid('Invalid Subject ID'),
-  streamId: z.string().uuid('Invalid Stream ID'),
-  objectives: z.string().min(10, 'Objectives must be at least 10 characters'),
+  title: z.string().trim().min(3, 'Lesson title must be at least 3 characters'),
+  teacherId: z.string().uuid('Please select a valid Teacher'),
+  subjectId: z.string().uuid('Please select a valid Subject'),
+  streamId: z.string().uuid('Please select a valid Class / Stream'),
+  objectives: z.string().trim().min(3, 'Curriculum objectives must be at least 3 characters'),
   status: z.enum(['Draft', 'Pending Review', 'Approved', 'Needs Revision']).default('Pending Review'),
 });
 

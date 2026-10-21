@@ -59,4 +59,13 @@ export class StudentsController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  async getMetadata(req: AuthenticatedRequest, res: Response) {
+    try {
+      const data = await service.getClassesAndStreams(req.tenantId!);
+      res.status(200).json({ success: true, data });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

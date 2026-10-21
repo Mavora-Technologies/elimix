@@ -11,6 +11,8 @@ router.use(authMiddleware);
 
 router.get('/', requirePermission('academics.read'), controller.getAssignments);
 router.post('/', requirePermission('academics.create'), controller.createAssignment);
+router.get('/:id/submissions', requirePermission('academics.read'), controller.getSubmissions);
+router.post('/:id/submissions', requirePermission('academics.create'), controller.recordSubmission);
 router.put('/:id', requirePermission('academics.create'), controller.updateAssignment);
 router.patch('/:id/status', requirePermission('academics.create'), controller.updateStatus);
 router.delete('/:id', requirePermission('academics.create'), controller.deleteAssignment);
