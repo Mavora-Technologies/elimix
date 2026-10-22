@@ -18,9 +18,12 @@ import assignmentRoutes from './modules/academics/assignments.routes.js';
 import examRoutes from './modules/academics/exams.routes.js';
 import examResultsRoutes from './modules/academics/exam_results.routes.js';
 import examReportsRoutes from './modules/academics/exam_reports.routes.js';
+import elearningRoutes from './modules/academics/elearning.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import parentRoutes from './modules/parents/parents.routes.js';
 import reportsRoutes from './modules/reports/reports.routes.js';
+import elearningResourcesRoutes from './modules/academics/elearning_resources.routes.js';
+import elearningProgressRoutes from './modules/academics/elearning_progress.routes.js';
 
 dotenv.config();
 
@@ -61,7 +64,13 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
-// 2. Specific Academic Sub-Routes (MUST go before base academic route)
+// 2. Specific Academic & E-Learning Sub-Routes (MUST go before base academic route)
+app.use('/api/v1/e-learning', elearningRoutes);
+app.use('/api/v1/academics/e-learning', elearningRoutes);
+app.use('/api/v1/e-learning/resources', elearningResourcesRoutes);
+app.use('/api/v1/e-learning/progress', elearningProgressRoutes);
+app.use('/api/v1/academics/progress', elearningResourcesRoutes);
+app.use('/api/v1/academics/resources', elearningResourcesRoutes);
 app.use('/api/v1/academics/subjects', subjectRoutes);
 app.use('/api/v1/academics/timetables', timetableRoutes);
 app.use('/api/v1/academics/lesson-plans', lessonPlanRoutes);
@@ -83,6 +92,7 @@ app.use('/api/v1/teachers/attendance', teacherAttendanceRoutes);
 app.use('/api/v1/teachers', teacherRoutes);
 app.use('/api/v1/departments', departmentRoutes);
 
+// 6. Reports & Analytics
 app.use('/api/v1/reports', reportsRoutes);
 
 // ==========================================

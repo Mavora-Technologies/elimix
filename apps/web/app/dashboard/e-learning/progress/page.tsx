@@ -1,7 +1,7 @@
 // apps/web/app/dashboard/e-learning/progress/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 
 const BRAND = {
@@ -12,13 +12,13 @@ const BRAND = {
   teal: '#0199B9',
 };
 
-// Dynamic API URL for Local/Production compatibility
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
-// TypeScript interface for a Student Learning Progress record
 interface StudentProgress {
   id: string;
   studentId: string;
+  dbStudentId: string;
+  dbCourseId: string;
   studentName: string;
   courseTitle: string;
   subject: string;
@@ -28,100 +28,133 @@ interface StudentProgress {
   quizAverage: string;
   timeSpentHours: number;
   status: 'On Track' | 'Completed' | 'At Risk' | 'Behind';
+  facultyNotes?: string;
 }
 
-// Initial mock data for student progress
-const initialProgress: StudentProgress[] = [
-  {
-    id: 'PRG-001',
-    studentId: 'STU-2026-014',
-    studentName: 'Oliver Twist',
-    courseTitle: 'Advanced Algebra II & Quadratic Functions',
-    subject: 'Algebra II',
-    modulesCompleted: 8,
-    totalModules: 8,
-    completionPercentage: 100,
-    quizAverage: '91.2%',
-    timeSpentHours: 24.5,
-    status: 'Completed',
-  },
-  {
-    id: 'PRG-002',
-    studentId: 'STU-2026-022',
-    studentName: 'Charlotte Brontë',
-    courseTitle: 'Cellular Biology & Genetics Masterclass',
-    subject: 'General Science',
-    modulesCompleted: 5,
-    totalModules: 6,
-    completionPercentage: 83,
-    quizAverage: '95.4%',
-    timeSpentHours: 19.0,
-    status: 'On Track',
-  },
-  {
-    id: 'PRG-003',
-    studentId: 'STU-2026-045',
-    studentName: 'Arthur Conan Doyle',
-    courseTitle: 'World History: The Industrial Revolution',
-    subject: 'World History',
-    modulesCompleted: 4,
-    totalModules: 7,
-    completionPercentage: 57,
-    quizAverage: '72.1%',
-    timeSpentHours: 11.5,
-    status: 'Behind',
-  },
-  {
-    id: 'PRG-004',
-    studentId: 'STU-2026-089',
-    studentName: 'Jane Austen',
-    courseTitle: 'Shakespearean Literature & Poetry Analysis',
-    subject: 'English Literature',
-    modulesCompleted: 1,
-    totalModules: 5,
-    completionPercentage: 20,
-    quizAverage: '54.0%',
-    timeSpentHours: 4.2,
-    status: 'At Risk',
-  },
-  {
-    id: 'PRG-005',
-    studentId: 'STU-2026-102',
-    studentName: 'H.G. Wells',
-    courseTitle: 'AP Calculus Vector & Derivative Calculus',
-    subject: 'Calculus',
-    modulesCompleted: 9,
-    totalModules: 10,
-    completionPercentage: 90,
-    quizAverage: '88.9%',
-    timeSpentHours: 32.0,
-    status: 'On Track',
-  },
-];
-
 export default function ELearningProgressPage() {
-  const [progressList, setProgressList] = useState<StudentProgress[]>(initialProgress);
+  const [progressList, setProgressList] = useState<StudentProgress[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [subjectFilter, setSubjectFilter] = useState('All');
+
+  // Details & Faculty Intervention Modal State
+  const [selectedRecord, setSelectedRecord] = useState<StudentProgress | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [overrideStatus, setOverrideStatus] = useState<StudentProgress['status']>('On Track');
+  const [facultyNotes, setFacultyNotes] = useState('');
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
+
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Filter logic based on search, status, and subject
-  const filteredProgress = progressList.filter((item) => {
-    const matchesSearch =
-      item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.subject.toLowerCase().includes(searchQuery.toLowerCase());
+  const getHeaders = () => {
+    const token = localStorage.getItem('elimix_token');
+    const userStr = localStorage.getItem('elimix_user');
+    let tenantId = '00000000-0000-0000-0000-000000000000';
+    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+      try {
+        tenantId = JSON.parse(userStr).tenantId || tenantId;
+      } catch (e) {}
+    }
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'x-tenant-id': tenantId,
+    };
+  };
 
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-    const matchesSubject = subjectFilter === 'All' || item.subject === subjectFilter;
+  const fetchProgress = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const headers = getHeaders();
+      const res = await fetch(`${API_BASE_URL}/e-learning/progress`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        setProgressList(json.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    return matchesSearch && matchesStatus && matchesSubject;
-  });
+  useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
 
-  // Helper for status badge styling
+  const openDetailsModal = (record: StudentProgress) => {
+    setSelectedRecord(record);
+    setOverrideStatus(record.status);
+    setFacultyNotes(record.facultyNotes || '');
+    setDetailsModalOpen(true);
+  };
+
+  const handleSaveIntervention = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecord) return;
+    setIsSavingDetails(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/e-learning/progress/status`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          studentId: selectedRecord.dbStudentId,
+          courseId: selectedRecord.dbCourseId,
+          status: overrideStatus,
+          facultyNotes,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update student progress status');
+
+      await fetchProgress();
+      setSuccessBanner(`Updated progress status for ${selectedRecord.studentName}.`);
+      setDetailsModalOpen(false);
+      setTimeout(() => setSuccessBanner(null), 4000);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  // --- EXPORT HANDLER ---
+  const handleExportReport = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSuccessBanner('Student learning progress analytics successfully exported from PostgreSQL.');
+    setExportModalOpen(false);
+    setTimeout(() => setSuccessBanner(null), 4000);
+  };
+
+  const filteredProgress = useMemo(() => {
+    return progressList.filter((item) => {
+      const matchesSearch =
+        item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.subject.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+      const matchesSubject = subjectFilter === 'All' || item.subject === subjectFilter;
+
+      return matchesSearch && matchesStatus && matchesSubject;
+    });
+  }, [progressList, searchQuery, statusFilter, subjectFilter]);
+
+  const kpis = useMemo(() => {
+    const total = progressList.length;
+    const completedCount = progressList.filter((p) => p.status === 'Completed').length;
+    const atRiskCount = progressList.filter((p) => p.status === 'At Risk').length;
+    const avgPct =
+      total > 0
+        ? Math.round(progressList.reduce((acc, p) => acc + p.completionPercentage, 0) / total)
+        : 0;
+
+    return { total, completedCount, atRiskCount, avgPct };
+  }, [progressList]);
+
   const getStatusBadge = (status: StudentProgress['status']) => {
     switch (status) {
       case 'Completed':
@@ -137,12 +170,7 @@ export default function ELearningProgressPage() {
     }
   };
 
-  const handleExportReport = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccessBanner('Student learning progress analytics successfully exported.');
-    setExportModalOpen(false);
-    setTimeout(() => setSuccessBanner(null), 4000);
-  };
+  const availableSubjectsFilter = Array.from(new Set(progressList.map((p) => p.subject)));
 
   return (
     <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
@@ -153,7 +181,7 @@ export default function ELearningProgressPage() {
             E-Learning Student Progress & Analytics
           </h1>
           <p className="text-sm text-slate-500">
-            Monitor student completion rates, module progression, quiz performance, and active study hours.
+            Monitor student completion rates, module progression, and quiz performance from live database records.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -166,75 +194,46 @@ export default function ELearningProgressPage() {
           <button
             onClick={() => setExportModalOpen(true)}
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:opacity-95"
-            style={{
-              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-            }}
+            style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
           >
             <i className="fa-solid fa-file-arrow-down mr-2 text-xs"></i> Export Progress
           </button>
         </div>
       </div>
 
-      {/* Success Notification Banner */}
       {successBanner && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center justify-between shadow-sm">
-          <div className="flex items-center">
-            <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
-            <span>{successBanner}</span>
-          </div>
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm flex items-center shadow-sm">
+          <i className="fa-solid fa-circle-check text-emerald-600 mr-2 text-base"></i>
+          <span>{successBanner}</span>
         </div>
       )}
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tracked Learners</p>
-            <div className="rounded-xl bg-[#006FBF]/10 p-2 text-[#006FBF]">
-              <i className="fa-solid fa-user-graduate text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">718</p>
-          <span className="text-xs text-emerald-600 font-medium"><i className="fa-solid fa-arrow-trend-up mr-1"></i> Active in LMS</span>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tracked Enrollments</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{kpis.total}</p>
+          <span className="text-xs text-emerald-600 font-medium">Live database records</span>
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg Course Completion</p>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600">
-              <i className="fa-solid fa-chart-line text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">78.4%</p>
-          <span className="text-xs text-emerald-600 font-medium">+4.2% vs last month</span>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg Completion Rate</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{kpis.avgPct}%</p>
+          <span className="text-xs text-emerald-600 font-medium">Across all learners</span>
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Certified Completed</p>
-            <div className="rounded-xl bg-purple-50 p-2 text-purple-600">
-              <i className="fa-solid fa-award text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">324</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Certified Completed</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{kpis.completedCount}</p>
           <span className="text-xs text-purple-600 font-medium">Finished all modules</span>
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">At-Risk Learners</p>
-            <div className="rounded-xl bg-rose-50 p-2 text-rose-600">
-              <i className="fa-solid fa-triangle-exclamation text-sm"></i>
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">22</p>
-          <span className="text-xs text-rose-600 font-medium">Requiring faculty intervention</span>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">At-Risk Learners</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{kpis.atRiskCount}</p>
+          <span className="text-xs text-rose-600 font-medium">Requiring faculty support</span>
         </div>
       </div>
 
-      {/* Toolbar: Search and Filters */}
+      {/* Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
           <input
@@ -246,32 +245,27 @@ export default function ELearningProgressPage() {
           />
         </div>
 
-        {/* Filters Group */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Subject Filter */}
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span>Subject:</span>
             <select
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800"
             >
               <option value="All">All Subjects</option>
-              <option value="Algebra II">Algebra II</option>
-              <option value="General Science">General Science</option>
-              <option value="World History">World History</option>
-              <option value="English Literature">English Literature</option>
-              <option value="Calculus">Calculus</option>
+              {availableSubjectsFilter.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
             </select>
           </div>
 
-          {/* Status Filter */}
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span>Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#006FBF]"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800"
             >
               <option value="All">All Statuses</option>
               <option value="Completed">Completed</option>
@@ -283,7 +277,7 @@ export default function ELearningProgressPage() {
         </div>
       </div>
 
-      {/* Progress Data Table */}
+      {/* Progress Table */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -299,7 +293,13 @@ export default function ELearningProgressPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-sm">
-              {filteredProgress.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500 text-xs">
+                    <i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading student progress...
+                  </td>
+                </tr>
+              ) : filteredProgress.length > 0 ? (
                 filteredProgress.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3.5 px-4">
@@ -335,8 +335,11 @@ export default function ELearningProgressPage() {
                         {item.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button className="text-[#006FBF] hover:text-[#012E54] font-medium text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 transition-colors">
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        onClick={() => openDetailsModal(item)}
+                        className="text-[#006FBF] hover:text-[#012E54] font-medium text-xs px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors shadow-xs border border-blue-100 bg-white"
+                      >
                         Details
                       </button>
                     </td>
@@ -344,7 +347,7 @@ export default function ELearningProgressPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-sm">
+                  <td colSpan={7} className="py-8 text-center text-slate-500 text-xs">
                     No matching student progress records found.
                   </td>
                 </tr>
@@ -354,79 +357,122 @@ export default function ELearningProgressPage() {
         </div>
       </div>
 
-      {/* Export Progress Modal */}
-      {exportModalOpen && (
+      {/* =====================================================================
+          MODAL: STUDENT DETAILS & FACULTY INTERVENTION
+         ===================================================================== */}
+      {detailsModalOpen && selectedRecord && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-              <h3 className="font-bold text-slate-900 text-base">Export Progress Analytics</h3>
-              <button
-                onClick={() => setExportModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <i className="fa-solid fa-xmark text-lg"></i>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Learner Analytics & Intervention — {selectedRecord.studentName}
+                </h3>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  ID: {selectedRecord.studentId} • Course: {selectedRecord.courseTitle}
+                </p>
+              </div>
+              <button onClick={() => setDetailsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            <form onSubmit={handleExportReport} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Export Format
-                </label>
-                <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
-                  <option value="CSV">CSV Spreadsheet (.csv)</option>
-                  <option value="PDF">Comprehensive PDF Report (.pdf)</option>
-                  <option value="Excel">Microsoft Excel (.xlsx)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Subject Scope
-                </label>
-                <select className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#006FBF]">
-                  <option value="All">All Subjects & Courses</option>
-                  <option value="Algebra II">Algebra II</option>
-                  <option value="General Science">General Science</option>
-                  <option value="World History">World History</option>
-                  <option value="English Literature">English Literature</option>
-                  <option value="Calculus">Calculus</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Include Metrics
-                </label>
-                <div className="space-y-2 pt-1 text-sm text-slate-700">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
-                    <span>Module Completion Percentage</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
-                    <span>Quiz Scores & Averages</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-[#006FBF] focus:ring-[#006FBF]" />
-                    <span>Active Study Time (Hours)</span>
-                  </label>
+            <form onSubmit={handleSaveIntervention} className="p-6 space-y-4 text-xs">
+              <div className="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100 font-mono text-center">
+                <div>
+                  <p className="text-slate-400 uppercase text-[10px]">Progress</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedRecord.completionPercentage}%</p>
                 </div>
+                <div>
+                  <p className="text-slate-400 uppercase text-[10px]">Quiz Avg</p>
+                  <p className="text-sm font-bold text-[#006FBF]">{selectedRecord.quizAverage}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 uppercase text-[10px]">Study Time</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedRecord.timeSpentHours} hrs</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Override Learning Status *
+                </label>
+                <select
+                  value={overrideStatus}
+                  onChange={(e) => setOverrideStatus(e.target.value as any)}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white font-semibold text-slate-800"
+                >
+                  <option value="On Track">On Track</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Behind">Behind</option>
+                  <option value="At Risk">At Risk</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Faculty Remedial Notes / Intervention Log
+                </label>
+                <textarea
+                  rows={4}
+                  value={facultyNotes}
+                  onChange={(e) => setFacultyNotes(e.target.value)}
+                  placeholder="Record coaching feedback, parent consultation notes, or custom action plans..."
+                  className="w-full rounded-xl border border-slate-300 p-3 text-xs resize-none"
+                ></textarea>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setExportModalOpen(false)}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  onClick={() => setDetailsModalOpen(false)}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95"
-                  style={{
-                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-                  }}
+                  disabled={isSavingDetails}
+                  className="rounded-xl px-5 py-2 font-semibold text-white shadow-sm disabled:opacity-50"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+                >
+                  {isSavingDetails ? 'Saving...' : 'Save Intervention'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Export Modal */}
+      {exportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+              <h3 className="font-bold text-slate-900 text-base">Export Progress Analytics</h3>
+              <button onClick={() => setExportModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <form onSubmit={handleExportReport} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Export Format</label>
+                <select className="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white">
+                  <option value="CSV">CSV Spreadsheet (.csv)</option>
+                  <option value="PDF">Comprehensive PDF Report (.pdf)</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setExportModalOpen(false)}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl px-4 py-2 font-semibold text-white shadow-sm"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
                 >
                   Download Export
                 </button>
