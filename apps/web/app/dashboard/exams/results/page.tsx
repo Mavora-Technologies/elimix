@@ -12,7 +12,6 @@ const BRAND = {
   teal: '#0199B9',
 };
 
-// Dynamic API URL for Local/Production compatibility
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 interface ExamResult {
@@ -30,7 +29,6 @@ interface ExamResult {
 
 export default function ExamResultsPage() {
   const [results, setResults] = useState<ExamResult[]>([]);
-  // In a full implementation, you would fetch these dynamically for the dropdowns
   const [dbStudents, setDbStudents] = useState<any[]>([]);
   const [dbExams, setDbExams] = useState<any[]>([]);
   const [dbSubjects, setDbSubjects] = useState<any[]>([]);
@@ -50,7 +48,6 @@ export default function ExamResultsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Raw UUID form state for the DB
   const [formData, setFormData] = useState({
     studentId: '',
     examId: '',
@@ -58,8 +55,8 @@ export default function ExamResultsPage() {
     streamId: '',
     marksObtained: 0,
     totalMarks: 100,
-    grade: 'A',
-    status: 'Passed',
+    grade: 'A' as 'A+' | 'A' | 'B' | 'C' | 'D' | 'F',
+    status: 'Passed' as 'Passed' | 'Failed' | 'Pending Review',
   });
 
   const getHeaders = () => {
@@ -98,6 +95,31 @@ export default function ExamResultsPage() {
 
   useEffect(() => { fetchPageData(); }, []);
 
+  // --- KNEC / CBC AUTO-GRADING ENGINE ---
+  const handleMarksChange = (obtained: number, total: number) => {
+    const pct = total > 0 ? (obtained / total) * 100 : 0;
+    let computedGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' = 'F';
+    let computedStatus: 'Passed' | 'Failed' = 'Passed';
+
+    if (pct >= 80) computedGrade = 'A+';
+    else if (pct >= 75) computedGrade = 'A';
+    else if (pct >= 65) computedGrade = 'B';
+    else if (pct >= 50) computedGrade = 'C';
+    else if (pct >= 40) computedGrade = 'D';
+    else {
+      computedGrade = 'F';
+      computedStatus = 'Failed';
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      marksObtained: obtained,
+      totalMarks: total,
+      grade: computedGrade,
+      status: computedStatus,
+    }));
+  };
+
   const handleSaveResult = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -123,7 +145,7 @@ export default function ExamResultsPage() {
       if (!res.ok) throw new Error(result.message || 'Submission failed');
 
       await fetchPageData();
-      setSuccessBanner(isEditing ? 'Exam result updated successfully.' : 'New examination result recorded.');
+      setSuccessBanner(isEditing ? 'Exam result updated successfully.' : 'New examination result auto-graded and recorded.');
       setIsModalOpen(false);
       setTimeout(() => setSuccessBanner(null), 4000);
     } catch (err: any) {
@@ -159,7 +181,7 @@ export default function ExamResultsPage() {
     setIsEditing(false);
     setSelectedResult(null);
     setFormError(null);
-    setFormData({ studentId: '', examId: '', subjectId: '', streamId: '', marksObtained: 0, totalMarks: 100, grade: 'A', status: 'Passed' });
+    setFormData({ studentId: '', examId: '', subjectId: '', streamId: '', marksObtained: 75, totalMarks: 100, grade: 'A', status: 'Passed' });
     setIsModalOpen(true);
   };
 
@@ -168,7 +190,6 @@ export default function ExamResultsPage() {
     setSelectedResult(rec);
     setFormError(null);
     
-    // Reverse lookup UUIDs based on UI names (since the GET request returned names for the table)
     const stu = dbStudents.find(s => s.admissionNumber === rec.studentId);
     const exm = dbExams.find(e => e.title === rec.examTitle);
     const sub = dbSubjects.find(s => s.name === rec.subject);
@@ -233,8 +254,8 @@ export default function ExamResultsPage() {
             <i className="fa-solid fa-chevron-right text-[10px]" />
             <span className="text-slate-900 truncate">Results</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">Examination Results</h1>
-          <p className="text-xs text-slate-500 mt-0.5 truncate">Review score records, grade distributions, and percentage metrics.</p>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">Examination Results & Auto-Grading</h1>
+          <p className="text-xs text-slate-500 mt-0.5 truncate">KNEC & CBC compliant automated grading, score entry, and pass/fail distribution.</p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -248,7 +269,7 @@ export default function ExamResultsPage() {
       </div>
 
       {successBanner && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/80 p-3.5 text-xs font-medium text-emerald-800 shadow-sm animate-in fade-in slide-in-from-top-2">
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/80 p-3.5 text-xs font-medium text-emerald-800 shadow-sm">
           <i className="fa-solid fa-check text-[10px] bg-emerald-100/80 text-emerald-600 p-1.5 rounded-lg" />
           <p className="flex-1">{successBanner}</p>
         </div>
@@ -282,16 +303,16 @@ export default function ExamResultsPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
         <div className="relative flex min-w-0 flex-1 items-center w-full">
           <i className="fa-solid fa-magnifying-glass absolute left-3.5 text-xs text-slate-400"></i>
-          <input type="text" placeholder="Search student name, ID, or subject..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-9 pr-4 py-2.5 sm:py-2 text-xs text-slate-800 outline-none focus:border-[#006FBF]/40 focus:bg-white" />
+          <input type="text" placeholder="Search student name, ID, or subject..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-9 pr-4 py-2 text-xs text-slate-800 outline-none" />
         </div>
         <div className="flex items-center gap-2 w-full lg:w-auto">
-          <select value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 sm:py-2 text-xs font-medium text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white">
+          <select value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-medium text-slate-700 outline-none">
             <option value="All">All Grades</option>
             <option value="A+">A+</option><option value="A">A</option>
             <option value="B">B</option><option value="C">C</option>
             <option value="D">D</option><option value="F">F</option>
           </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 sm:py-2 text-xs font-medium text-slate-700 outline-none focus:border-[#006FBF]/40 focus:bg-white">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-medium text-slate-700 outline-none">
             <option value="All">All Statuses</option>
             <option value="Passed">Passed</option>
             <option value="Failed">Failed</option>
@@ -349,7 +370,7 @@ export default function ExamResultsPage() {
                         </div>
                       </td>
                       <td className="py-4 pl-3 pr-5 text-right">
-                        <div className="flex items-center justify-end gap-1.5 transition-opacity">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button onClick={() => openEditModal(res)} className="h-7 w-7 rounded-lg bg-slate-50 text-slate-500 hover:text-[#006FBF] hover:bg-[#006FBF]/10 flex items-center justify-center border border-slate-200/60 transition-colors" title="Edit Result">
                             <i className="fa-solid fa-pen-to-square text-[10px]"></i>
                           </button>
@@ -369,68 +390,14 @@ export default function ExamResultsPage() {
         </div>
       </div>
 
-      {/* MOBILE & TABLET CARDS VIEW */}
-      <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        {isLoading ? (
-          <div className="col-span-full py-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-sm"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Loading...</div>
-        ) : filteredResults.length > 0 ? (
-          filteredResults.map((res) => {
-            const percentage = Math.round((res.marksObtained / res.totalMarks) * 100);
-            return (
-              <div key={res.id} className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col gap-4 min-w-0">
-                <div className="flex justify-between items-start gap-2 min-w-0">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500 font-bold border border-slate-200/80 flex-shrink-0">
-                      {getInitials(res.studentName)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-semibold text-slate-900 block truncate text-sm">{res.studentName}</span>
-                      <span className="font-mono text-[10px] font-semibold text-slate-500 block mt-0.5">{res.studentId}</span>
-                    </div>
-                  </div>
-                  <span className={`inline-flex flex-shrink-0 items-center justify-center w-8 h-8 rounded-lg text-sm font-bold border ${getGradeBadge(res.grade)}`}>{res.grade}</span>
-                </div>
-
-                <div className="text-xs text-slate-600 space-y-2 pt-3 border-t border-slate-100 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <i className="fa-solid fa-file-signature text-slate-400 w-4 text-center flex-shrink-0" />
-                    <span className="truncate flex-1 font-medium text-slate-700">{res.examTitle}</span>
-                  </div>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <i className="fa-solid fa-book text-slate-400 w-4 text-center flex-shrink-0" />
-                    <span className="truncate flex-1 text-slate-500">{res.subject} <span className="text-slate-400">({res.gradeStream})</span></span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                  <span className="font-mono text-[11px] text-slate-800 font-semibold">{res.marksObtained} / {res.totalMarks} <span className="text-slate-400 font-normal">({percentage}%)</span></span>
-                  <span className={`inline-flex flex-shrink-0 items-center px-2 py-0.5 rounded-md text-[9px] font-bold ${getStatusBadge(res.status)}`}>{res.status}</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100">
-                  <button onClick={() => openEditModal(res)} className="flex justify-center items-center gap-1.5 rounded-xl bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/60">
-                    <i className="fa-solid fa-pen-to-square"></i> Edit
-                  </button>
-                  <button onClick={() => openDeletePrompt(res)} className="flex justify-center items-center gap-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-100">
-                    <i className="fa-solid fa-trash-can"></i> Delete
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="col-span-full py-8 text-center text-slate-500 bg-white rounded-2xl border border-slate-200/80 shadow-sm text-sm">No results found.</div>
-        )}
-      </div>
-
-      {/* CREATE / EDIT RESULT MODAL */}
+      {/* RECORD / EDIT SCORE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200/80 shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">{isEditing ? 'Edit Exam Result' : 'Record New Result'}</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">{isEditing ? 'Update student score and grading.' : 'Log a student examination score.'}</p>
+                <h3 className="font-bold text-slate-900 text-sm">{isEditing ? 'Edit Exam Result' : 'Record & Auto-Grade Score'}</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">KNEC / CBC grades are computed automatically from marks entered.</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="h-8 w-8 rounded-xl text-slate-400 hover:bg-slate-200/50"><i className="fa-solid fa-xmark text-sm"></i></button>
             </div>
@@ -442,14 +409,14 @@ export default function ExamResultsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Student *</label>
-                    <select required value={formData.studentId} onChange={(e) => setFormData({ ...formData, studentId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors">
+                    <select required value={formData.studentId} onChange={(e) => setFormData({ ...formData, studentId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none">
                       <option value="">Select student...</option>
                       {dbStudents.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.admissionNumber})</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Grade Stream *</label>
-                    <select required value={formData.streamId} onChange={(e) => setFormData({ ...formData, streamId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors">
+                    <select required value={formData.streamId} onChange={(e) => setFormData({ ...formData, streamId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none">
                       <option value="">Select class...</option>
                       {dbStreams.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -459,60 +426,53 @@ export default function ExamResultsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Exam / Assessment *</label>
-                    <select required value={formData.examId} onChange={(e) => setFormData({ ...formData, examId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors">
+                    <select required value={formData.examId} onChange={(e) => setFormData({ ...formData, examId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none">
                       <option value="">Select exam...</option>
                       {dbExams.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Subject *</label>
-                    <select required value={formData.subjectId} onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors">
+                    <select required value={formData.subjectId} onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none">
                       <option value="">Select subject...</option>
                       {dbSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 bg-sky-50/50 p-4 rounded-xl border border-sky-100">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Marks Obtained *</label>
-                    <input type="number" required min="0" step="0.5" value={formData.marksObtained} onChange={(e) => setFormData({ ...formData, marksObtained: Number(e.target.value) })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors font-mono" />
+                    <input type="number" required min="0" step="0.5" value={formData.marksObtained} onChange={(e) => handleMarksChange(Number(e.target.value), formData.totalMarks)} className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-mono font-bold text-slate-900" />
                   </div>
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Total Marks *</label>
-                    <input type="number" required min="1" step="0.5" value={formData.totalMarks} onChange={(e) => setFormData({ ...formData, totalMarks: Number(e.target.value) })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors font-mono" />
+                    <input type="number" required min="1" step="0.5" value={formData.totalMarks} onChange={(e) => handleMarksChange(formData.marksObtained, Number(e.target.value))} className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-mono font-bold text-slate-900" />
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-2 gap-4 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Letter Grade *</label>
-                    <select value={formData.grade} onChange={(e) => setFormData({ ...formData, grade: e.target.value as any })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors font-bold">
-                      <option value="A+">A+</option><option value="A">A</option>
-                      <option value="B">B</option><option value="C">C</option>
-                      <option value="D">D</option><option value="F">F</option>
-                    </select>
+                    <label className="block font-semibold text-emerald-900 mb-1">Auto-Graded Letter</label>
+                    <input type="text" disabled value={formData.grade} className="w-full rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 font-extrabold text-emerald-900 text-center text-sm" />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Status</label>
-                    <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value as any })} className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 outline-none focus:border-[#006FBF] focus:bg-white transition-colors">
-                      <option value="Passed">Passed</option>
-                      <option value="Failed">Failed</option>
-                      <option value="Pending Review">Pending Review</option>
-                    </select>
+                    <label className="block font-semibold text-emerald-900 mb-1">Auto-Graded Status</label>
+                    <input type="text" disabled value={formData.status} className="w-full rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 font-extrabold text-emerald-900 text-center text-sm" />
                   </div>
                 </div>
               </div>
+
               <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="rounded-xl px-5 py-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 transition-colors" style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}>{isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Record Result')}</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="rounded-xl px-5 py-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50" style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}>{isSubmitting ? 'Saving...' : 'Save & Auto-Grade'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* DELETE MODAL */}
       {isDeleteModalOpen && selectedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
           <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl text-center space-y-4">
@@ -521,14 +481,11 @@ export default function ExamResultsPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900">Delete Result</h3>
-              <p className="mt-1.5 text-xs text-slate-500">Are you sure you want to permanently delete this exam result for "<span className="font-semibold text-slate-700">{selectedResult.studentName}</span>"?</p>
+              <p className="mt-1.5 text-xs text-slate-500">Are you sure you want to permanently delete this exam result?</p>
             </div>
-            {formError && <div className="text-xs text-rose-600 font-medium">{formError}</div>}
-            <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-              <button type="button" onClick={() => setIsDeleteModalOpen(false)} disabled={isSubmitting} className="w-full sm:w-auto rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">Cancel</button>
-              <button type="button" onClick={handleDelete} disabled={isSubmitting} className="w-full sm:w-auto rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-500 transition-colors disabled:opacity-50">
-                {isSubmitting ? 'Deleting...' : 'Confirm Delete'}
-              </button>
+            <div className="flex justify-center gap-3 pt-2">
+              <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-semibold text-slate-700">Cancel</button>
+              <button type="button" onClick={handleDelete} className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white">Confirm Delete</button>
             </div>
           </div>
         </div>
