@@ -17,7 +17,7 @@ export const eLearningCourses = pgTable('e_learning_courses', {
   description: text('description').notNull(),
   enrolledStudents: integer('enrolled_students').default(0).notNull(),
   modulesCount: integer('modules_count').default(0).notNull(),
-  status: varchar('status', { length: 50 }).default('Active').notNull(), // 'Active' | 'Draft' | 'Archived'
+  status: varchar('status', { length: 50 }).default('Active').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -47,9 +47,9 @@ export const eLearningQuizzes = pgTable('e_learning_quizzes', {
   title: varchar('title', { length: 255 }).notNull(),
   instructions: text('instructions').notNull(),
   timeLimitMinutes: integer('time_limit_minutes').default(30).notNull(),
-  passingScore: integer('passing_score').default(50).notNull(), // Percentage threshold (e.g., 50%)
+  passingScore: integer('passing_score').default(50).notNull(),
   questionsCount: integer('questions_count').default(0).notNull(),
-  status: varchar('status', { length: 50 }).default('Active').notNull(), // 'Active' | 'Draft' | 'Closed'
+  status: varchar('status', { length: 50 }).default('Active').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -61,9 +61,9 @@ export const eLearningQuizQuestions = pgTable('e_learning_quiz_questions', {
   quizId: uuid('quiz_id').references(() => eLearningQuizzes.id, { onDelete: 'cascade' }).notNull(),
   questionNumber: integer('question_number').default(1).notNull(),
   questionText: text('question_text').notNull(),
-  questionType: varchar('question_type', { length: 50 }).default('MCQ').notNull(), // 'MCQ' | 'TrueFalse'
-  options: jsonb('options').default([]).notNull(), // string[] e.g. ["Option A", "Option B", "Option C", "Option D"]
-  correctAnswer: text('correct_answer').notNull(), // Exact matching option string
+  questionType: varchar('question_type', { length: 50 }).default('MCQ').notNull(),
+  options: jsonb('options').default([]).notNull(),
+  correctAnswer: text('correct_answer').notNull(),
   points: integer('points').default(1).notNull(),
   explanation: text('explanation'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -75,22 +75,24 @@ export const eLearningQuizAttempts = pgTable('e_learning_quiz_attempts', {
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).notNull(),
   quizId: uuid('quiz_id').references(() => eLearningQuizzes.id, { onDelete: 'cascade' }).notNull(),
   studentId: uuid('student_id').references(() => students.id, { onDelete: 'cascade' }).notNull(),
-  answers: jsonb('answers').default({}).notNull(), // Record<questionId, selectedOption>
+  answers: jsonb('answers').default({}).notNull(),
   earnedPoints: integer('earned_points').default(0).notNull(),
   totalPoints: integer('total_points').default(0).notNull(),
   scorePercentage: integer('score_percentage').default(0).notNull(),
-  passed: varchar('passed', { length: 20 }).default('Pass').notNull(), // 'Pass' | 'Fail'
+  passed: varchar('passed', { length: 20 }).default('Pass').notNull(),
   submittedAt: timestamp('submitted_at').defaultNow(),
 });
 
+// 6. Persisted Student Course Progress & Lesson Completion Tracking
 export const eLearningStudentProgress = pgTable('e_learning_student_progress', {
   id: uuid('id').defaultRandom().primaryKey(),
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).notNull(),
   studentId: uuid('student_id').references(() => students.id, { onDelete: 'cascade' }).notNull(),
   courseId: uuid('course_id').references(() => eLearningCourses.id, { onDelete: 'cascade' }).notNull(),
+  completedLessonIds: jsonb('completed_lesson_ids').default([]).notNull(), // string[] of completed lesson UUIDs
   modulesCompleted: integer('modules_completed').default(0).notNull(),
-  timeSpentHours: integer('time_spent_hours').default(0).notNull(), // stored in minutes or hours
-  status: varchar('status', { length: 50 }).default('On Track').notNull(), // 'On Track' | 'Completed' | 'Behind' | 'At Risk'
+  timeSpentMinutes: integer('time_spent_minutes').default(0).notNull(),
+  status: varchar('status', { length: 50 }).default('On Track').notNull(), // 'Completed' | 'On Track' | 'Behind' | 'At Risk'
   facultyNotes: text('faculty_notes'),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

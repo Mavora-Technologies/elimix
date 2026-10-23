@@ -8,7 +8,10 @@ const router = Router();
 const controller = new ELearningProgressController();
 
 router.use(authMiddleware);
+
 router.get('/', requirePermission('academics.read'), controller.getProgressOverview);
+router.get('/details', requirePermission('academics.read'), controller.getStudentCourseDetail);
+router.post('/toggle-lesson', requirePermission('academics.create'), controller.toggleLessonCompletion);
 router.patch('/status', requirePermission('academics.create'), controller.updateProgressStatus);
 
 export default router;
