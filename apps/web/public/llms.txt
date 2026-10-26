@@ -1,17 +1,29 @@
-# Elimix School Management System (SRMS)
-> Developed by Mavora Technologies
+# Elimix School Management System (Mavora SRMS)
+> Developed by Mavora Technologies (https://mavoratechnologies.com)
 
-## Overview
-Elimix is a secure, cloud-native, multi-tenant institutional management platform built for primary schools, secondary academies, and tertiary universities. It provides strict database schema partitioning, granular Role-Based Access Control (RBAC), fee management, and CBC (Competency-Based Curriculum) assessment tracking.
+## Product Overview
+Elimix is a cloud-native, multi-tenant school management system built for primary schools, secondary academies, colleges, and universities in Kenya and supported markets.
 
-## Core Features
-- Strict Multi-Tenant Schema Isolation: Zero cross-tenant data leakage.
-- Granular RBAC: Tailored permissions for directors, bursars, teachers, and administrators.
-- CBC & Academic Assessment: Real-time rubric tracking and automated report cards.
-- Fee Collection & Financial Auditing: Immutable audit trails and term billing.
-- Cloud-Native Architecture: Built with Next.js, Node.js/Express, and PostgreSQL.
+## Verified Core Modules
+- Multi-Tenant Security & Governance: Partitioned PostgreSQL database schemas per institution, Role-Based Access Control (RBAC), and immutable audit logs.
+- Student Information System (SIS): Student admissions, class allocations, attendance tracking, medical records, transfers, withdrawals, and discipline records.
+- Academic & CBC Administration: Curriculum structure, departments, subjects, teacher allocations, lesson plans, timetables, CBC rubrics, examinations, and branded report cards.
+- School Fees & Finance: Termly fee structures, student invoices, payment recording, reconciliation, fee statements, defaulter tracking, and income-expenditure reports.
+- Campus Operations & E-Learning: LMS courses, quizzes and resources, parent communication portals, library circulation, hostel management, transport fleet routing, HR payroll, and procurement.
 
-## Public Resources
-- Official Website: https://elimix.mavoratechnologies.com
+## Canonical Public URLs
+- Homepage: https://elimix.mavoratechnologies.com/
+- All Features: https://elimix.mavoratechnologies.com/features
+- CBC Assessment Software: https://elimix.mavoratechnologies.com/features/cbc-assessment
+- School Fees Management: https://elimix.mavoratechnologies.com/features/fees-management
+- Academics Overview: https://elimix.mavoratechnologies.com/academics
+- Finance Overview: https://elimix.mavoratechnologies.com/finance
+- Student Records Overview: https://elimix.mavoratechnologies.com/students
+- Attendance Overview: https://elimix.mavoratechnologies.com/attendance
+- Examinations Overview: https://elimix.mavoratechnologies.com/exams
+- Communication & Parent Portal: https://elimix.mavoratechnologies.com/communication
 - Pricing Tiers: https://elimix.mavoratechnologies.com/pricing
-- Enterprise Contact: https://elimix.mavoratechnologies.com/contact
+- About Elimix: https://elimix.mavoratechnologies.com/about
+- Contact & Demo Requests: https://elimix.mavoratechnologies.com/contact
+- Privacy Policy: https://elimix.mavoratechnologies.com/privacy
+- Terms of Service: https://elimix.mavoratechnologies.com/terms
