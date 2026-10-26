@@ -1,6 +1,8 @@
 import { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
+export const runtime = 'edge';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers();
   const host = headersList.get("host") || "elimix.mavoratechnologies.com";
