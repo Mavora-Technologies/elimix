@@ -11,6 +11,7 @@ router.use(authMiddleware);
 
 router.get('/', requirePermission('academics.read'), controller.getResults);
 router.post('/', requirePermission('academics.create'), controller.createResult);
+router.post('/bulk', requirePermission('academics.create'), controller.bulkRecordResults);
 router.put('/:id', requirePermission('academics.create'), controller.updateResult);
 router.delete('/:id', requirePermission('academics.create'), controller.deleteResult);
 

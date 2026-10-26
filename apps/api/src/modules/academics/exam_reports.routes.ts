@@ -10,8 +10,7 @@ const controller = new ExamReportsController();
 router.use(authMiddleware);
 
 router.get('/', requirePermission('academics.read'), controller.getReports);
-router.post('/', requirePermission('academics.create'), controller.createReport);
-router.put('/:id', requirePermission('academics.create'), controller.updateReport);
-router.delete('/:id', requirePermission('academics.create'), controller.deleteReport);
+router.post('/endorse', requirePermission('academics.create'), controller.upsertReport);
+router.post('/publish-batch', requirePermission('academics.create'), controller.publishExamBatch);
 
 export default router;

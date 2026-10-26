@@ -1,0 +1,17 @@
+# Elimix School Management System (SRMS)
+> Developed by Mavora Technologies
+
+## Overview
+Elimix is a secure, cloud-native, multi-tenant institutional management platform built for primary schools, secondary academies, and tertiary universities. It provides strict database schema partitioning, granular Role-Based Access Control (RBAC), fee management, and CBC (Competency-Based Curriculum) assessment tracking.
+
+## Core Features
+- Strict Multi-Tenant Schema Isolation: Zero cross-tenant data leakage.
+- Granular RBAC: Tailored permissions for directors, bursars, teachers, and administrators.
+- CBC & Academic Assessment: Real-time rubric tracking and automated report cards.
+- Fee Collection & Financial Auditing: Immutable audit trails and term billing.
+- Cloud-Native Architecture: Built with Next.js, Node.js/Express, and PostgreSQL.
+
+## Public Resources
+- Official Website: https://elimix.mavoratechnologies.com
+- Pricing Tiers: https://elimix.mavoratechnologies.com/pricing
+- Enterprise Contact: https://elimix.mavoratechnologies.com/contact
