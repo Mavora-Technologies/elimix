@@ -9,28 +9,28 @@ const homeFaqs = [
   {
     question: "What is Elimix School Management System?",
     answer:
-      "Elimix is an enterprise, multi-tenant school administration platform engineered by Mavora Technologies. It connects student lifecycle records, fee invoicing, attendance tracking, examination grading, e-learning portals, library logistics, hostel management, transport routing, and staff payroll into one secure, unified system.",
+      "Elimix is an all-in-one school management platform that helps schools manage students, fees, attendance, academics, staff, and parent communication in one place.",
   },
   {
-    question: "Which educational institutions are supported by Elimix?",
+    question: "Which schools can use Elimix?",
     answer:
-      "Elimix is built to serve primary schools, secondary academies, private learning institutions, and multi-campus tertiary colleges operating under Competency-Based Curriculum (CBC), IGCSE, IB, or college semester frameworks.",
+      "Elimix is built for primary schools, secondary academies, private learning institutions, and colleges operating under the Competency-Based Curriculum (CBC), IGCSE, or semester frameworks.",
   },
   {
-    question: "How does Elimix guarantee data security and tenant isolation?",
+    question: "How does Elimix handle fee collection and parent communication?",
     answer:
-      "Each educational institution operates within a strictly partitioned PostgreSQL database schema, protected by a granular Role-Based Access Control (RBAC) matrix and immutable audit trails to ensure absolute data confidentiality and integrity.",
+      "Elimix automates term invoicing, payment tracking, fee balances, and sends instant SMS and email alerts so parents stay fully informed of their children's school activities.",
   },
   {
-    question: "How can our school schedule a product demonstration or view pricing?",
+    question: "How can our school get started or request a demo?",
     answer:
-      "School directors, principals, and administrators can review student capacity tiers on our Pricing page or connect with our enterprise team via the Contact page to arrange a personalized platform walkthrough.",
+      "School principals, directors, and administrators can check our pricing plans or contact our support team to schedule a personalized platform demonstration.",
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white font-sans overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white font-sans w-full overflow-x-hidden">
       <SoftwareAppJsonLd />
       <WebPageJsonLd
         title="Elimix School Management System in Kenya"
@@ -40,32 +40,31 @@ export default function HomePage() {
       />
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full flex flex-col">
         {/* Hero Banner Section */}
-        <section className="w-full bg-[#F0F4F8] text-slate-900 px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 pt-6 pb-12 md:pt-10 md:pb-20 lg:pt-12 lg:pb-28 border-b border-slate-200/80 relative overflow-hidden">
+        <section className="w-full bg-[#F0F4F8] text-slate-900 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 pt-8 pb-14 md:pt-12 md:pb-24 lg:pt-16 lg:pb-32 border-b border-slate-200/80 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:20px_20px] opacity-20 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-emerald-500/15 rounded-tr-full blur-[100px] pointer-events-none"></div>
 
-          <div className="w-full max-w-[1800px] mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-12 lg:gap-16 relative z-10">
-            <div className="space-y-6 flex-1 w-full text-center lg:text-left pr-0 lg:pr-8 xl:pr-12 lg:pt-2">
+          <div className="w-full max-w-[2000px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 relative z-10">
+            <div className="space-y-6 flex-1 w-full text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-xs sm:text-sm font-semibold text-[#0F2942] border border-blue-100/60 shadow-sm">
                 <i
-                  className="fa-solid fa-shield-halved text-[#0070F3]"
+                  className="fa-solid fa-school text-[#0070F3]"
                   aria-hidden="true"
                 ></i>
-                Mavora Technologies • Secure Multi-Tenant Architecture • Automated ERP
+                Complete School Management Platform by Mavora Technologies
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl 2xl:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
-                Elimix School Management System &amp;{" "}
+                Manage Students, Fees, Attendance &amp; Academics{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                  Institutional Governance Console
+                  All in One Place
                 </span>
               </h1>
 
-              <p className="text-slate-600 text-base sm:text-lg lg:text-xl leading-relaxed">
-                Automate administrative workflows, optimize stakeholder communication,
-                and govern academic operations through an advanced cloud platform built for modern educational institutions.
+              <p className="text-slate-600 text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl lg:max-w-none">
+                Elimix helps schools streamline daily administration, track student performance, simplify fee collections, and keep parents closely connected.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
@@ -75,7 +74,7 @@ export default function HomePage() {
                       className="fa-solid fa-right-to-bracket mr-2"
                       aria-hidden="true"
                     ></i>{" "}
-                    Launch Workspace
+                    Launch Portal
                   </Button>
                 </Link>
                 <Link href="/pricing" className="w-full sm:w-auto">
@@ -89,13 +88,13 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Crawlable Module Navigation */}
+              {/* Quick Access Links */}
               <nav
                 aria-label="Core Platform Modules"
                 className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600"
               >
                 <span className="font-semibold text-slate-800">
-                  Quick Access:
+                  Explore Modules:
                 </span>
                 <Link
                   href="/features/cbc-assessment"
@@ -130,8 +129,8 @@ export default function HomePage() {
               </nav>
             </div>
 
-            {/* Hero Image & Metrics */}
-            <div className="w-full lg:w-[450px] xl:w-[550px] shrink-0 flex flex-col items-center gap-6 mt-8 lg:mt-0">
+            {/* Hero Image & Dashboard Highlight */}
+            <div className="w-full lg:w-[450px] xl:w-[550px] shrink-0 flex flex-col items-center gap-6">
               <div className="relative w-full h-72 sm:h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg border border-slate-200/80 bg-slate-100 group">
                 <Image
                   src="/1.png"
@@ -144,57 +143,32 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-[#0F2942]/10 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500"></div>
               </div>
 
-              <div className="w-full bg-white/90 backdrop-blur-md text-slate-900 p-6 rounded-2xl shadow-xl shadow-slate-900/5 border border-slate-200 space-y-5">
+              <div className="w-full bg-white/90 backdrop-blur-md text-slate-900 p-6 rounded-2xl shadow-xl shadow-slate-900/5 border border-slate-200 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <span className="text-xs font-semibold uppercase tracking-wider text-[#0070F3]">
-                    Infrastructure Telemetry
+                    Trusted School Solution
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>{" "}
-                    Active Cluster Nominal
+                    <span className="h-2 w-2 rounded-full bg-emerald-500"></span>{" "}
+                    Reliable &amp; Secure
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-2">
-                  <div>
-                    <div className="text-3xl font-extrabold text-slate-900">
-                      Isolated
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Dedicated DB Schema
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-extrabold text-slate-900">
-                      99.99%
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Partition Uptime
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 border-t border-slate-100 pt-3 flex items-center justify-between">
-                  <span>
-                    Query Latency:{" "}
-                    <strong className="text-slate-900">12ms</strong>
-                  </span>
-                  <i
-                    className="fa-solid fa-server text-[#0070F3]"
-                    aria-hidden="true"
-                  ></i>
-                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Elimix brings your entire school community together on a single, easy-to-use platform designed for teachers, parents, and administrators.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
         {/* Overview & Efficiency Section */}
-        <section className="w-full bg-slate-50 px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-[1800px] mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
+        <section className="w-full bg-slate-50 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center w-full">
+            <div className="space-y-6 w-full">
               <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-100">
                 <Image
                   src="/15.png"
-                  alt="Elimix Comprehensive Institutional Overview"
+                  alt="Elimix Comprehensive School Management Overview"
                   fill
                   className="object-cover object-center"
                   sizes="(max-width: 1200px) 100vw, 800px"
@@ -203,26 +177,22 @@ export default function HomePage() {
               <div className="text-center">
                 <Link href="/contact">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 h-12 shadow-md">
-                    Contact Our Specialists
+                    Speak With Our Team
                   </Button>
                 </Link>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 w-full">
               <div className="title_sections space-y-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                  Platform Overview
+                  Unified Platform
                 </span>
                 <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                  Comprehensive Institutional Management Architecture
+                  Everything Your School Needs in One Place
                 </h2>
                 <p className="text-slate-600 text-base leading-relaxed">
-                  Elimix delivers an integrated ERP solution featuring dedicated
-                  portals for Administrators, Directors, Educators, Learners, and
-                  Guardians. Available via secure cloud deployment, the platform
-                  integrates with messaging gateways and financial networks to
-                  streamline communication and fee collection.
+                  Elimix eliminates paperwork and disconnected spreadsheets by unifying student admissions, term billing, exam processing, teacher grading, and parent announcements into a single workflow.
                 </p>
               </div>
 
@@ -235,8 +205,7 @@ export default function HomePage() {
                     Administrative Efficiency Gain
                   </h3>
                   <p className="text-sm text-slate-600">
-                    Institutions leveraging Elimix benefit from accelerated turnaround
-                    times, synchronized stakeholder engagement, and precise academic tracking.
+                    Schools using Elimix save hours of administrative time each week, allowing staff to focus more on student learning and mentorship.
                   </p>
                 </div>
               </div>
@@ -249,8 +218,9 @@ export default function HomePage() {
                   height={48}
                   className="shrink-0"
                 />
-                <h3 className="text-lg font-bold text-slate-900">
-                  Empowering Smart Academic Ecosystems Across Modern Education.
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
+                  Empowering Digital Schools Across Modern Education.
                 </h3>
               </div>
             </div>
@@ -258,56 +228,51 @@ export default function HomePage() {
         </section>
 
         {/* Educational Frameworks Section */}
-        <section className="w-full bg-[#F0F4F8] border-y border-slate-200/80 px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24">
-          <div className="max-w-[1800px] mx-auto space-y-12">
+        <section className="w-full bg-[#F0F4F8] border-y border-slate-200/80 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24">
+          <div className="max-w-[2000px] mx-auto space-y-12 w-full">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                Curriculum Scope
+                Curriculum Support
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
-                Designed to Support Diverse Educational Frameworks
+                Built for CBC, IGCSE &amp; College Curriculums
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all flex flex-col h-full">
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                   <i className="fa fa-lightbulb-o" aria-hidden="true"></i>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">
                   Competency-Based Curriculum (CBC)
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Pre-configured rubric tracking and formative evaluation tools
-                  enable educators to record competencies, observe learner progress,
-                  and generate compliant reports instantly.
+                <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                  Pre-configured rubric tracking and formative evaluation tools allow teachers to easily assess competencies and generate professional report cards.
                 </p>
               </div>
 
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all">
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all flex flex-col h-full">
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                   <i className="fa fa-globe" aria-hidden="true"></i>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">
-                  IGCSE / IB / International Standards
+                  IGCSE &amp; International Standards
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Flexible examination management modules tailored for international
-                  curriculums, featuring robust grading scales, effort tracking,
-                  and detailed assessment analytics.
+                <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                  Flexible grading scales, effort tracking, and detailed exam analytics designed specifically for international curriculum schools.
                 </p>
               </div>
 
-              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all">
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition-all flex flex-col h-full">
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                   <i className="fa fa-mortar-board" aria-hidden="true"></i>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">
                   Tertiary &amp; College Programs
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Scalable multi-campus support incorporating integrated e-learning workspaces,
-                  semester unit registration, lecturer portals, and academic transcript generation.
+                <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                  Comprehensive semester unit registration, lecturer portals, and academic transcript management for colleges and training institutes.
                 </p>
               </div>
             </div>
@@ -315,42 +280,42 @@ export default function HomePage() {
         </section>
 
         {/* Mobile App Callout Section */}
-        <section className="w-full bg-white px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-[1800px] mx-auto">
-          <div className="bg-gradient-to-br from-slate-100 to-blue-50 rounded-3xl p-8 md:p-16 border border-slate-200 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-12">
-            <div className="space-y-6 max-w-xl">
+        <section className="w-full bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto">
+          <div className="bg-gradient-to-br from-slate-100 to-blue-50 rounded-3xl p-8 md:p-16 border border-slate-200 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-12 w-full">
+            <div className="space-y-6 max-w-xl w-full">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-600/10 text-blue-600">
                 Elimix Mobile Companion
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
-                Stay Connected to Every Milestone
+                Stay Connected to Every School Moment
               </h2>
               <p className="text-slate-600 text-base leading-relaxed">
-                Empower parents with a secure, intuitive mobile experience to monitor academic progress, fee statements, attendance logs, and school bulletins anywhere, anytime.
+                Give parents a secure, easy-to-use mobile experience to monitor academic progress, fee balances, attendance logs, and school announcements anywhere, anytime.
               </p>
               <ul className="space-y-3 text-sm font-semibold text-slate-700">
                 <li className="flex items-center gap-3">
-                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0">
                     ✓
                   </span>{" "}
-                  Real-time push notifications for institutional bulletins
+                  Instant push notifications for school bulletins
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0">
                     ✓
                   </span>{" "}
-                  Transparent attendance and academic performance tracking
+                  Transparent attendance and grade tracking
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0">
                     ✓
-                  </span>{"   "}
+                  </span>{" "}
                   Direct parent-teacher communication channels
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                  <span className="h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0">
                     ✓
                   </span>{" "}
-                  Instant fee balance checks and digital receipt access
+                  Quick fee balance checks and digital receipts
                 </li>
               </ul>
               <div className="flex flex-wrap gap-4 pt-2">
@@ -363,13 +328,13 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative w-full lg:w-[360px] h-[500px] flex items-center justify-center">
+            <div className="relative w-full lg:w-[360px] h-[500px] flex items-center justify-center shrink-0">
               <div className="absolute inset-0 bg-blue-600/10 blur-3xl rounded-full"></div>
               <div className="relative w-[280px] h-[540px] bg-slate-900 rounded-[40px] p-4 shadow-2xl border-4 border-slate-800 flex items-center justify-center overflow-hidden">
                 <div className="absolute top-2 w-32 h-4 bg-slate-800 rounded-full"></div>
                 <Image
                   src="/smsh2.png"
-                  alt="Elimix Mobile Application Interface Preview"
+                  alt="Elimix Mobile App Interface Preview"
                   fill
                   className="object-cover pt-6"
                 />
@@ -378,87 +343,87 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Custom System Features Grid */}
-        <section className="w-full bg-[#F0F4F8] px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-[1800px] mx-auto space-y-12">
+        {/* Core Features Grid */}
+        <section className="w-full bg-[#F0F4F8] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-              Core Modules
+              Core Features
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Engineered Capabilities for Modern Schools
+              Everything Your School Needs in One Place
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-users" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Student Lifecycle Management
+                Student Management
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Oversee student records from admission through alumni status, maintaining comprehensive academic histories and administrative logs in one secure repository.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Maintain comprehensive student profiles, admissions, attendance records, and medical histories from enrollment to graduation.
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-credit-card" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Financial Operations &amp; Billing
+                Fees &amp; Financial Tracking
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Track fee invoices, payment receipts, and outstanding ledgers in real time with automated financial reconciliation designed to ease administrative burdens.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Streamline school fee collections, track payment ledgers, issue digital receipts, and generate financial reports effortlessly.
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-envelope" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Automated Messaging &amp; Alerts
+                Parent Communication
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Broadcast instant SMS and email notifications, fee reminders, and event announcements to parents and staff for dependable communication.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Send instant SMS and email announcements, fee reminders, and student progress updates directly to parents.
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-money" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Automated Term Invoicing
+                Automated Invoicing
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Configure fee structures and voteheads once; the system automatically generates student invoices each term while connecting securely with payment gateways.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Set up termly fee structures and voteheads once, and let the system automatically generate student invoices every term.
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-graduation-cap" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Examination &amp; Grade Processing
+                Academics &amp; Exams
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Capture examination scores, generate professional report forms, compute merit rankings, and distribute results to parents instantly.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Record exam marks, compute merit rankings, track subject performance, and print professional report cards.
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all flex flex-col h-full">
               <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
                 <i className="fa fa-bar-chart" aria-hidden="true"></i>
               </div>
               <h3 className="text-xl font-bold text-slate-900">
-                Executive Reporting &amp; Analytics
+                Staff &amp; Operations
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Produce robust operational dashboards and data insights that empower school boards and directors to make informed strategic choices.
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                Manage teacher timetables, staff attendance, library inventories, hostel allocations, and school transport logs.
               </p>
             </div>
           </div>
@@ -472,124 +437,124 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Available Portals Section */}
-        <section className="w-full bg-white px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-[1800px] mx-auto space-y-12">
+        {/* Dedicated Stakeholder Portals */}
+        <section className="w-full bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
               Role-Based Access
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
-              Dedicated Stakeholder Portals
+              Dedicated Portals for Everyone
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-              <h3 className="text-lg font-bold text-blue-600">Admin Console</h3>
-              <p className="text-sm text-slate-600">
-                Centralized control center for managing user permissions, operational parameters, and inter-departmental workflows.
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 flex flex-col h-full">
+              <h3 className="text-lg font-bold text-blue-600">Admin Portal</h3>
+              <p className="text-sm text-slate-600 flex-1">
+                Centralized dashboard for managing school settings, user accounts, timetables, and daily administrative workflows.
               </p>
             </div>
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 flex flex-col h-full">
               <h3 className="text-lg font-bold text-blue-600">
-                Director&apos;s Dashboard
+                Director&apos;s Portal
               </h3>
-              <p className="text-sm text-slate-600">
-                Holistic financial intelligence providing real-time revenue visibility, fee collection metrics, and academic progress indicators.
+              <p className="text-sm text-slate-600 flex-1">
+                Gain complete oversight of school financial performance, fee collection trends, and academic progress indicators.
               </p>
             </div>
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 flex flex-col h-full">
               <h3 className="text-lg font-bold text-blue-600">
-                Educator Portal
+                Teachers Portal
               </h3>
-              <p className="text-sm text-slate-600">
-                Dedicated workspace for planning lessons, recording continuous assessments, taking attendance, and collaborating with parents.
+              <p className="text-sm text-slate-600 flex-1">
+                Dedicated workspace for recording exam marks, logging lesson attendance, managing assignments, and updating parents.
               </p>
             </div>
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-              <h3 className="text-lg font-bold text-blue-600">Parent Hub</h3>
-              <p className="text-sm text-slate-600">
-                Secure portal allowing guardians to monitor student development, verify attendance records, and review fee statements online.
+            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 flex flex-col h-full">
+              <h3 className="text-lg font-bold text-blue-600">Parents Portal</h3>
+              <p className="text-sm text-slate-600 flex-1">
+                Secure access for parents to review student report cards, track attendance, check fee balances, and receive school notices.
               </p>
             </div>
           </div>
         </section>
 
         {/* Pricing Plans Section */}
-        <section className="w-full bg-[#F0F4F8] px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-[1800px] mx-auto space-y-12">
+        <section className="w-full bg-[#F0F4F8] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
               Pricing Options
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
-              Scalable Packages for Every Institution
+              Flexible Packages for Every School
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6">
-              <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6 flex flex-col justify-between h-full">
+              <div className="space-y-2">
                 <h3 className="text-xl font-bold text-slate-900">Starter Tier</h3>
                 <p className="text-xs text-slate-500">Subscription</p>
               </div>
-              <div className="text-3xl font-extrabold text-blue-600">
+              <div className="text-3xl font-extrabold text-blue-600 py-2">
                 15,000 <span className="text-xs font-normal">KES/term</span>
               </div>
-              <Link href="/contact">
+              <Link href="/contact" className="block w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                   Get Started
                 </Button>
               </Link>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border-2 border-blue-600 shadow-md text-center space-y-6 relative">
+            <div className="bg-white p-8 rounded-2xl border-2 border-blue-600 shadow-md text-center space-y-6 relative flex flex-col justify-between h-full">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full">
                 Most Popular
               </span>
-              <div>
+              <div className="space-y-2">
                 <h3 className="text-xl font-bold text-slate-900">
                   Standard Tier
                 </h3>
                 <p className="text-xs text-slate-500">Subscription</p>
               </div>
-              <div className="text-3xl font-extrabold text-blue-600">
+              <div className="text-3xl font-extrabold text-blue-600 py-2">
                 35,000 <span className="text-xs font-normal">KES/term</span>
               </div>
-              <Link href="/contact">
+              <Link href="/contact" className="block w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                   Get Started
                 </Button>
               </Link>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6">
-              <div>
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6 flex flex-col justify-between h-full">
+              <div className="space-y-2">
                 <h3 className="text-xl font-bold text-slate-900">
                   Advanced Tier
                 </h3>
                 <p className="text-xs text-slate-500">Subscription</p>
               </div>
-              <div className="text-3xl font-extrabold text-blue-600">
+              <div className="text-3xl font-extrabold text-blue-600 py-2">
                 60,000 <span className="text-xs font-normal">KES/term</span>
               </div>
-              <Link href="/contact">
+              <Link href="/contact" className="block w-full">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                   Get Started
                 </Button>
               </Link>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6">
-              <div>
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6 flex flex-col justify-between h-full">
+              <div className="space-y-2">
                 <h3 className="text-xl font-bold text-slate-900">
                   Enterprise Tier
                 </h3>
                 <p className="text-xs text-slate-500">Custom Deployment</p>
               </div>
-              <div className="text-2xl font-extrabold text-slate-900 py-1">
+              <div className="text-2xl font-extrabold text-slate-900 py-3">
                 Contact Us
               </div>
-              <Link href="/contact">
+              <Link href="/contact" className="block w-full">
                 <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold">
                   Request Quote
                 </Button>
@@ -597,7 +562,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center pt-4">
             <Link href="/pricing">
               <Button
                 variant="outline"
@@ -609,30 +574,42 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Buyer FAQ Section */}
-        <section className="w-full bg-white px-4 sm:px-8 md:px-12 xl:px-16 2xl:px-24 py-16 md:py-24 max-w-4xl mx-auto space-y-8">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-              Support &amp; Guidance
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Frequently Asked Questions
-            </h2>
-          </div>
-          <div className="space-y-4">
-            {homeFaqs.map((faq) => (
-              <div
-                key={faq.question}
-                className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-2"
-              >
-                <h3 className="text-base font-bold text-slate-900">
-                  {faq.question}
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </div>
-            ))}
+        {/* Buyer FAQ Section - Revamped with Exclusive Accordion (Only one open at a time) */}
+        <section className="w-full bg-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-16 md:py-24 max-w-[2000px] mx-auto">
+          <div className="max-w-4xl mx-auto space-y-12 w-full">
+            <div className="text-center space-y-3">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-600/10 text-blue-600">
+                Support &amp; Guidance
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-slate-600 text-base max-w-2xl mx-auto">
+                Got questions about how Elimix simplifies school administration? Find clear answers below.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 w-full">
+              {homeFaqs.map((faq, idx) => (
+                <details
+                  key={faq.question}
+                  name="faq-accordion"
+                  className="group bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200 p-6 transition-all duration-300 w-full open:bg-white open:shadow-md open:border-blue-200"
+                  defaultChecked={idx === 0}
+                  {...(idx === 0 ? { open: true } : {})}
+                >
+                  <summary className="flex items-center justify-between cursor-pointer font-bold text-base sm:text-lg text-slate-900 list-none gap-4">
+                    <span>{faq.question}</span>
+                    <span className="h-8 w-8 rounded-full bg-blue-600/10 text-blue-600 flex items-center justify-center shrink-0 transition-transform duration-300 group-open:rotate-180">
+                      <i className="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+                    </span>
+                  </summary>
+                  <div className="mt-4 pt-4 border-t border-slate-200/60 text-slate-600 text-sm sm:text-base leading-relaxed">
+                    <p>{faq.answer}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
       </main>
