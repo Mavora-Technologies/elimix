@@ -79,11 +79,11 @@ export function Header() {
           </span>
 
           <a
-            href="mailto:info@elimix.com"
+            href="mailto:info@mavoratechnologies.com"
             className="hidden items-center gap-2 transition-colors hover:text-white sm:flex"
           >
             <i className="fa-regular fa-envelope text-teal-400" />
-            info@elimix.com
+            info@mavoratechnologies.com
           </a>
         </div>
 
@@ -226,18 +226,6 @@ export function Header() {
             {/* Sidebar Content */}
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-4">
 
-              {/* Brand Introduction */}
-              <div className="mb-4 mt-1">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-widest text-slate-600">
-                  <i className="fa-solid fa-wand-magic-sparkles text-teal-500" />
-                  ELIMIX
-                </div>
-
-                <h2 className="mt-2.5 text-lg font-extrabold leading-tight text-[#0B1727]">
-                  Tech Built for Education
-                </h2>
-              </div>
-
               {/* Navigation Links */}
               <nav
                 aria-label="Mobile navigation"
@@ -310,7 +298,7 @@ export function Header() {
                   </a>
 
                   <a
-                    href="mailto:info@elimix.com"
+                    href="mailto:info@mavoratechnologies.com"
                     className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B1727] transition-colors hover:text-teal-600"
                   >
                     <i className="fa-regular fa-envelope text-teal-500" />
