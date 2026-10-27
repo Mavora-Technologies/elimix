@@ -119,7 +119,7 @@ export default function ContactPage() {
               </div>
               <div className="pt-6 sm:pt-8 border-t border-slate-100">
                 <a href="tel:+254795707823" className="text-base sm:text-lg font-bold text-[#0070F3] hover:text-blue-700 transition-colors flex items-center gap-2">
-                  +254 (0) 795 707 823 <i className="fa-solid fa-arrow-right text-sm"></i>
+                  +254 795 707 823 <i className="fa-solid fa-arrow-right text-sm"></i>
                 </a>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function ContactPage() {
                     <input 
                       type="text" 
                       required 
-                      placeholder="Dr. Valary Femy" 
+                      placeholder="Prof. Jacobs Moh" 
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 sm:px-5 py-3.5 sm:py-4 text-base transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0070F3]/50 focus:border-[#0070F3]" 
                     />
                   </div>
@@ -161,7 +161,7 @@ export default function ContactPage() {
                     <input 
                       type="email" 
                       required 
-                      placeholder="valary.femy@university.edu" 
+                      placeholder="jacobs.moh@university.edu" 
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 sm:px-5 py-3.5 sm:py-4 text-base transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0070F3]/50 focus:border-[#0070F3]" 
                     />
                   </div>

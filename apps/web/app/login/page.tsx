@@ -311,7 +311,7 @@ export default function AuthPage() {
                   <Label className="text-sm font-semibold text-slate-700">Administrator Full Name</Label>
                   <Input 
                     type="text" 
-                    placeholder="Dr. Valary Femy" 
+                    placeholder="Prof. Jacobs Moh" 
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
                     required 

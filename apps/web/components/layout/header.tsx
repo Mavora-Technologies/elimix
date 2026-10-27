@@ -75,7 +75,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-2">
             <i className="fa-solid fa-location-dot text-teal-400" />
-            Nairobi, Kenya
+            Kilimani - Nairobi, Kenya
           </span>
 
           <a
@@ -92,7 +92,7 @@ export function Header() {
           className="flex items-center gap-2 transition-colors hover:text-white"
         >
           <i className="fa-solid fa-phone text-teal-400" />
-          <span>+254 (0) 795 707 823</span>
+          <span>+254 795 707 823</span>
         </a>
 
       </div>
@@ -294,7 +294,7 @@ export function Header() {
                     className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#0B1727] transition-colors hover:text-teal-600"
                   >
                     <i className="fa-solid fa-phone text-teal-500" />
-                    +254 (0) 795 707 823
+                    +254 795 707 823
                   </a>
 
                   <a
